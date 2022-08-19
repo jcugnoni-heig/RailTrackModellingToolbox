@@ -27,7 +27,7 @@ Anyone interested and working in this field can use and/or developed the existin
 
 ## What does it contain ?
 
-This toolbox is composed of four finites elements models and one semi-analytical model:
+This toolbox is composed of four finite element models and one semi-analytical model:
 
 1. The *PadStiffness* Model
 2. The *Semi-Analytical* Model
@@ -59,16 +59,10 @@ It aims to reproduce a pass-by of a bogie on a sleeper. Therefore a *M* shaped i
 
 ## Libraries and dependencies
 
-1. Code_Aster 2019
-2. Salome (2019 ?)
-3. Python 3? 2?  
-
-   - Which specific libraries ?
-   -
-
-4. Bash
-5. PyQT5
-6. Others ?
+The code was developed to run in a CAELinux 2020 Lite (http://www.caelinux.com) but can be adapted to run on other similar distributions (Ubuntu 18.04 for example).
+1. Code_Aster with MFront support (tested version 14.6)
+2. Salome-Meca 2019 
+3. Python 2.7 with PyQT5, pyperclip and numpy libraries
 
 ## Getting Started
 
@@ -87,3 +81,12 @@ If you want to learn more about *Code_Aster* you can visit their [official web s
 If you want to learn more about *Salome*, a multi-platform open source scientific computing environment, you can visit their [official web site](https://www.salome-platform.org/)
 
 ## License
+This code is published under Gnu Public Licence v3 / GPL v3
+
+## Development, Funding & Acknowledgement
+
+This toolbox was developed in the framework of the "Novel Railpad Project" funded by the Swiss Federal Office of Environment and developed in collaboration with EPFL, HEIG-VD, EMPA and SBB.
+
+The finite element models of the toolbox have been developed at COMATEC institute / HEIG-VD by Maurice Ammann, Raphael Nardin and Joël Cugnoni.
+
+The semi-analytical track model was developed in the laboratory of acoustics at EMPA by Benjamin Morin and Bart Van Damme. 
