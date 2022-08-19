@@ -5,7 +5,7 @@ import shutil
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt, QTimer, QObject, QThread, pyqtSignal
-import clipboard
+import pyperclip as clipboard
 import module_run as mod
 import json
 from datetime import datetime
