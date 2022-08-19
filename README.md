@@ -60,9 +60,13 @@ It aims to reproduce a pass-by of a bogie on a sleeper. Therefore a *M* shaped i
 ## Libraries and dependencies
 
 The code was developed to run in a CAELinux 2020 Lite (http://www.caelinux.com) but can be adapted to run on other similar distributions (Ubuntu 18.04 for example).
+
+The toolbox requires the following software installed on the system to run:
 1. Code_Aster with MFront support (tested version 14.6)
 2. Salome-Meca 2019 
 3. Python 2.7 with PyQT5, pyperclip and numpy libraries
+
+To facilitate the use of the toolbox, a custom version of CAELinux 2020 is provided as a ISO image which can be used to install a physical or virtual machine with all software preconfigured.
 
 ## Getting Started
 
