@@ -1,0 +1,58 @@
+P actions make_etude
+P aster_root /opt/aster
+P consbtc oui
+P corefilesize unlimited
+P cpresok RESNOOK
+P debug nodebug
+P display lmafpc22:0.0
+P facmtps 1
+P follow_output yes
+P lang en
+P mclient lmafpc22
+P memjob 30783488
+P memory_limit 30062.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P nbmaxnook 5
+P ncpus 12
+P noeud lmafpc22
+P nomjob ImpulsePhase2
+P origine ASTK 2020.0.final
+P platform LINUX64
+P profastk cae@lmafpc22:/home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/ImpulsePhase2.astk
+P protocol_copyfrom asrun.plugins.server.SCPServer
+P protocol_copyto asrun.plugins.server.SCPServer
+P protocol_exec asrun.plugins.server.SSHServer
+P proxy_dir /tmp
+P rep_trav /tmp/cae-interactif_553121/
+P serveur lmafpc22
+P soumbtc oui
+P time_limit 3600900.0
+P tpsjob 60016
+P uclient cae
+P username cae
+P version 14.6MUPT
+A args 
+A memjeveux 3757.75
+A tpmax 3600900.0
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/GeneralizedMaxwell.mfront D  10
+R base /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/base1 DC 0
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/E_mx1.csv D  20
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/poisson_mx1.csv D  21
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/density_mx1.csv D  22
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/K_mx1.csv D  23
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/G_mx1.csv D  24
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/tau_mx1.csv D  25
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/E_mx2.csv D  26
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/poisson_mx2.csv D  27
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/density_mx2.csv D  28
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/K_mx2.csv D  29
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/G_mx2.csv D  30
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/tau_mx2.csv D  31
+F comm /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/ImpulsePhase2.comm D  1
+F mess /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/messages/messageImpulsePhase2.mess R  6
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/Resultats_impulse.txt R  40
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/Resultats_ballast_impulse_INVAR.txt R  8
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/Resultats_ballast_impulse_SGIM.txt R  9
+F libr /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/resultImpulse.res.med R  81

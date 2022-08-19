@@ -1,0 +1,841 @@
+######################################################
+# CRAIG-BAMPTON MODELISATION with coupling modes : Phase 2 / Run simulation
+######################################################
+DEBUT(PAR_LOT='NON')
+
+
+from Utilitai import partition
+from Utilitai.Table import Table
+from math import pi
+import time
+import numpy as np
+import os
+import json
+
+
+with open('fort.2', 'r') as f:
+    txt = f.read()
+f.close()
+
+parameters = json.loads(txt)
+maxFreq = parameters['phase1FreqMax']
+includeUSP = parameters['USPON']
+freq1 = parameters['phase1Freqs'][0]
+freq2 = parameters['phase1Freqs'][-1]
+nuPadMat1 = parameters['nuMat1']
+nuPadMat2 = parameters['nuMat2']
+coefSlpBotArea = parameters['balAreaCoef']
+nuBal = parameters['nuBal']
+hBal = parameters['hBal']
+nModesRails = parameters['phase1RailModes']
+nModesSleeper = parameters['phase1SlpModes']
+slpForce = 3
+
+if includeUSP == True:
+    nuUSP = parameters['nuUSP']
+
+######################################################
+# Define functions
+######################################################
+
+
+def GetAlphaBeta(freqList, dampingList):
+# Computes optimized Rayleigh's coefs alpha & beta ( eta=1/2*(alpha*w+beta/w) )
+# freqList in Hz ; both lists = np.array()
+    print(freqList)
+    print(dampingList)
+    if len(freqList) == 1: # only 1 freq: set beta to 0 and alpha s.t. damping is exact
+        return [dampingList[0]/(pi*freqList[0]), 0] 
+    elif len(freqList) == 2: # only 2 freqs: return alpha, beta s.t. damping is exact at both freqs
+        f0 = freqList[0]
+        f1 = freqList[1]
+        eta0 = dampingList[0]
+        eta1 = dampingList[1]
+        alpha = eta0/(pi*f0)*(1 - f1/eta0 * (eta0*f1-eta1*f0)/(f1**2-f0**2))
+        beta = 4*pi*f0*f1 * (eta0*f1-eta1*f0)/(f1**2-f0**2)
+        return [alpha, beta]
+
+    # more than 2 freqs: use least squares method to optimize damping
+    A = np.trapz(dampingList*2*pi*freqList, 2*pi*freqList)
+    B = np.trapz(dampingList/(2*pi*freqList), 2*pi*freqList)
+    vect = np.array([[A], [B]])
+    w1 = 2*pi*freqList[0]
+    w2 = 2*pi*freqList[-1]
+    M = 12/((w2**3-w1**3)*(1/w1-1/w2) - 3*(w2-w1)**2) * np.array([[1/2*(1/w1-1/w2), -1/2*(w2-w1)], [-1/2*(w2-w1), 1/6*(w2**3-w1**3)]])
+    alphaBeta = np.dot(M, vect)
+    alpha = float(alphaBeta[0])
+    beta = float(alphaBeta[1])
+    return [alpha, beta]
+
+    
+
+######################################################
+# Trim eigenmodes and define min number of interface modes to compute
+######################################################
+t0=time.time()
+freqBands1 = list(range(0, int(maxFreq) + 1, min(1000, int(maxFreq))))
+if freqBands1[-1] != int(maxFreq):
+    freqBands1.append(int(maxFreq))
+
+
+######################################################
+# Get list of frequencies from freq files
+######################################################
+with open('fort.40') as freqFile:
+    freqlines = freqFile.read().splitlines()
+freqFile.close()
+
+allFreqs = []
+for freqline in freqlines:
+    try:
+        frequency=float(freqline.split(' ')[0])
+    except:
+        continue
+    allFreqs.append(frequency)
+
+
+######################################################
+# MESHES AND MODEL
+######################################################
+meshSlp = LIRE_MAILLAGE(FORMAT="MED",UNITE=21);
+meshRaiR = LIRE_MAILLAGE(FORMAT="MED",UNITE=25);
+
+meshPadR = LIRE_MAILLAGE(FORMAT="MED",UNITE=23);
+offsetPadDroit = 757.54
+offsetPadBas = 214.0
+rotpadX=-1.43261
+
+meshPadR = MODI_MAILLAGE(reuse=meshPadR,
+                       MAILLAGE=meshPadR,
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)))
+
+meshPadR = MODI_MAILLAGE(reuse=meshPadR,
+                       MAILLAGE=meshPadR,
+                       TRANSLATION=(0.0, offsetPadBas, offsetPadDroit),)
+
+
+if includeUSP == True:
+    USPthk = 8.5
+    
+    meshUSP = LIRE_MAILLAGE(FORMAT="MED",UNITE=26);
+    
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_MA = _F(TYPE_MAILLE='2D', NOM='USPbot', OPTION='FACE_NORMALE', VECT_NORMALE=(0,-1,0)))
+
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='USPbot', GROUP_MA='USPbot'))
+                         
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='USPtop', OPTION='PLAN', POINT=(0,USPthk,0), VECT_NORMALE=(0,1,0), PRECISION=1e-3))
+    ###                     
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='tmp', OPTION='PLAN', POINT=(0,0,0), VECT_NORMALE=(0,0,1), PRECISION=1e-3))
+
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='USPsym', DIFFE=('tmp', 'USPtop')))
+
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         DETR_GROUP_NO = _F(NOM='tmp'))
+    
+    # Translate components above USPs of USP's thickness
+    meshSlp = MODI_MAILLAGE(reuse=meshSlp, MAILLAGE=meshSlp, TRANSLATION=(0, USPthk, 0));
+    meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(0, USPthk, 0));
+    meshRaiR = MODI_MAILLAGE(reuse=meshRaiR, MAILLAGE=meshRaiR, TRANSLATION=(0, USPthk, 0));
+    
+    tmp2 = ASSE_MAILLAGE(MAILLAGE_1=meshUSP, MAILLAGE_2=meshSlp, OPERATION='SUPERPOSE')
+    tmp3 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')
+    mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp3, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
+    
+    mesh0 = DEFI_GROUP(reuse=mesh0, MAILLAGE=mesh0, 
+                       CREA_GROUP_NO = _F(NOM='slpSym2', UNION=('slpSym', 'USPsym')))
+    
+    discreteBalNodes = 'USPbot'
+    slpSym = 'slpSym2'
+else:
+    tmp2 = ASSE_MAILLAGE(MAILLAGE_1=meshSlp, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')
+    mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
+    discreteBalNodes = 'slpBot'
+    slpSym = 'slpSym'
+
+mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes, 
+                                  NOM_GROUP_MA=discreteBalNodes + '0D'), 
+                     MAILLAGE=mesh0) 
+
+model = AFFE_MODELE(MAILLAGE=mesh,
+                    AFFE=(_F(TOUT='OUI',
+                            PHENOMENE='MECANIQUE',
+                            MODELISATION='3D',),
+                          _F(GROUP_MA=discreteBalNodes + '0D',
+                             PHENOMENE='MECANIQUE',
+                             MODELISATION='DIS_T',),));
+                          
+# Compute area of a half-sleeper bottom face
+CH_id = CREA_CHAMP(OPERATION = 'AFFE',
+                      TYPE_CHAM ='NOEU_NEUT_R',
+                      MAILLAGE = mesh ,
+                      AFFE = _F(GROUP_MA=discreteBalNodes, NOM_CMP=('X1'), VALE=1.0,))
+
+intCH_id = POST_ELEM(CHAM_GD=CH_id,
+                     INTEGRALE=_F(GROUP_MA=discreteBalNodes,
+                                  NOM_CMP=('X1'),
+                                  TYPE_MAILLE='2D'),
+                     MODELE=model)
+                     
+A_slpBot = intCH_id['INTE_X1',1]
+
+# Get number of nodes in discreteBalNodes
+pyMesh = partition.MAIL_PY()
+pyMesh.FromAster('mesh')
+nodeGrps = mesh.LIST_GROUP_NO()
+for gp in nodeGrps:
+    gpName = gp[0]
+    if gpName == discreteBalNodes:
+        gpNodes = pyMesh.gno.get(gpName)
+        nNodesBal = len(gpNodes)
+        break
+                    
+######################################################
+# Import materials properties / functions
+######################################################
+f_EPad1=LIRE_FONCTION(UNITE = 30,
+                     NOM_PARA = 'FREQ',
+                     PROL_GAUCHE = 'CONSTANT',
+                     PROL_DROITE = 'CONSTANT')
+                 
+f_TDPad1=LIRE_FONCTION(UNITE = 31,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+
+
+f_EPad2=LIRE_FONCTION(UNITE = 32,
+                     NOM_PARA = 'FREQ',
+                     PROL_GAUCHE = 'CONSTANT',
+                     PROL_DROITE = 'CONSTANT')
+                 
+f_TDPad2=LIRE_FONCTION(UNITE = 33,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+
+if includeUSP:
+    f_EUSP=LIRE_FONCTION(UNITE = 34,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+                     
+    f_TDUSP=LIRE_FONCTION(UNITE = 35,
+                             NOM_PARA = 'FREQ',
+                             PROL_GAUCHE = 'CONSTANT',
+                             PROL_DROITE = 'CONSTANT')
+
+f_EBal=LIRE_FONCTION(UNITE = 36,
+                     NOM_PARA = 'FREQ',
+                     PROL_GAUCHE = 'CONSTANT',
+                     PROL_DROITE = 'CONSTANT')
+
+f_TDBal=LIRE_FONCTION(UNITE = 37,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+
+# Materials frequency-independent hysteretic damping
+eta_concrete = 0.016
+eta_steel = 0.001
+
+######################################################
+# BOUNDARY CONDITIONS AND INTERACTIONS
+######################################################
+
+nForce10 = 'nForce10'
+force10 = (0, -100000.0, 10000.0)
+nForce45 = 'nForce45'
+force45 = (0, -173205, -173205)
+
+if includeUSP == True:
+    tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ),
+                                           GROUP_MA_MAIT=('slpBotV', ),
+                                           TYPE_RACCORD='MASSIF')),
+                          MODELE=model)
+                          
+tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('botn', ),
+                                       GROUP_MA_MAIT=('slpUpad', ),
+                                       TYPE_RACCORD='MASSIF')),
+                      MODELE=model)
+                      
+tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('topn', ),
+                                       GROUP_MA_MAIT=('railBotV', ),
+                                       TYPE_RACCORD='MASSIF')),
+                      MODELE=model)
+                                    
+BCinterf=AFFE_CHAR_MECA(MODELE=model,
+                        DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', slpSym), #SANS_GROUP_NO='nope','USPsym'
+                                    DX=0.0,
+                                    DY=0.0,
+                                    DZ=0.0),);
+
+if includeUSP == True:
+    BCs = (BCinterf, tie1, tie2, tie3)
+else:
+    BCs = (BCinterf, tie2, tie3)
+                              
+load10 = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force10[0],
+                                      FY = force10[1],
+                                      FZ = force10[2],
+                                      GROUP_NO=(nForce10, )),
+                      MODELE=model)
+                      
+load45 = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force45[0],
+                                      FY = force45[1],
+                                      FZ = force45[2],
+                                      GROUP_NO=(nForce45, )),
+                      MODELE=model)
+
+t_macroEl = 0
+t_modeGe = 0
+t_harmo = 0
+
+# Loop over N bands within this frequency band => N macroelem with optimized Rayleigh damping
+normMode='TRAN'
+
+# meanFreq is the frequency at which E' is gonna be taken. Since modes are damping independent, 
+# we decide to compute them (interface and eigen) only once per job. So we evaluate them with 
+# E' at the middle of the whole frequency range (among all jobs). It must be so, otherwise each job
+# provides a different list of modes and analyzing their contributions to the response is much harder. 
+# However, the frequency range of each job can be divided in nBands bands to better model Rayleigh damping. 
+# So the damping matrices are recomputed for each band, as well as the macroelement.
+
+
+meanFreqGlob = (freq1+freq2)/2.0 # (allFreqs[0] + allFreqs[-1])/2
+meanFreqJob = (allFreqs[0] + allFreqs[-1])/2
+
+# to be used for damping (not stiffness, see comments above !), when Rayleigh damping is not possible 
+# and viscous damping is used. Properties are taken at the middle of the band
+
+
+# Materials
+allFreqsNP = np.array(allFreqs)
+AB_concrete = GetAlphaBeta(allFreqsNP, eta_concrete*np.ones(len(allFreqs)))
+AB_steel = GetAlphaBeta(allFreqsNP, eta_steel*np.ones(len(allFreqs)))
+
+eta_padMat1 = np.array([f_TDPad1(f) for f in allFreqs])
+AB_padMat1 = GetAlphaBeta(allFreqsNP, eta_padMat1)
+eta_padMat2 = np.array([f_TDPad2(f) for f in allFreqs])
+AB_padMat2 = GetAlphaBeta(allFreqsNP, eta_padMat2)
+
+if includeUSP:
+    eta_USP = np.array([f_TDUSP(f) for f in allFreqs])
+    AB_USP = GetAlphaBeta(allFreqsNP, eta_USP)
+
+
+                        
+concrRe = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_concrete[0],
+                                AMOR_BETA=AB_concrete[1],
+                                E=46300.0,
+                                NU=0.2,
+                                RHO=2.4356e-09))
+                            
+steel = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_steel[0],
+                              AMOR_BETA=AB_steel[1],
+                              E=210000.0,
+                              NU=0.3,
+                              RHO=7.85e-09))
+                            
+padMat1 = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_padMat1[0],
+                                AMOR_BETA=AB_padMat1[1],
+                                E=f_EPad1(meanFreqGlob),
+                                NU=nuPadMat1,
+                                RHO=1.0e-09))
+                                
+padMat2 = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_padMat2[0],
+                                AMOR_BETA=AB_padMat2[1],
+                                E=f_EPad2(meanFreqGlob),
+                                NU=nuPadMat2,
+                                RHO=1.0e-09))   
+    
+
+if includeUSP == True:
+    USPmat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_USP[0],
+                                   AMOR_BETA=AB_USP[1],
+                                   E=f_EUSP(meanFreqGlob), 
+                                   NU=nuUSP,
+                                   RHO=0.375e-09)) 
+
+    fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('sleeper'),
+                                      MATER=(concrRe, )),
+                                   _F(GROUP_MA=('hard'),
+                                      MATER=(padMat1, )),
+                                   _F(GROUP_MA=('soft'),
+                                      MATER=(padMat2, )),
+                                   _F(GROUP_MA=('USP'),
+                                      MATER=(USPmat, )),
+                                   _F(GROUP_MA=('rail'),
+                                      MATER=(steel, ))),
+                             MAILLAGE=mesh,
+                             MODELE=model,)
+else:
+    fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('sleeper'),
+                                      MATER=(concrRe, )),
+                                   _F(GROUP_MA=('hard'),
+                                      MATER=(padMat1, )),
+                                   _F(GROUP_MA=('soft'),
+                                      MATER=(padMat2, )),
+                                   _F(GROUP_MA=('rail'),
+                                      MATER=(steel, ))),
+                             MAILLAGE=mesh,
+                             MODELE=model,)
+                    
+######################################################
+# Compute elementary matrices & assemble (K, M and vect are independent of damping)
+######################################################  
+nodeStiff_Y = f_EBal(meanFreqGlob)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
+nodeStiff_XZ = f_EBal(meanFreqGlob)/2/(1+nuBal)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
+nodeAmo_Y = nodeStiff_Y*f_TDBal(meanFreqJob)/(2*pi*meanFreqJob)
+nodeAmo_XZ = nodeStiff_XZ*f_TDBal(meanFreqJob)/(2*pi*meanFreqJob)
+
+elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N',
+                                      GROUP_MA=(discreteBalNodes+'0D'),
+                                      REPERE='GLOBAL',
+                                      VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),),
+                                   _F(CARA='M_T_D_N',
+                                      GROUP_MA=(discreteBalNodes+'0D'),
+                                      REPERE='GLOBAL',
+                                      VALE=0),
+                                   _F(CARA='A_T_D_N',
+                                      GROUP_MA=(discreteBalNodes+'0D'),
+                                      REPERE='GLOBAL',
+                                      VALE=(nodeAmo_XZ, nodeAmo_Y, nodeAmo_XZ)),
+                                      ),
+                          MODELE=model)
+                              
+matEl_K1=CALC_MATR_ELEM(MODELE=model,
+                        CHAM_MATER=fieldmat,
+                        OPTION='RIGI_MECA',
+                        CHARGE=BCs,
+                        CARA_ELEM=elemprop)
+                        
+num1 = NUME_DDL(MATR_RIGI=matEl_K1)
+matAs_K1 = ASSE_MATRICE(MATR_ELEM=matEl_K1, NUME_DDL=num1)
+
+matEl_M1=CALC_MATR_ELEM(MODELE=model,
+                        CHAM_MATER=fieldmat,
+                        OPTION='MASS_MECA',
+                        CHARGE=BCs,
+                        CARA_ELEM=elemprop)
+                        
+matAs_M1 = ASSE_MATRICE(MATR_ELEM=matEl_M1, NUME_DDL=num1)
+
+vectEl10=CALC_VECT_ELEM(OPTION='CHAR_MECA',
+                      CHARGE=load10, CARA_ELEM=elemprop)
+                      
+vectEl45=CALC_VECT_ELEM(OPTION='CHAR_MECA',
+                      CHARGE=load45, CARA_ELEM=elemprop)
+
+vectAs10 = ASSE_VECTEUR(VECT_ELEM=vectEl10, NUME_DDL=num1)
+vectAs45 = ASSE_VECTEUR(VECT_ELEM=vectEl45, NUME_DDL=num1)
+
+matEl_A1=CALC_MATR_ELEM(MODELE=model,
+                        RIGI_MECA=matEl_K1,
+                        MASS_MECA=matEl_M1,
+                        CHAM_MATER=fieldmat,
+                        OPTION='AMOR_MECA',
+                        CHARGE=BCs,
+                        CARA_ELEM=elemprop)
+                        
+matAs_A1 = ASSE_MATRICE(MATR_ELEM=matEl_A1, NUME_DDL=num1)  
+
+######################################################
+# Compute eigen modes (once since damping-independent)
+######################################################
+t_modes0 = time.time()
+
+tabModes = INFO_MODE( MATR_RIGI = matAs_K1,
+                      MATR_MASS = matAs_M1,
+                      FREQ = freqBands1)                              
+
+# Build a list of frequency bands which contain roughly the same desired number of modes
+temp1 = tabModes.EXTR_TABLE()
+temp2 = temp1.values()
+fMin = temp2['FREQ_MIN']
+fMax = temp2['FREQ_MAX']
+nModes = temp2['NB_MODE']
+
+nEigen = sum(nModes)
+
+table = []
+for i in range(len(fMin)):
+    table.append([fMin[i], fMax[i], nModes[i]])
+
+nModesPerBand = 40
+nTot = 0
+freqBandsOpt = [table[0][0]]
+# nModesList = []
+cursor = 0
+
+i = 0
+while i < len(table):
+    f1 = table[i][0]
+    f2 = table[i][1]
+    nInBand = table[i][2]
+    nRemaining = table[i][2]*(1-cursor)
+    
+    if nTot + nRemaining < nModesPerBand:
+        nTot += nRemaining
+        i += 1
+        cursor = 0
+        continue
+    else:
+        cursor += (nModesPerBand - nTot)/nInBand
+        fSup = f1 + (f2 - f1)*cursor
+        freqBandsOpt.append(fSup)
+        # nModesList.append(nModesPerBand) # supposition.. works if modal density const in the band
+        nTot = 0
+
+if freqBandsOpt[-1] < table[-1][1]:
+    freqBandsOpt.append(table[-1][1])
+    # nModesList.append(nTot)
+
+print('Optimized frequency bands : ')
+print(freqBandsOpt)
+
+# Modes computed with (E, tanD) of the middle of the frequency band
+modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
+                   CALC_FREQ=_F(FREQ=freqBandsOpt,),
+                   STOP_BANDE_VIDE='NON',
+                   OPTION='BANDE',
+                   NORM_MODE=_F(NORME=normMode),
+                   MATR_MASS=matAs_M1,
+                   VERI_MODE=_F(STOP_ERREUR='NON',),)
+                   
+
+print('TIME FOR INFO_MODE + CALC_MODES     ' + str(time.time() - t_modes0))
+
+######################################################
+# Compute static interface modes (once as well (iBand==0) cause damping indep)
+######################################################
+t_modesSta0 = time.time()
+
+modStaR1=MODE_STATIQUE(MATR_RIGI=matAs_K1,
+                       MATR_MASS=matAs_M1,
+                       MODE_INTERF=_F(GROUP_NO = 'railBk',
+                                      TOUT_CMP='OUI',
+                                      NB_MODE=nModesRails,
+                                      SHIFT=10.,),);
+
+modStaR2=MODE_STATIQUE(MATR_RIGI=matAs_K1,
+                       MATR_MASS=matAs_M1,
+                       MODE_INTERF=_F(GROUP_NO = 'railFt',
+                                      TOUT_CMP='OUI',
+                                      NB_MODE=nModesRails,
+                                      SHIFT=10.,),);
+
+modStaS=MODE_STATIQUE(MATR_RIGI=matAs_K1,
+                       MATR_MASS=matAs_M1,
+                       MODE_INTERF=_F(GROUP_NO = slpSym,
+                                      TOUT_CMP='OUI',
+                                      NB_MODE=nModesSleeper,
+                                      SHIFT=10.,),);
+
+                                      
+print('TIME FOR INTF MODES     ' + str(time.time() - t_modesSta0))
+# Normalize static modes
+modStaR1 = NORM_MODE(reuse=modStaR1, MODE=modStaR1, NORME=normMode)
+modStaR2 = NORM_MODE(reuse=modStaR2, MODE=modStaR2, NORME=normMode)
+modStaS = NORM_MODE(reuse=modStaS, MODE=modStaS, NORME=normMode)
+
+t_bamo0 = time.time()
+
+# Define dynamic interfaces   
+Lint=DEFI_INTERF_DYNA(NUME_DDL=num1,
+                      INTERFACE=(_F(NOM = 'I_slpSym',
+                                    TYPE = 'CRAIGB',
+                                    GROUP_NO = slpSym),
+                                 _F(NOM = 'I_raiRBk',
+                                    TYPE = 'CRAIGB',
+                                    GROUP_NO = 'railBk'),
+                                 _F(NOM = 'I_raiRFt',
+                                    TYPE = 'CRAIGB',
+                                    GROUP_NO = 'railFt'),))
+
+######################################################
+# Create modal basis
+######################################################
+bamo1=DEFI_BASE_MODALE(RITZ=(_F(MODE_MECA = modes_1, ),
+                             _F(MODE_INTF = modStaR1, )),
+                       INTERF_DYNA=Lint,
+                       NUME_REF=num1)
+
+bamo1=DEFI_BASE_MODALE(reuse=bamo1,
+                       RITZ=(_F(BASE_MODALE=bamo1),
+                             _F(MODE_INTF = modStaR2, )),
+                       NUME_REF=num1)
+
+bamo1=DEFI_BASE_MODALE(reuse=bamo1,
+                       RITZ=(_F(BASE_MODALE=bamo1),
+                             _F(MODE_INTF = modStaS, )),
+                       NUME_REF=num1)
+
+print('TIME FOR BAMO     ' + str(time.time() - t_bamo0))
+    
+######################################################
+# Create macro element
+######################################################
+t_macroEl0 = time.time()
+
+macroEl1 = MACR_ELEM_DYNA(BASE_MODALE=bamo1,
+                          MATR_MASS=matAs_M1,
+                          MATR_RIGI=matAs_K1,
+                          MATR_AMOR=matAs_A1)
+                          
+print('TIME FOR MACROEL     ' + str(time.time() - t_macroEl0))
+######################################################
+# Macroelements coupling and generalized model creation
+######################################################
+t_modeGe0 = time.time()
+
+substructs = []
+liaisons = []
+nSlp = 3
+for i in range(nSlp):
+    substR = _F(NOM = 'elem'+str(i)+'R', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 0., 0.), TRANS=(i*600,0.,0.))
+    substL = _F(NOM = 'elem'+str(i)+'L', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 180., 0.), TRANS=(i*600,0.,0.))
+    substructs.append(substR)
+    substructs.append(substL)
+    
+    liais2 = _F(SOUS_STRUC_1 = 'elem'+str(i)+'R', SOUS_STRUC_2 = 'elem'+str(i)+'L', INTERFACE_1  = 'I_slpSym', INTERFACE_2  = 'I_slpSym', OPTION='REDUIT')
+    liaisons.append(liais2)
+    
+    if i != nSlp-1:
+        liais4 = _F(SOUS_STRUC_1 = 'elem'+str(i)+'R', SOUS_STRUC_2 = 'elem'+str(i+1)+'R', INTERFACE_1  = 'I_raiRFt', INTERFACE_2  = 'I_raiRBk', OPTION='REDUIT')
+        liais6 = _F(SOUS_STRUC_1 = 'elem'+str(i)+'L', SOUS_STRUC_2 = 'elem'+str(i+1)+'L', INTERFACE_1  = 'I_raiRBk', INTERFACE_2  = 'I_raiRFt', OPTION='REDUIT')
+        liaisons.append(liais4)
+        liaisons.append(liais6)
+
+modeGene=DEFI_MODELE_GENE(SOUS_STRUC=substructs, LIAISON=liaisons, VERIF=_F( STOP_ERREUR = 'OUI', PRECISION = 1.E-6, CRITERE = 'RELATIF'))
+numGene=NUME_DDL_GENE(MODELE_GENE=modeGene);
+
+######################################################
+# ASSEMBLAGE DES MATRICES RAIDEUR ET MASSE GENERALISEES STATIQUES
+######################################################
+masGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene,
+                                  OPTION='MASS_GENE');
+
+rigGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene,
+                                  OPTION='RIGI_GENE');
+                                  
+amoGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene,
+                                  OPTION='AMOR_GENE');
+
+vectGe10 = ASSE_VECT_GENE(NUME_DDL_GENE=numGene,CHAR_SOUS_STRUC=(_F(SOUS_STRUC = 'elem'+str(slpForce-1)+'R',VECT_ASSE = vectAs10),))        
+vectGe45 = ASSE_VECT_GENE(NUME_DDL_GENE=numGene,CHAR_SOUS_STRUC=(_F(SOUS_STRUC = 'elem'+str(slpForce-1)+'R',VECT_ASSE = vectAs45),)) 
+
+print('TIME FOR MODEGENE     ' + str(time.time() - t_modeGe0))
+    
+######################################################
+# HARMONIC SIMULATION
+######################################################
+t_harmo0 = time.time()
+
+harmGe10 = DYNA_VIBRA(BASE_CALCUL='GENE',
+                      TYPE_CALCUL='HARM',
+                      MATR_MASS=masGene,
+                      MATR_RIGI=rigGene,
+                      MATR_AMOR=amoGene,
+                      FREQ=allFreqs,
+                      TOUT_CHAM='OUI',
+                      EXCIT=_F(VECT_ASSE_GENE=vectGe10, COEF_MULT=1.0,),
+                      SOLVEUR=_F(METHODE='LDLT',
+                                 RENUM='RCMK',
+                                 NPREC=8,
+                                 ELIM_LAGR='NON',
+                                 STOP_SINGULIER='OUI',),)
+                                 
+harmGe45 = DYNA_VIBRA(BASE_CALCUL='GENE',
+                      TYPE_CALCUL='HARM',
+                      MATR_MASS=masGene,
+                      MATR_RIGI=rigGene,
+                      MATR_AMOR=amoGene,
+                      FREQ=allFreqs,
+                      TOUT_CHAM='OUI',
+                      EXCIT=_F(VECT_ASSE_GENE=vectGe45, COEF_MULT=1.0,),
+                      SOLVEUR=_F(METHODE='LDLT',
+                                 RENUM='RCMK',
+                                 NPREC=8,
+                                 ELIM_LAGR='NON',
+                                 STOP_SINGULIER='OUI',),)
+ 
+print('TIME FOR HARMO     ' + str(time.time() - t_harmo0))
+######################################################
+# POST-PROCESSING : vect_mag (envelope of max modal vector components)
+######################################################
+nModesTot = nEigen + 2*nModesRails + nModesSleeper
+
+vect_mag = [0]*nModesTot
+for i in range(len(vect_mag)):
+    vect_mag[i] = [0.0]*(nSlp*2)
+    
+for freq in allFreqs:
+    dispGene = RECU_GENE(RESU_GENE=harmGe10,
+                         NOM_CHAM='DEPL',
+                         FREQ=freq)
+
+    IMPR_GENE(UNITE=8, GENE=_F(RESU_GENE=dispGene))
+
+    DETRUIRE(CONCEPT=_F(NOM=(dispGene)))
+
+# if only 1 concept is printed to fort.8, nothing appears in it while still in the calculation (content=''). It's a bug..
+if len(allFreqs) == 1:
+    dispGen2 = RECU_GENE(RESU_GENE=harmGe10,
+                         NOM_CHAM='DEPL',
+                         FREQ=allFreqs[0])
+
+    IMPR_GENE(UNITE=8, GENE=_F(RESU_GENE=dispGen2))
+    DETRUIRE(CONCEPT=_F(NOM=(dispGen2)))
+
+    
+with open('fort.8','r') as f:
+    content = f.read()
+f.close()
+lines = content.split('\n')
+
+for line in lines:
+    listLine = line.split(' ')
+    listLine = [x.replace('D','e') for x in listLine if x]
+    try:
+        lineNo = int(listLine[0])
+    except:
+        continue
+      
+    # if lineNo > nModesTot:
+        # continue
+
+    modeNo = lineNo % nModesTot 
+    macroElNo = (lineNo // nModesTot) % (3*nSlp) # 0 => 5
+    if modeNo == 0: # True when lineNo == nModesTot
+        modeNo = nModesTot
+        macroElNo = macroElNo - 1
+        
+    modeNo = modeNo - 1 # 0 => 1409 p.ex
+        
+    real = float(listLine[1])
+    imag = float(listLine[2])
+    magn = (real**2+imag**2)**(1/2)
+
+    print(str(lineNo) + ' ' + str(modeNo) + ' ' + str(macroElNo) + ' ' + str(magn))
+        
+    vect_mag[modeNo][macroElNo] = max(vect_mag[modeNo][macroElNo], magn)
+
+vect_mag_str = []
+for i in vect_mag:
+    myStrList = []
+    for j in i:
+        myStrList.append(str(j))
+    vect_mag_str.append('\t'.join(myStrList))
+    
+fileVectContent = '\n'.join(vect_mag_str)
+fileVect=open('fort.91','w')
+fileVect.write(fileVectContent)
+fileVect.close()
+
+#=====================================================
+
+vect_mag = [0]*nModesTot
+for i in range(len(vect_mag)):
+    vect_mag[i] = [0.0]*(nSlp*2)
+    
+for freq in allFreqs:
+    dispGene = RECU_GENE(RESU_GENE=harmGe45,
+                         NOM_CHAM='DEPL',
+                         FREQ=freq)
+
+    IMPR_GENE(UNITE=9, GENE=_F(RESU_GENE=dispGene))
+    DETRUIRE(CONCEPT=_F(NOM=(dispGene)))
+
+# if only 1 concept is printed to fort.9, nothing appears in it while still in the calculation (content=''). It's a bug..
+if len(allFreqs) == 1:
+    dispGen2 = RECU_GENE(RESU_GENE=harmGe45,
+                         NOM_CHAM='DEPL',
+                         FREQ=allFreqs[0])
+
+    IMPR_GENE(UNITE=9, GENE=_F(RESU_GENE=dispGen2))
+    DETRUIRE(CONCEPT=_F(NOM=(dispGen2)))
+    
+    
+with open('fort.9','r') as f:
+    content = f.read()
+f.close()
+lines = content.split('\n')
+
+
+for line in lines:
+    listLine = line.split(' ')
+    listLine = [x.replace('D','e') for x in listLine if x]
+    try:
+        lineNo = int(listLine[0])
+    except:
+        continue
+      
+    # if lineNo > nModesTot:
+        # continue
+
+    modeNo = lineNo % nModesTot 
+    macroElNo = (lineNo // nModesTot) % (3*nSlp) # 0 => 5
+    if modeNo == 0: # True when lineNo == nModesTot
+        modeNo = nModesTot
+        macroElNo = macroElNo - 1
+        
+    modeNo = modeNo - 1 # 0 => 1409 p.ex
+        
+    real = float(listLine[1])
+    imag = float(listLine[2])
+    magn = (real**2+imag**2)**(1/2)
+        
+    vect_mag[modeNo][macroElNo] = max(vect_mag[modeNo][macroElNo], magn)
+
+vect_mag_str = []
+for i in vect_mag:
+    myStrList = []
+    for j in i:
+        myStrList.append(str(j))
+    vect_mag_str.append('\t'.join(myStrList))
+    
+fileVectContent = '\n'.join(vect_mag_str)
+fileVect=open('fort.92','w')
+fileVect.write(fileVectContent)
+fileVect.close()
+
+try:
+    IMPR_RESU(FORMAT='MED',
+              RESU=_F(RESULTAT=modes_1),
+              UNITE=82)
+except:
+    pass
+          
+
+
+ 
+t_fin = time.time()
+print('nModesTot ' + str(nModesTot))
+print('nEigen ' + str(nEigen))
+print('TOTAL TIME ' + str(t_fin-t0))
+
+fileModesContent = 'nEigen = ' + str(nEigen) + '\nnModesRails = ' + str(nModesRails) + '\nnModesSleeper = ' + str(nModesSleeper)
+fileModes=open('fort.10','w')
+fileModes.write(fileModesContent)
+fileModes.close()
+
+DETRUIRE(CONCEPT=_F(NOM=(matEl_A1, matAs_A1, masGene, rigGene, amoGene, vectGe10, vectGe45, elemprop)))
+DETRUIRE(CONCEPT=_F(NOM=(meshSlp, meshRaiR, meshPadR, tmp2, mesh, mesh0, model, f_EBal, f_TDBal,  f_EPad1, )))
+DETRUIRE(CONCEPT=_F(NOM=(f_EPad2, f_TDPad1, f_TDPad2, tie2, tie3, BCinterf, load10, load45, )))
+DETRUIRE(CONCEPT=_F(NOM=(matEl_K1, concrRe, steel, padMat1, padMat2, fieldmat, tabModes, macroEl1, )))
+DETRUIRE(CONCEPT=_F(NOM=(matAs_K1, matEl_M1, matAs_M1, vectEl10, vectEl45, vectAs10, vectAs45, modeGene, numGene, )))
+DETRUIRE(CONCEPT=_F(NOM=(modStaR1, modStaR2, modStaS, Lint, bamo1, )))
+DETRUIRE(CONCEPT=_F(NOM=(harmGe10, harmGe45, CH_id, intCH_id)))
+if includeUSP == True:
+    DETRUIRE(CONCEPT=_F(NOM=(meshUSP, tmp3, tie1, f_EUSP, f_TDUSP, USPmat)))
+
+# saves only modes_1 & num1 to the base
+FIN(RETASSAGE='OUI')

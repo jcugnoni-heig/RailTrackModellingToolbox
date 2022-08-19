@@ -1,0 +1,53 @@
+P actions make_etude
+P aster_root /opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180
+P consbtc oui
+P corefilesize unlimited
+P cpresok RESNOOK
+P debug nodebug
+P display lmafpc22:0.0
+P facmtps 1
+P follow_output yes
+P lang en
+P mclient lmafpc22
+P memjob 8255488
+P memory_limit 8062.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P nbmaxnook 5
+P ncpus 4
+P noeud localhost
+P nomjob padStiffnessPhase2_b4
+P origine ASTK 2017.0
+P platform Linux64
+P profastk cae@lmafpc22:/home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padStiffnessPhase2_b4.astk
+P protocol_copyfrom asrun.plugins.server.SCPServer
+P protocol_copyto asrun.plugins.server.SCPServer
+P protocol_exec asrun.plugins.server.SSHServer
+P proxy_dir /tmp
+P rep_trav /scratch/cae-caesrv1-interactif_103759
+P serveur localhost
+P soumbtc oui
+P time_limit 3600900.0
+P tpsjob 60016
+P uclient cae
+P username cae
+P version stable
+A args 
+A memjeveux 1007.75
+A tpmax 3600900.0
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/tanD_hard.csv D  39
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/E_hard.csv D  38
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/tanD_soft.csv D  29
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/E_soft.csv D  28
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/poisson_hard.csv D  27
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/poisson_soft.csv D  26
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/density_hard.csv D  25
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/density_soft.csv D  24
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/frequencies_b4.txt D  37
+R base /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/base1 DC 0
+F comm /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padStiffnessPhase2.comm D  1
+F mess /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/messages/messagePadStiffnessPhase2_b4.mess R  6
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/Stiffness_b4.txt R  40
+F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/Static_Stiffness_b4.txt R  41
+F rmed /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/resultPadStiffnessPhase2_b4.res.med R  81

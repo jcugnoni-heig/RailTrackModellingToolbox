@@ -1,0 +1,41 @@
+P actions make_etude
+P aster_root /opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180
+P consbtc oui
+P corefilesize unlimited
+P cpresok RESNOOK
+P debug nodebug
+P display caelinux:0
+P facmtps 1
+P follow_output yes
+P lang en
+P mclient caelinux
+P memjob 1548288
+P memory_limit 1512.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P nbmaxnook 5
+P noeud localhost
+P nomjob meshConvert
+P origine ASTK 2017.0
+P platform Linux64
+P profastk caelinux@caelinux:/home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.astk
+P protocol_copyfrom asrun.plugins.server.SCPServer
+P protocol_copyto asrun.plugins.server.SCPServer
+P protocol_exec asrun.plugins.server.SSHServer
+P proxy_dir /tmp
+P rep_trav /tmp/caelinux-caelinux-interactif_18523
+P serveur caelinux
+P soumbtc oui
+P time_limit 900.0
+P tpsjob 16
+P uclient caelinux
+P username caelinux
+P version stable
+A args 
+A memjeveux 189.0
+A tpmax 900.0
+F mail /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/all.mail D  71
+F comm /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.comm D  1
+F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/importedPad.mesh.med R  72
+F mess /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.mess R  6

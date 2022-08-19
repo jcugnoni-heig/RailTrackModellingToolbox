@@ -1,0 +1,12 @@
+Here are the parameters selected for the sutdy: Example_result
+
+The selected mesh is: pad_mesh_lin
+
+The selected material 1 is: EVA
+The poisson's ratio of material 1 is: 0.484
+The density of material 1 in [t/mm3] is: 1e-9
+
+The selected material 2 is: EVA
+The poisson's ratio of material 2 is: 0.484
+The density of material 2 in [t/mm3] is: 1e-9
+

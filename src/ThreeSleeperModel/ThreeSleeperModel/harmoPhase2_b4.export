@@ -1,0 +1,57 @@
+P actions make_etude
+P aster_root /opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180
+P consbtc oui
+P corefilesize unlimited
+P cpresok RESNOOK
+P debug nodebug
+P display caesrv1:0.0
+P facmtps 1
+P follow_output yes
+P lang en
+P mclient caesrv1
+P memjob 30783488
+P memory_limit 30062.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P nbmaxnook 5
+P ncpus 6
+P noeud localhost
+P nomjob harmoPhase2_b4
+P origine ASTK 2017.0
+P platform Linux64
+P profastk cae@caesrv1:/home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoPhase2_b4.astk
+P protocol_copyfrom asrun.plugins.server.SCPServer
+P protocol_copyto asrun.plugins.server.SCPServer
+P protocol_exec asrun.plugins.server.SSHServer
+P proxy_dir /tmp
+P rep_trav /tmp/cae-caesrv1-interactif_2204
+P serveur localhost
+P soumbtc oui
+P time_limit 3600900.0
+P tpsjob 60016
+P uclient cae
+P username cae
+P version stable
+A args 
+A memjeveux 3757.75
+A tpmax 3600900.0
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/temp_parameters/parameters_test.py D  22
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/tanD_bal.csv D  59
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/E_bal.csv D  58
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/tanD_USP.csv D  49
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/E_USP.csv D  48
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/tanD_hard.csv D  39
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/E_hard.csv D  38
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/tanD_soft.csv D  29
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/E_soft.csv D  28
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/frequencies_b4.txt D  37
+R base /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/base1 DC 0
+F comm /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoAcoust_Phase2.comm D  1
+F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/acGrid.med D  21
+F mess /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/messages/harmo2_b4.mess R  6
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/FRF_b4.txt R  40
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/power_b4.txt R  41
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/data_b4 R  42
+F rmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/resuAcc_b4.res.med R  80
+F rmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/resuHarm_b4.res.med R  81

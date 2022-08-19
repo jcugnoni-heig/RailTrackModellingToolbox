@@ -1,0 +1,271 @@
+DEBUT(LANG='EN', PAR_LOT='NON')
+
+# import parameters
+paramFile = open('fort.22')
+content = paramFile.read()
+paramFile.close()
+exec(content)
+
+
+# ---------- MESH --------------
+mesh = LIRE_MAILLAGE(FORMAT='MED',
+
+                     UNITE=20)
+
+groupsPadHard=('hard___0','hard___1','hard___2','hard___3','hard___4','hard',)
+groupsPadSoft=('soft___0','soft___1','soft___2','soft___3','soft___4','soft',)
+
+
+# -------- FE Model ------------
+model = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
+
+                             PHENOMENE='MECANIQUE',
+
+                             TOUT='OUI'),
+
+                          _F(MODELISATION=('3D'),
+
+                             PHENOMENE='MECANIQUE',
+
+                             GROUP_MA=groupsPadSoft)),
+
+                    INFO=2,
+
+                    MAILLAGE=mesh)
+
+
+
+
+
+
+
+# --------- Element properties -------
+# elemprop = AFFE_CARA_ELEM(MASSIF=(_F(ANGL_REP=(0.0, 0.0, -90.0),
+
+                                     # GROUP_MA=('ballast', )),
+
+                                  # _F(ANGL_REP=(0.0, 0.0, 0.0),
+
+                                     # GROUP_MA=('tr3', 'tr2', 'tr1'))),
+
+                          # MODELE=model)
+
+# --------- Fixed boundary conditions -------
+
+BCfix = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
+
+                                   DY=0.0,
+
+                                   DZ=0.0,
+
+                                   GROUP_MA=('balbot', )),
+
+                       MODELE=model)
+
+
+# -------- Tied Surfaces ---------------
+
+                          
+                          
+                          
+                          
+                          
+                          
+
+if includeUSPs == True:
+    tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USP1botn', ),
+                                               GROUP_MA_MAIT=('ballast', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+
+    tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USP2botn', ),
+                                               GROUP_MA_MAIT=('ballast', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+
+    tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USP3botn', ),
+                                               GROUP_MA_MAIT=('ballast', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+                                  
+    tie16 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_MA_ESCL=('tr1bot', ),
+                                               GROUP_MA_MAIT=('USP1topV', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+                              
+    tie17 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_MA_ESCL=('tr2bot', ),
+                                               GROUP_MA_MAIT=('USP2topV', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+
+    tie18 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_MA_ESCL=('tr3bot', ),
+                                               GROUP_MA_MAIT=('USP3topV', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+else:
+    tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_MA_ESCL=('tr1bot', ),
+                                               GROUP_MA_MAIT=('ballast', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+
+    tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_MA_ESCL=('tr2bot', ),
+                                               GROUP_MA_MAIT=('ballast', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+                              
+
+    tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_MA_ESCL=('tr3bot', ),
+                                               GROUP_MA_MAIT=('ballast', ),
+                                               TYPE_RACCORD='MASSIF')),
+                              MODELE=model)
+
+tie4 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('botn', ),
+
+                                           GROUP_MA_MAIT=('tr1tg', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+                          
+tie5 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('botn___0',),
+
+                                           GROUP_MA_MAIT=('tr1td', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+tie6 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('botn___1', ),
+
+                                           GROUP_MA_MAIT=('tr2tg', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+tie7 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('botn___2', ),
+
+                                           GROUP_MA_MAIT=('tr2td', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+
+tie8 = AFFE_CHAR_MECA(LIAISON_MAIL=(  _F(GROUP_NO_ESCL=('botn___3', ),
+
+                                           GROUP_MA_MAIT=('tr3tg', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+                          
+tie9 = AFFE_CHAR_MECA(LIAISON_MAIL=(  _F(GROUP_NO_ESCL=('botn___4',),
+
+                                           GROUP_MA_MAIT=('tr3td', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+tie10 = AFFE_CHAR_MECA(LIAISON_MAIL=(  _F(GROUP_NO_ESCL=('topn', ),
+
+                                           GROUP_MA_MAIT=('rg1', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+tie11 = AFFE_CHAR_MECA(LIAISON_MAIL=(  _F(GROUP_NO_ESCL=( 'topn___1',),
+
+                                           GROUP_MA_MAIT=('rg2', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+                          
+tie12 = AFFE_CHAR_MECA(LIAISON_MAIL=(  _F(GROUP_NO_ESCL=('topn___3',),
+
+                                           GROUP_MA_MAIT=('rg3', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+tie13 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('topn___0', ),
+
+                                           GROUP_MA_MAIT=('rd1', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+
+tie14 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('topn___2', ),
+
+                                           GROUP_MA_MAIT=('rd2', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+                          
+tie15 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=( 'topn___4',),
+
+                                           GROUP_MA_MAIT=('rd3', ),
+
+                                           TYPE_RACCORD='MASSIF')),
+
+                          MODELE=model)
+                          
+#meshTies = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(DISTANCE_MAX=1.0,
+
+                                           #GROUP_MA_ESCL=('tr3bot', 'tr2bot', 'tr1bot'),
+
+                                           #GROUP_MA_MAIT=('ballast', ),
+
+                                           #TYPE_RACCORD='MASSIF'),
+
+                                        #_F(DISTANCE_MAX=1.0,
+
+                                           #GROUP_NO_ESCL=('botn', 'botn___0'),
+
+                                           #GROUP_MA_MAIT=('tr1', ),
+
+                                           #TYPE_RACCORD='MASSIF'),
+
+                                        #_F(DISTANCE_MAX=1.0,
+
+                                           #GROUP_NO_ESCL=('botn___1', 'botn___2'),
+
+                                           #GROUP_MA_MAIT=('tr2', ),
+
+                                           #TYPE_RACCORD='MASSIF'),
+
+                                        #_F(DISTANCE_MAX=1.0,
+
+                                           #GROUP_NO_ESCL=('botn___3', 'botn___4'),
+
+                                           #GROUP_MA_MAIT=('tr3', ),
+
+                                           #TYPE_RACCORD='MASSIF'),
+
+                                        #_F(DISTANCE_MAX=1.0,
+
+                                           #GROUP_NO_ESCL=('topn', 'topn___1', 'topn___3'),
+
+                                           #GROUP_MA_MAIT=('railg', ),
+
+                                           #TYPE_RACCORD='MASSIF'),
+
+                                        #_F(DISTANCE_MAX=1.0,
+
+                                           #GROUP_NO_ESCL=('topn___0', 'topn___2', 'topn___4'),
+
+                                           #GROUP_MA_MAIT=('raild', ),
+
+                                           #TYPE_RACCORD='MASSIF')),
+
+                          #MODELE=model)
+
+# ------ Save results in BASE to restart at Phase2 ---------
+
+FIN()

@@ -1,0 +1,42 @@
+P actions make_etude
+P aster_root /opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180
+P consbtc oui
+P corefilesize unlimited
+P cpresok RESNOOK
+P debug nodebug
+P display caelinux:0
+P facmtps 1
+P follow_output yes
+P lang en
+P mclient caelinux
+P memjob 5120000
+P memory_limit 5000.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P nbmaxnook 5
+P noeud localhost
+P nomjob gen3sleeper
+P origine ASTK 2017.0
+P platform Linux64
+P profastk caelinux@caelinux:/home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3sleeper.astk
+P protocol_copyfrom asrun.plugins.server.SCPServer
+P protocol_copyto asrun.plugins.server.SCPServer
+P protocol_exec asrun.plugins.server.SSHServer
+P proxy_dir /tmp
+P rep_trav /tmp/caelinux-caelinux-interactif_40109
+P serveur caelinux
+P soumbtc oui
+P time_limit 900.0
+P tpsjob 16
+P uclient caelinux
+P username caelinux
+P version stable
+A args 
+A memjeveux 625.0
+A tpmax 900.0
+F comm /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3Sleepers.comm D  1
+F mmed /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/importedPad.mesh.med D  3
+F mmed /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/base3Sleeper.med D  2
+F mess /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3Sleepers.mess R  6
+F rmed /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3Sleeper.mesh.med R  80

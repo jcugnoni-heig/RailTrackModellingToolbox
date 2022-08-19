@@ -1,0 +1,11 @@
+read Export_Aster.inp inp  
+prnt se      	
+seta botn n bot
+seta topn n top	    
+prnt set			      
+move all tra -79.0 50.0 0.0   
+pnt O 0 0 0   
+move all rot O x -90.0    
+send all ast        
+exit
+

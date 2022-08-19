@@ -1,0 +1,44 @@
+P actions make_etude
+P aster_root /opt/SalomeMeca/V2019.0.3_universal/tools/Code_aster_frontend-20190
+P consbtc oui
+P corefilesize unlimited
+P cpresok RESNOOK
+P debug nodebug
+P display caesrv1:0.0
+P facmtps 1
+P follow_output yes
+P lang en
+P mclient caesrv1
+P memjob 122880000
+P memory_limit 120000.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P nbmaxnook 5
+P ncpus 1
+P noeud localhost
+P nomjob harmoJCPhase1
+P origine ASTK 2018.1.final
+P platform Linux64
+P profastk cae@caesrv1:/home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoJCPhase1.astk
+P protocol_copyfrom asrun.plugins.server.SCPServer
+P protocol_copyto asrun.plugins.server.SCPServer
+P protocol_exec asrun.plugins.server.SSHServer
+P proxy_dir /tmp
+P rep_trav /tmp/caelinux-caelinux-interactif_2200
+P serveur localhost
+P soumbtc oui
+P time_limit 18900.0
+P tpsjob 316
+P uclient cae
+P username cae
+P version stable
+A args 
+A dbgjeveux 
+A memjeveux 15000.0
+A tpmax 18900.0
+F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/temp_parameters/parameters_test.py D  22
+F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/gen3Sleeper.mesh.med D  20
+F comm /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoAcoust_Phase1.comm D  1
+F mess /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/messages/harmo1.mess R  6
+R base /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/base1 RC 0

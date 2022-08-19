@@ -1,0 +1,88 @@
+DEBUT(LANG='EN', PAR_LOT='NON')
+
+# ---------- MESH --------------
+mesh = LIRE_MAILLAGE(FORMAT='MED',
+
+                     UNITE=20) #check the unite number. Need to load 'padWithRF.mesh.med'.
+
+# For Pad Stiffness we need groups for : Hard, Soft, Top, Bot, RF and RF0D. This only for a single pad.
+
+topNodes = ('topn')
+botNodes = ('botn')
+rfNodes = ('RF')
+hardElem = ('hard')
+softElem = ('soft')
+rf0dElem = ('RF0D')
+
+# -------- FE Model ------------
+model = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
+
+                             PHENOMENE='MECANIQUE',
+
+                             TOUT='OUI'),
+
+                          _F(MODELISATION=('3D'),
+
+                             PHENOMENE='MECANIQUE',
+
+                             GROUP_MA=softElem),
+                          _F(GROUP_MA= ('RF0D', ),
+                             PHENOMENE='MECANIQUE',
+                             MODELISATION='DIS_TR',)),
+
+                    INFO=2,
+
+                    MAILLAGE=mesh)
+
+
+# --------- Fixed boundary conditions -------
+
+BCfix = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
+
+                                   DY=0.0,
+
+                                   DZ=0.0,
+
+                                   GROUP_NO=('botn', )), #Bottom nodes are fixed
+
+                       MODELE=model)
+
+# This condition will certainly be removed... the solid link is already doing it and anyway this one has to be change for shear.
+BCfixTop = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
+
+                                   DZ=0.0,
+
+                                   GROUP_NO=('topn', )), #Top nodes are fixed laterally
+
+                          MODELE=model)
+
+
+
+# --------- Add DDL to RF0D -------
+
+
+
+RFprop = AFFE_CARA_ELEM(DISCRET=_F(CARA='K_TR_D_N',
+
+                                   GROUP_MA=('RF0D', ),
+
+                                   VALE=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)),
+
+                         MODELE=model) #Add null rigidity in every direction to add the 6 degrees of liberty to my RF.
+
+
+# --------- infinit stiff link between topn and RF -------
+
+
+
+RFCtltop = AFFE_CHAR_MECA(LIAISON_SOLIDE=_F(GROUP_NO=('topn', 'RF', ),
+					    DIST_MIN=1.8,
+
+                                            ), #Top nodes and RF node are link to be rigid
+
+                          MODELE=model)
+
+
+# ------ Save results in BASE to restart at Phase2 ---------
+
+FIN()

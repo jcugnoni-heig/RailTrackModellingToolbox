@@ -1,0 +1,1473 @@
+# ------------------------------------------------------------------------------------------
+# Impression du contenu du fichier de commandes à exécuter :
+# ------------------------------------------------------------------------------------------
+DEBUT(LANG='EN')
+
+
+offsetPadGauche = -757.54
+offsetPadDroit = 757.54
+offsetPadBas = 214.0
+rotpadX=-1.43261
+
+stepPadX = 600.0
+
+mbase = LIRE_MAILLAGE(UNITE=2)
+
+mpad1g = LIRE_MAILLAGE(UNITE=3)
+
+mpad1g = MODI_MAILLAGE(reuse=mpad1g,
+                       MAILLAGE=mpad1g,
+                       ROTATION=_F(
+                         ANGLE=-rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  )
+)
+
+mpad1g = MODI_MAILLAGE(reuse=mpad1g,
+                       MAILLAGE=mpad1g,
+                       TRANSLATION=(0.0, offsetPadBas, offsetPadGauche),
+)
+                       
+mcomb1g = ASSE_MAILLAGE(MAILLAGE_1=mbase,
+                      MAILLAGE_2=mpad1g,
+                      OPERATION='SUPERPOSE')
+                       
+mpad1d = LIRE_MAILLAGE(UNITE=3)
+
+mpad1d = MODI_MAILLAGE(reuse=mpad1d,
+                       MAILLAGE=mpad1d,
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+
+mpad1d = MODI_MAILLAGE(reuse=mpad1d,
+                       MAILLAGE=mpad1d,
+                       TRANSLATION=(0.0, offsetPadBas, offsetPadDroit),
+                      )
+
+mcomb1d = ASSE_MAILLAGE(MAILLAGE_1=mcomb1g,
+                      MAILLAGE_2=mpad1d,
+                      OPERATION='SUPERPOSE')
+                       
+mpad2g = LIRE_MAILLAGE(UNITE=3)
+
+mpad2g = MODI_MAILLAGE(reuse=mpad2g,
+                       MAILLAGE=mpad2g,
+                       ROTATION=_F(
+                         ANGLE=-rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+         
+mpad2g = MODI_MAILLAGE(reuse=mpad2g,
+                       MAILLAGE=mpad2g,
+                       TRANSLATION=(stepPadX, offsetPadBas, offsetPadGauche),
+                      )
+       
+              
+mcomb2g = ASSE_MAILLAGE(MAILLAGE_1=mcomb1d,
+                      MAILLAGE_2=mpad2g,
+                      OPERATION='SUPERPOSE')
+                                                                    
+mpad2d = LIRE_MAILLAGE(UNITE=3)
+
+mpad2d = MODI_MAILLAGE(reuse=mpad2d,
+                       MAILLAGE=mpad2d, 
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+
+mpad2d = MODI_MAILLAGE(reuse=mpad2d,
+                       MAILLAGE=mpad2d,
+                       TRANSLATION=(stepPadX, offsetPadBas, offsetPadDroit),
+                      )
+                       
+mcomb2d = ASSE_MAILLAGE(MAILLAGE_1=mcomb2g,
+                      MAILLAGE_2=mpad2d,
+                      OPERATION='SUPERPOSE')
+                      
+mpad3g = LIRE_MAILLAGE(UNITE=3)
+
+mpad3g = MODI_MAILLAGE(reuse=mpad3g,
+                       MAILLAGE=mpad3g,
+                       ROTATION=_F(
+                         ANGLE=-rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+
+mpad3g = MODI_MAILLAGE(reuse=mpad3g,
+                       MAILLAGE=mpad3g,
+                       TRANSLATION=(2*stepPadX, offsetPadBas, offsetPadGauche),
+                       )
+                       
+mcomb3g = ASSE_MAILLAGE(MAILLAGE_1=mcomb2d,
+                      MAILLAGE_2=mpad3g,
+                      OPERATION='SUPERPOSE')
+                                                                    
+mpad3d = LIRE_MAILLAGE(UNITE=3)
+
+mpad3d = MODI_MAILLAGE(reuse=mpad3d,
+                       MAILLAGE=mpad3d,
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+    
+mpad3d = MODI_MAILLAGE(reuse=mpad3d,
+                       MAILLAGE=mpad3d,
+                       TRANSLATION=(2*stepPadX, offsetPadBas, offsetPadDroit),
+                       )
+                   
+mcomb3d = ASSE_MAILLAGE(MAILLAGE_1=mcomb3g,
+                      MAILLAGE_2=mpad3d,
+                      OPERATION='SUPERPOSE')
+                      
+
+IMPR_RESU(RESU=_F(MAILLAGE=mcomb3d,
+                  TOUT='OUI'),
+          UNITE=80)
+
+FIN()
+
+# ------------------------------------------------------------------------------------------
+
+  Ouverture en écriture du fichier ./vola.1
+
+ <INFO> Démarrage de l'exécution.
+                                                                                
+                                                                                
+              -- CODE_ASTER -- VERSION:  EXPLOITATION (stable) --               
+                                                                                
+                       Modified 14.4.0 version 21/08/2019                       
+                the revision 2708712c2a40 - branch  v14.4_smeca                 
+                        Copyright EDF R & D 1991 - 2022                         
+                                                                                
+                    Exécution of:  Wed Aug 10 10:41:33 2022                     
+                         Name of the machine:  caesrv1                          
+                               Structure:  64bit                                
+                               CPU type:  x86_64                                
+   Operating system:  Linux-4.10.0-35-generic-x86_64-with-debian-stretch-sid    
+                     Language of the messages:  en (UTF-8)                      
+                                                                                
+                             Python version: 3.6.5                              
+                             NumPy version: 1.15.1                              
+   
+   !------------------------------------------------------------------------!
+   ! <A> <SUPERVIS2_2>                                                      !
+   !                                                                        !
+   !  You use an old version of Code_Aster.                                 !
+   !                                                                        !
+   !  By upgrading your version, you will profit from the last improvements !
+   !  made to the code since 15 month.                                      !
+   !  If you have private developments, you are likely to have an important !
+   !  work of bearing if you do not follow the upgraded ones.               !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+                             Parallelism MPI: idle                              
+                           OpenMP parallelism: Nombre                           
+                         credit of processes used:  24                          
+                      Version of the HDF5 library : 1.10.3                      
+                       Version of the MED library : 4.0.0                       
+                     Version de la librairie MFront : 3.2.1                     
+                          MUMPS library version: 5.1.2                          
+                          PETSc library: not available                          
+                     Version of the SCOTCH library : 6.0.4                      
+
+                  Mémoire limite pour l'exécution : 5000.00 Mo                  
+                  consommée par l'initialisation : 1042.73 Mo                   
+                  par les objets du jeu de commandes : 3.29 Mo                  
+                 reste pour l'allocation dynamique : 3953.98 Mo                 
+                   Cut limiting files of exchange:  48.00 Go                    
+                                                                                
+
+.. __stg1_txt1
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0001 Concept of the type:  -
+  # ------------------------------------------------------------------------------------------
+  DEBUT(LANG='EN',
+        PAR_LOT='OUI',
+        IMPR_MACRO='NON',
+        DEBUG=_F(JXVERI='NON',
+                 SDVERI='NON',
+                 JEVEUX='NON',
+                 HIST_ETAPE='NON',),
+        MESURE_TEMPS=_F(NIVE_DETAIL=1,
+                        MOYENNE='NON',),
+        MEMOIRE=_F(TAILLE_BLOC=800.0,
+                   TAILLE_GROUP_ELEM=1000,),
+        RESERVE_CPU=_F(BORNE=900,),
+        INFO=1,)
+
+   
+   !-------------------------------------------------!
+   ! <I> <SUPERVIS_41>                               !
+   !                                                 !
+   ! The version 14.4.0 was modified by 1 revisions. !
+   !-------------------------------------------------!
+   
+
+ Initial value of maximum time CPU = 900 second
+ Valeur of the maximum time CPU placed to the orders = 810 second
+ Réserve CPU envisaged = 90 seconds 
+
+  Ouverture en écriture du fichier ./glob.1
+
+  Ouverture en écriture du fichier ./vola.1
+
+  Ouverture en lecture du fichier /opt/SalomeMeca/V2019_univ/tools/Code_aster_stable-v144_smeca/lib/aster/elem.1
+
+     Nom de la base                          :  ELEMBASE
+     Créée avec la version                   :  14.04.00
+     Nombre d'enregistrements utilisés       :  43
+     Nombre d'enregistrements maximum        :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+
+  Ouverture en lecture du fichier /opt/SalomeMeca/V2019_univ/tools/Code_aster_stable-v144_smeca/lib/aster/elem.1
+
+
+     Nom de la base                          :  ELEMBASE
+     Nombre d'enregistrements utilisés       :  43
+     Nombre d'enregistrements maximum        :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  60
+     Volume des accès en lecture             :         46.88 Mo.
+     Nombre total d'accès en écriture        :  0
+     Volume des accès en écriture            :          0.00 Mo.
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+
+ Second reading of the catalogues of the elements made. 
+
+ End of reading (lasted 0.025408 S.)   
+  # Memory (Mo):   1090.82 /   1083.09 /     44.30 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0001 user+syst:          0.04S (syst:          0.02S, Elaps:          0.04S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt11
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0002 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mbase = LIRE_MAILLAGE(UNITE=2,
+                        INFO_MED=1,
+                        FORMAT='MED',
+                        VERI_MAIL=_F(VERIF='OUI',
+                                     APLAT=1.E-3,),
+                        INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mbase    - IMPRESSIONS NIVEAU  1 ------------
+
+ME-10-AOUT-2022 10:41:33                                                        
+
+NOMBRE DE NOEUDS                       62579
+
+NOMBRE DE MAILLES                      78114
+                              QUAD4               32610
+                              HEXA8               45504
+
+NOMBRE DE GROUPES DE NOEUDS                8
+                              frfout                               5
+                              noeuForc                             1
+                              frftravg                             1
+                              frftravm                             1
+                              baltop                            1581
+                              frfrailm                             1
+                              balbot                            1581
+                              frfrailc                             1
+
+NOMBRE DE GROUPES DE MAILLES              50
+                              tr1surf                           4582
+                              trAcZ                              576
+                              tr2surf                           4582
+                              tr3surf                           4582
+                              trAcX                             6798
+                              Group_38                           264
+                              railsurf                         15544
+                              Group_37                          1584
+                              Group_36                          1584
+                              raildAcZ                          1716
+                              railAcY                           4224
+                              force                                4
+                              raildAcI                          1056
+                              Group_25                          1584
+                              Group_24                           264
+                              Group_22                          1584
+                              railgAcZ                          1716
+                              railgAcI                          1056
+                              balsurf                           3320
+                              balAcY                             588
+                              baltop                            1500
+                              railg                             7656
+                              rg3                                259
+                              rg2                                307
+                              rg1                                274
+                              raild                             7656
+                              rd3                                315
+                              rd2                                268
+                              rd1                                340
+                              tr1                               9064
+                              tr1tg                              144
+                              tr1td                              144
+                              tr2                               9064
+                              tr2tg                              144
+                              tr2td                              144
+                              tr3                               9064
+                              tr3tg                              144
+                              tr3td                              144
+                              ballast                           3000
+                              balbot                            1500
+                              tr1bot                             960
+                              tr2bot                             960
+                              tr3bot                             960
+                              trAcY                             2880
+                              tr1topg                            112
+                              tr1topd                            112
+                              tr2topg                            112
+                              tr2topd                            112
+                              tr3topg                            112
+                              tr3topd                            112
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1103.12 /   1096.00 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0002 user+syst:          0.18S (syst:          0.01S, Elaps:          0.18S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt13
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0004 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad1g = LIRE_MAILLAGE(UNITE=3,
+                         INFO_MED=1,
+                         FORMAT='MED',
+                         VERI_MAIL=_F(VERIF='OUI',
+                                      APLAT=1.E-3,),
+                         INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mpad1g   - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 13.06.00 - EXPLOITATION (stable)               caesrv1          - L
+
+NOMBRE DE NOEUDS                       32329
+
+NOMBRE DE MAILLES                      20301
+                              TETRA10             20301
+
+NOMBRE DE GROUPES DE NOEUDS                2
+                              botn                              2676
+                              topn                              2809
+
+NOMBRE DE GROUPES DE MAILLES               4
+                              soft                             13390
+                              bot                               1060
+                              hard                              6911
+                              top                               1352
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1103.27 /   1100.21 /     55.02 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0004 user+syst:          0.05S (syst:          0.00S, Elaps:          0.06S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt20
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0006 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad1g = MODI_MAILLAGE(reuse=mpad1g,
+                         MAILLAGE=mpad1g,
+                         ROTATION=_F(POIN_1=(0.0, 0.0, 0.0),
+                                     ANGLE=1.43261,
+                                     POIN_2=(1000.0, 0.0, 0.0),),
+                         INFO=1,)
+
+  # Memory (Mo):   1103.27 /   1100.21 /     55.02 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0006 user+syst:          0.02S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt26
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0007 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad1g = MODI_MAILLAGE(reuse=mpad1g,
+                         MAILLAGE=mpad1g,
+                         TRANSLATION=(0.0, 214.0, -757.54),
+                         INFO=1,)
+
+  # Memory (Mo):   1103.27 /   1100.21 /     55.02 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0007 user+syst:          0.00S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt31
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0008 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mcomb1g = ASSE_MAILLAGE(MAILLAGE_1=mbase,
+                          MAILLAGE_2=mpad1g,
+                          OPERATION='SUPERPOSE',)
+
+  # Memory (Mo):   1115.41 /   1115.39 /     67.18 /     36.16 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0008 user+syst:          0.32S (syst:          0.01S, Elaps:          0.33S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt33
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0009 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad1d = LIRE_MAILLAGE(UNITE=3,
+                         INFO_MED=1,
+                         FORMAT='MED',
+                         VERI_MAIL=_F(VERIF='OUI',
+                                      APLAT=1.E-3,),
+                         INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mpad1d   - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 13.06.00 - EXPLOITATION (stable)               caesrv1          - L
+
+NOMBRE DE NOEUDS                       32329
+
+NOMBRE DE MAILLES                      20301
+                              TETRA10             20301
+
+NOMBRE DE GROUPES DE NOEUDS                2
+                              botn                              2676
+                              topn                              2809
+
+NOMBRE DE GROUPES DE MAILLES               4
+                              soft                             13390
+                              bot                               1060
+                              hard                              6911
+                              top                               1352
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1122.77 /   1119.72 /     74.49 /     36.16 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0009 user+syst:          0.07S (syst:          0.00S, Elaps:          0.06S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt40
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0011 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad1d = MODI_MAILLAGE(reuse=mpad1d,
+                         MAILLAGE=mpad1d,
+                         ROTATION=_F(POIN_1=(0.0, 0.0, 0.0),
+                                     ANGLE=-1.43261,
+                                     POIN_2=(1000.0, 0.0, 0.0),),
+                         INFO=1,)
+
+  # Memory (Mo):   1122.77 /   1119.72 /     74.49 /     36.16 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0011 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt45
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0012 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad1d = MODI_MAILLAGE(reuse=mpad1d,
+                         MAILLAGE=mpad1d,
+                         TRANSLATION=(0.0, 214.0, 757.54),
+                         INFO=1,)
+
+  # Memory (Mo):   1122.77 /   1119.72 /     74.49 /     36.16 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0012 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt50
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0013 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mcomb1d = ASSE_MAILLAGE(MAILLAGE_1=mcomb1g,
+                          MAILLAGE_2=mpad1d,
+                          OPERATION='SUPERPOSE',)
+
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA soft is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA soft                     DU MAILLAGE mpad1d   EST RENOMME soft___0                 DANS mcomb1d 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA bot is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA bot                      DU MAILLAGE mpad1d   EST RENOMME bot____0                 DANS mcomb1d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA hard is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA hard                     DU MAILLAGE mpad1d   EST RENOMME hard___0                 DANS mcomb1d 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA top is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA top                      DU MAILLAGE mpad1d   EST RENOMME top____0                 DANS mcomb1d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO botn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO botn                     DU MAILLAGE mpad1d   EST RENOMME botn___0                 DANS mcomb1d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO topn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO topn                     DU MAILLAGE mpad1d   EST RENOMME topn___0                 DANS mcomb1d 
+  # Memory (Mo):   1139.11 /   1139.10 /     90.84 /     43.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0013 user+syst:          0.40S (syst:          0.00S, Elaps:          0.40S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt52
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0014 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad2g = LIRE_MAILLAGE(UNITE=3,
+                         INFO_MED=1,
+                         FORMAT='MED',
+                         VERI_MAIL=_F(VERIF='OUI',
+                                      APLAT=1.E-3,),
+                         INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mpad2g   - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 13.06.00 - EXPLOITATION (stable)               caesrv1          - L
+
+NOMBRE DE NOEUDS                       32329
+
+NOMBRE DE MAILLES                      20301
+                              TETRA10             20301
+
+NOMBRE DE GROUPES DE NOEUDS                2
+                              botn                              2676
+                              topn                              2809
+
+NOMBRE DE GROUPES DE MAILLES               4
+                              soft                             13390
+                              bot                               1060
+                              hard                              6911
+                              top                               1352
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1146.48 /   1143.43 /     98.15 /     43.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0014 user+syst:          0.07S (syst:          0.00S, Elaps:          0.07S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt59
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0016 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad2g = MODI_MAILLAGE(reuse=mpad2g,
+                         MAILLAGE=mpad2g,
+                         ROTATION=_F(POIN_1=(0.0, 0.0, 0.0),
+                                     ANGLE=1.43261,
+                                     POIN_2=(1000.0, 0.0, 0.0),),
+                         INFO=1,)
+
+  # Memory (Mo):   1146.48 /   1143.43 /     98.15 /     43.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0016 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt64
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0017 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad2g = MODI_MAILLAGE(reuse=mpad2g,
+                         MAILLAGE=mpad2g,
+                         TRANSLATION=(600.0, 214.0, -757.54),
+                         INFO=1,)
+
+  # Memory (Mo):   1146.48 /   1143.43 /     98.15 /     43.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0017 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt70
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0018 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mcomb2g = ASSE_MAILLAGE(MAILLAGE_1=mcomb1d,
+                          MAILLAGE_2=mpad2g,
+                          OPERATION='SUPERPOSE',)
+
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA soft is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA soft                     DU MAILLAGE mpad2g   EST RENOMME soft___1                 DANS mcomb2g 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA bot is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA bot                      DU MAILLAGE mpad2g   EST RENOMME bot____1                 DANS mcomb2g 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA hard is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA hard                     DU MAILLAGE mpad2g   EST RENOMME hard___1                 DANS mcomb2g 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA top is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA top                      DU MAILLAGE mpad2g   EST RENOMME top____1                 DANS mcomb2g 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO botn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO botn                     DU MAILLAGE mpad2g   EST RENOMME botn___1                 DANS mcomb2g 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO topn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO topn                     DU MAILLAGE mpad2g   EST RENOMME topn___1                 DANS mcomb2g 
+  # Memory (Mo):   1166.73 /   1166.73 /    118.40 /     50.52 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0018 user+syst:          0.56S (syst:          0.08S, Elaps:          0.57S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt72
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0019 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad2d = LIRE_MAILLAGE(UNITE=3,
+                         INFO_MED=1,
+                         FORMAT='MED',
+                         VERI_MAIL=_F(VERIF='OUI',
+                                      APLAT=1.E-3,),
+                         INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mpad2d   - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 13.06.00 - EXPLOITATION (stable)               caesrv1          - L
+
+NOMBRE DE NOEUDS                       32329
+
+NOMBRE DE MAILLES                      20301
+                              TETRA10             20301
+
+NOMBRE DE GROUPES DE NOEUDS                2
+                              botn                              2676
+                              topn                              2809
+
+NOMBRE DE GROUPES DE MAILLES               4
+                              soft                             13390
+                              bot                               1060
+                              hard                              6911
+                              top                               1352
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1174.07 /   1171.00 /    125.71 /     50.52 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0019 user+syst:          0.09S (syst:          0.04S, Elaps:          0.08S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt79
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0021 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad2d = MODI_MAILLAGE(reuse=mpad2d,
+                         MAILLAGE=mpad2d,
+                         ROTATION=_F(POIN_1=(0.0, 0.0, 0.0),
+                                     ANGLE=-1.43261,
+                                     POIN_2=(1000.0, 0.0, 0.0),),
+                         INFO=1,)
+
+  # Memory (Mo):   1174.07 /   1171.00 /    125.71 /     50.52 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0021 user+syst:          0.01S (syst:          0.00S, Elaps:          0.02S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt84
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0022 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad2d = MODI_MAILLAGE(reuse=mpad2d,
+                         MAILLAGE=mpad2d,
+                         TRANSLATION=(600.0, 214.0, 757.54),
+                         INFO=1,)
+
+  # Memory (Mo):   1174.07 /   1171.00 /    125.71 /     50.52 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0022 user+syst:          0.02S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt89
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0023 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mcomb2d = ASSE_MAILLAGE(MAILLAGE_1=mcomb2g,
+                          MAILLAGE_2=mpad2d,
+                          OPERATION='SUPERPOSE',)
+
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA soft is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA soft                     DU MAILLAGE mpad2d   EST RENOMME soft___2                 DANS mcomb2d 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA bot is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA bot                      DU MAILLAGE mpad2d   EST RENOMME bot____2                 DANS mcomb2d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA hard is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA hard                     DU MAILLAGE mpad2d   EST RENOMME hard___2                 DANS mcomb2d 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA top is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA top                      DU MAILLAGE mpad2d   EST RENOMME top____2                 DANS mcomb2d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO botn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO botn                     DU MAILLAGE mpad2d   EST RENOMME botn___2                 DANS mcomb2d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO topn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO topn                     DU MAILLAGE mpad2d   EST RENOMME topn___2                 DANS mcomb2d 
+  # Memory (Mo):   1198.42 /   1198.41 /    149.98 /     57.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0023 user+syst:          0.54S (syst:          0.00S, Elaps:          0.55S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt91
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0024 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad3g = LIRE_MAILLAGE(UNITE=3,
+                         INFO_MED=1,
+                         FORMAT='MED',
+                         VERI_MAIL=_F(VERIF='OUI',
+                                      APLAT=1.E-3,),
+                         INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mpad3g   - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 13.06.00 - EXPLOITATION (stable)               caesrv1          - L
+
+NOMBRE DE NOEUDS                       32329
+
+NOMBRE DE MAILLES                      20301
+                              TETRA10             20301
+
+NOMBRE DE GROUPES DE NOEUDS                2
+                              botn                              2676
+                              topn                              2809
+
+NOMBRE DE GROUPES DE MAILLES               4
+                              soft                             13390
+                              bot                               1060
+                              hard                              6911
+                              top                               1352
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1205.78 /   1202.73 /    157.29 /     57.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0024 user+syst:          0.07S (syst:          0.01S, Elaps:          0.06S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt98
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0026 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad3g = MODI_MAILLAGE(reuse=mpad3g,
+                         MAILLAGE=mpad3g,
+                         ROTATION=_F(POIN_1=(0.0, 0.0, 0.0),
+                                     ANGLE=1.43261,
+                                     POIN_2=(1000.0, 0.0, 0.0),),
+                         INFO=1,)
+
+  # Memory (Mo):   1205.78 /   1202.73 /    157.29 /     57.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0026 user+syst:          0.01S (syst:          0.00S, Elaps:          0.02S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt103
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0027 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad3g = MODI_MAILLAGE(reuse=mpad3g,
+                         MAILLAGE=mpad3g,
+                         TRANSLATION=(1200.0, 214.0, -757.54),
+                         INFO=1,)
+
+  # Memory (Mo):   1205.78 /   1202.73 /    157.29 /     57.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0027 user+syst:          0.02S (syst:          0.01S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt108
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0028 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mcomb3g = ASSE_MAILLAGE(MAILLAGE_1=mcomb2d,
+                          MAILLAGE_2=mpad3g,
+                          OPERATION='SUPERPOSE',)
+
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA soft is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA soft                     DU MAILLAGE mpad3g   EST RENOMME soft___3                 DANS mcomb3g 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA bot is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA bot                      DU MAILLAGE mpad3g   EST RENOMME bot____3                 DANS mcomb3g 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA hard is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA hard                     DU MAILLAGE mpad3g   EST RENOMME hard___3                 DANS mcomb3g 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA top is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA top                      DU MAILLAGE mpad3g   EST RENOMME top____3                 DANS mcomb3g 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO botn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO botn                     DU MAILLAGE mpad3g   EST RENOMME botn___3                 DANS mcomb3g 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO topn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO topn                     DU MAILLAGE mpad3g   EST RENOMME topn___3                 DANS mcomb3g 
+  # Memory (Mo):   1234.87 /   1234.87 /    186.22 /     65.46 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0028 user+syst:          0.63S (syst:          0.01S, Elaps:          0.63S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt110
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0029 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad3d = LIRE_MAILLAGE(UNITE=3,
+                         INFO_MED=1,
+                         FORMAT='MED',
+                         VERI_MAIL=_F(VERIF='OUI',
+                                      APLAT=1.E-3,),
+                         INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE mpad3d   - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 13.06.00 - EXPLOITATION (stable)               caesrv1          - L
+
+NOMBRE DE NOEUDS                       32329
+
+NOMBRE DE MAILLES                      20301
+                              TETRA10             20301
+
+NOMBRE DE GROUPES DE NOEUDS                2
+                              botn                              2676
+                              topn                              2809
+
+NOMBRE DE GROUPES DE MAILLES               4
+                              soft                             13390
+                              bot                               1060
+                              hard                              6911
+                              top                               1352
+
+--------------------------------------------------------------------------------
+
+  # Memory (Mo):   1242.17 /   1239.12 /    193.53 /     65.46 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0029 user+syst:          0.06S (syst:          0.01S, Elaps:          0.06S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt117
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0031 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad3d = MODI_MAILLAGE(reuse=mpad3d,
+                         MAILLAGE=mpad3d,
+                         ROTATION=_F(POIN_1=(0.0, 0.0, 0.0),
+                                     ANGLE=-1.43261,
+                                     POIN_2=(1000.0, 0.0, 0.0),),
+                         INFO=1,)
+
+  # Memory (Mo):   1242.17 /   1239.12 /    193.53 /     65.46 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0031 user+syst:          0.01S (syst:          0.00S, Elaps:          0.02S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt122
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0032 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mpad3d = MODI_MAILLAGE(reuse=mpad3d,
+                         MAILLAGE=mpad3d,
+                         TRANSLATION=(1200.0, 214.0, 757.54),
+                         INFO=1,)
+
+  # Memory (Mo):   1242.17 /   1239.12 /    193.53 /     65.46 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0032 user+syst:          0.02S (syst:          0.00S, Elaps:          0.01S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt127
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0033 Concept of the type:  maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  mcomb3d = ASSE_MAILLAGE(MAILLAGE_1=mcomb3g,
+                          MAILLAGE_2=mpad3d,
+                          OPERATION='SUPERPOSE',)
+
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA soft is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA soft                     DU MAILLAGE mpad3d   EST RENOMME soft___4                 DANS mcomb3d 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA bot is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA bot                      DU MAILLAGE mpad3d   EST RENOMME bot____4                 DANS mcomb3d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                      !
+   !                                                                         !
+   !  - > the GROUP_MA hard is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_MA retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_MA hard                     DU MAILLAGE mpad3d   EST RENOMME hard___4                 DANS mcomb3d 
+   
+   !------------------------------------------------------------------------!
+   ! <A> <MODELISA2_21>                                                     !
+   !                                                                        !
+   !  - > the GROUP_MA top is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_MA of the 2nd mesh is renamed.  !
+   !  - > Risks & advices:                                                  !
+   !  Check that the name of the GROUP_MA retained is well that desired.    !
+   !                                                                        !
+   !                                                                        !
+   ! This is a warning. If you do not understand the meaning of this        !
+   !  warning, you can obtain unexpected results!                           !
+   !------------------------------------------------------------------------!
+   
+  LE GROUP_MA top                      DU MAILLAGE mpad3d   EST RENOMME top____4                 DANS mcomb3d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO botn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO botn                     DU MAILLAGE mpad3d   EST RENOMME botn___4                 DANS mcomb3d 
+   
+   !-------------------------------------------------------------------------!
+   ! <A> <MODELISA2_22>                                                      !
+   !                                                                         !
+   !  - > the GROUP_NO topn is present in the 2 meshes which one assembles.  !
+   !  There is conflict of names. The GROUP_NO of the 2nd mesh is renamed.   !
+   !  - > Risks & advices:                                                   !
+   !  Check that the name of the GROUP_NO retained is well that desired.     !
+   !                                                                         !
+   !                                                                         !
+   ! This is a warning. If you do not understand the meaning of this         !
+   !  warning, you can obtain unexpected results!                            !
+   !-------------------------------------------------------------------------!
+   
+  LE GROUP_NO topn                     DU MAILLAGE mpad3d   EST RENOMME topn___4                 DANS mcomb3d 
+  # Memory (Mo):   1274.82 /   1274.82 /    225.98 /     72.12 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0033 user+syst:          0.90S (syst:          0.15S, Elaps:          0.91S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt132
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0034 Concept of the type:  -
+  # ------------------------------------------------------------------------------------------
+  IMPR_RESU(UNITE=80,
+            VERSION_MED='3.3.1',
+            RESU=_F(MAILLAGE=mcomb3d,
+                    TOUT='OUI',
+                    INFO_MAILLAGE='NON',
+                    IMPR_NOM_VARI='OUI',),
+            FORMAT='MED',
+            PROC0='OUI',
+            INFO=1,)
+
+
+Création du fichier au format MED 3.3.1.
+  # Memory (Mo):   1308.52 /   1275.92 /    257.96 /     72.12 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0034 user+syst:          0.20S (syst:          0.09S, Elaps:          0.19S)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt134
+  # ------------------------------------------------------------------------------------------
+  # Commands No:  0035 Concept of the type:  -
+  # ------------------------------------------------------------------------------------------
+  FIN(FORMAT_HDF='NON',
+      RETASSAGE='NON',
+      INFO_RESU='OUI',
+      PROC0='OUI',
+      )
+
+   
+   !-----------------------------------------------------------------!
+   ! <I> <CATAMESS_89>                                               !
+   !                                                                 !
+   !  List of warnings emitted during the execution of computation.  !
+   !                                                                 !
+   !  Warnings which you chose to ignore of are preceded by (*).     !
+   !  Number of occurrences for each warning:                        !
+   !              MODELISA2_21         emitted   20 time             !
+   !              MODELISA2_22         emitted   10 time             !
+   !              SUPERVIS2_2          emitted    1 time             !
+   !-----------------------------------------------------------------!
+   
+ ---------------------------------------------------------------------------
+ Concepts de la base: G
+    Nom       Type                 Taille (Mo)         Nombre      Nombre de
+                                                     d'objets       segments
+    TOTAL                               216.70            507           1409
+  
+    mbase      MAILLAGE_SDASTER          11.20             36            115
+    mpad1g     MAILLAGE_SDASTER           4.13             36             63
+    mcomb1g    MAILLAGE_SDASTER          15.33             35            120
+    mpad1d     MAILLAGE_SDASTER           4.13             36             63
+    mcomb1d    MAILLAGE_SDASTER          19.52             35            126
+    mpad2g     MAILLAGE_SDASTER           4.13             36             63
+    mcomb2g    MAILLAGE_SDASTER          23.43             35            132
+    mpad2d     MAILLAGE_SDASTER           4.13             36             63
+    mcomb2d    MAILLAGE_SDASTER          27.44             35            138
+    mpad3g     MAILLAGE_SDASTER           4.13             36             63
+    mcomb3g    MAILLAGE_SDASTER          32.10             35            144
+    mpad3d     MAILLAGE_SDASTER           4.13             36             63
+    mcomb3d    MAILLAGE_SDASTER          35.62             35            150
+    &FOZERO                               0.00              2              2
+    &&_NUM_C                              0.00              1              1
+    &CATA.AC                              0.00              2              4
+    &CATA.CL                              0.60              1              3
+    &CATA.GD                              0.14              4             11
+    &CATA.ME                              0.20              2              4
+    &CATA.OP                              0.30              4             19
+    &CATA.PH                              0.00              1              1
+    &CATA.PR                              0.00              2              4
+    &CATA.TE                             26.03             17             42
+    &CATA.TH                              0.01              2              4
+    &CATA.TM                              0.01              7             11
+ ---------------------------------------------------------------------------
+
+
+     Nom de la base                          :  GLOBALE
+     Nombre d'enregistrements utilisés       :  314
+     Nombre d'enregistrements maximum        :  62914
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  7
+     Volume des accès en lecture             :          5.47 Mo.
+     Nombre total d'accès en écriture        :  330
+     Volume des accès en écriture            :        257.81 Mo.
+     Nombre d'identificateurs utilisés       :  835
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  41 %
+
+
+     Nom de la base                          :  VOLATILE
+     Nombre d'enregistrements utilisés       :  3
+     Nombre d'enregistrements maximum        :  62914
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  0
+     Volume des accès en lecture             :          0.00 Mo.
+     Nombre total d'accès en écriture        :  6
+     Volume des accès en écriture            :          4.69 Mo.
+     Nombre d'identificateurs utilisés       :  93
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  4 %
+
+ <FIN> Arrêt normal dans "FIN".
+ <I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
+
+ The memory requested from launching is over-estimated, it is of 5000.00 Mo. 
+ The peak report used is of 1308.52 Mo. 
+ 
+
+
+     Nom de la base                          :  ELEMBASE
+     Nombre d'enregistrements utilisés       :  43
+     Nombre d'enregistrements maximum        :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  60
+     Volume des accès en lecture             :         46.88 Mo.
+     Nombre total d'accès en écriture        :  0
+     Volume des accès en écriture            :          0.00 Mo.
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+  
+ <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                      72.12 Mo
+ <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                     257.96 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :    1308.52 Mo
+  
+ <I>       FERMETURE DES BASES EFFECTUEE
+  
+   STATISTIQUES CONCERNANT L'ALLOCATION DYNAMIQUE :
+     TAILLE CUMULEE MAXIMUM            :                  258  Mo.
+     TAILLE CUMULEE LIBEREE            :                  231  Mo.
+     NOMBRE TOTAL D'ALLOCATIONS        :              1795847
+     NOMBRE TOTAL DE LIBERATIONS       :              1795827
+     APPELS AU MECANISME DE LIBERATION :                    0
+     TAILLE MEMOIRE CUMULEE RECUPEREE  :                    0  Mo.
+     VOLUME DES LECTURES               :                    0  Mo.
+     VOLUME DES ECRITURES              :                    0  Mo.
+  
+   MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :      72.12 Mo
+     - IMPOSE DE NOMBREUX ACCES DISQUE
+     - RALENTIT LA VITESSE D'EXECUTION
+   MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :     257.96 Mo
+     - LIMITE LES ACCES DISQUE
+     - AMELIORE LA VITESSE D'EXECUTION
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :    1308.52 Mo
+     - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX, 
+       LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
+  
+ <I>       FIN D'EXECUTION LE : ME-10-AOUT-2022 10:41:38
+
+
+  <I> Informations sur les temps d'exécution
+      Temps cpu user total                    4.29 s
+      Temps cpu systeme total                 1.09 s
+      Temps elapsed total                     5.39 s
+      Temps restant                         804.61 s
+
+
+ The signup of the saved base is (with the address 0): 
+  e227288c389beff85aa0a672bfcc6b70166e3130 
+
+ ********************************************************************************
+ * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
+ ********************************************************************************
+ * init (jdc)               :       0.33 :       0.01 :       0.34 :       0.34 *
+ *  . compile               :       0.00 :       0.00 :       0.00 :       0.00 *
+ *  . exec_compile          :       0.09 :       0.00 :       0.09 :       0.09 *
+ *  . report                :       0.00 :       0.00 :       0.00 :       0.00 *
+ *  . build                 :       0.00 :       0.00 :       0.00 :       0.00 *
+ * DEBUT                    :       0.02 :       0.02 :       0.04 :       0.04 *
+ * LIRE_MAILLAGE            :       0.17 :       0.01 :       0.18 :       0.18 *
+ * LIRE_MAILLAGE            :       0.05 :       0.00 :       0.05 :       0.06 *
+ * MODI_MAILLAGE            :       0.02 :       0.00 :       0.02 :       0.01 *
+ * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.01 *
+ * ASSE_MAILLAGE            :       0.31 :       0.01 :       0.32 :       0.33 *
+ * LIRE_MAILLAGE            :       0.07 :       0.00 :       0.07 :       0.06 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
+ * ASSE_MAILLAGE            :       0.40 :       0.00 :       0.40 :       0.40 *
+ * LIRE_MAILLAGE            :       0.07 :       0.00 :       0.07 :       0.07 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
+ * ASSE_MAILLAGE            :       0.48 :       0.08 :       0.56 :       0.57 *
+ * LIRE_MAILLAGE            :       0.05 :       0.04 :       0.09 :       0.08 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.02 *
+ * MODI_MAILLAGE            :       0.02 :       0.00 :       0.02 :       0.01 *
+ * ASSE_MAILLAGE            :       0.54 :       0.00 :       0.54 :       0.55 *
+ * LIRE_MAILLAGE            :       0.06 :       0.01 :       0.07 :       0.06 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.02 *
+ * MODI_MAILLAGE            :       0.01 :       0.01 :       0.02 :       0.01 *
+ * ASSE_MAILLAGE            :       0.62 :       0.01 :       0.63 :       0.63 *
+ * LIRE_MAILLAGE            :       0.05 :       0.01 :       0.06 :       0.06 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.02 *
+ * MODI_MAILLAGE            :       0.02 :       0.00 :       0.02 :       0.01 *
+ * ASSE_MAILLAGE            :       0.75 :       0.15 :       0.90 :       0.91 *
+ * IMPR_RESU                :       0.11 :       0.09 :       0.20 :       0.19 *
+ * FIN                      :       0.05 :       0.65 :       0.70 :       0.71 *
+ *  . part Superviseur      :       0.39 :       0.05 :       0.44 :       0.44 *
+ *  . part Fortran          :       3.90 :       1.05 :       4.95 :       4.95 *
+ ********************************************************************************
+ * TOTAL_JOB                :       4.29 :       1.09 :       5.38 :       5.39 *
+ ********************************************************************************
+
+EXECUTION_CODE_ASTER_EXIT_114431=0

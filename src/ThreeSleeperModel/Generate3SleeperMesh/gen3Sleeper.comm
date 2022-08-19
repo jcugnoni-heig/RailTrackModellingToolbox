@@ -1,0 +1,134 @@
+DEBUT(LANG='EN')
+
+
+offsetPadGauche = -757.54
+offsetPadDroit = 757.54
+offsetPadBas = 214.0
+rotpadX=-1.43261
+
+stepPadX = 600.0
+
+mbase = LIRE_MAILLAGE(UNITE=2)
+
+mpad1g = LIRE_MAILLAGE(UNITE=3)
+
+mpad1g = MODI_MAILLAGE(reuse=mpad1g,
+                       MAILLAGE=mpad1g,
+                       ROTATION=_F(
+                         ANGLE=-rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  )
+)
+
+mpad1g = MODI_MAILLAGE(reuse=mpad1g,
+                       MAILLAGE=mpad1g,
+                       TRANSLATION=(0.0, offsetPadBas, offsetPadGauche),
+)
+                       
+mcomb1g = ASSE_MAILLAGE(MAILLAGE_1=mbase,
+                      MAILLAGE_2=mpad1g,
+                      OPERATION='SUPERPOSE')
+                       
+mpad1d = LIRE_MAILLAGE(UNITE=3)
+
+mpad1d = MODI_MAILLAGE(reuse=mpad1d,
+                       MAILLAGE=mpad1d,
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+
+mpad1d = MODI_MAILLAGE(reuse=mpad1d,
+                       MAILLAGE=mpad1d,
+                       TRANSLATION=(0.0, offsetPadBas, offsetPadDroit),
+                      )
+
+mcomb1d = ASSE_MAILLAGE(MAILLAGE_1=mcomb1g,
+                      MAILLAGE_2=mpad1d,
+                      OPERATION='SUPERPOSE')
+                       
+mpad2g = LIRE_MAILLAGE(UNITE=3)
+
+mpad2g = MODI_MAILLAGE(reuse=mpad2g,
+                       MAILLAGE=mpad2g,
+                       ROTATION=_F(
+                         ANGLE=-rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+         
+mpad2g = MODI_MAILLAGE(reuse=mpad2g,
+                       MAILLAGE=mpad2g,
+                       TRANSLATION=(stepPadX, offsetPadBas, offsetPadGauche),
+                      )
+       
+              
+mcomb2g = ASSE_MAILLAGE(MAILLAGE_1=mcomb1d,
+                      MAILLAGE_2=mpad2g,
+                      OPERATION='SUPERPOSE')
+                                                                    
+mpad2d = LIRE_MAILLAGE(UNITE=3)
+
+mpad2d = MODI_MAILLAGE(reuse=mpad2d,
+                       MAILLAGE=mpad2d, 
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+
+mpad2d = MODI_MAILLAGE(reuse=mpad2d,
+                       MAILLAGE=mpad2d,
+                       TRANSLATION=(stepPadX, offsetPadBas, offsetPadDroit),
+                      )
+                       
+mcomb2d = ASSE_MAILLAGE(MAILLAGE_1=mcomb2g,
+                      MAILLAGE_2=mpad2d,
+                      OPERATION='SUPERPOSE')
+                      
+mpad3g = LIRE_MAILLAGE(UNITE=3)
+
+mpad3g = MODI_MAILLAGE(reuse=mpad3g,
+                       MAILLAGE=mpad3g,
+                       ROTATION=_F(
+                         ANGLE=-rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+
+mpad3g = MODI_MAILLAGE(reuse=mpad3g,
+                       MAILLAGE=mpad3g,
+                       TRANSLATION=(2*stepPadX, offsetPadBas, offsetPadGauche),
+                       )
+                       
+mcomb3g = ASSE_MAILLAGE(MAILLAGE_1=mcomb2d,
+                      MAILLAGE_2=mpad3g,
+                      OPERATION='SUPERPOSE')
+                                                                    
+mpad3d = LIRE_MAILLAGE(UNITE=3)
+
+mpad3d = MODI_MAILLAGE(reuse=mpad3d,
+                       MAILLAGE=mpad3d,
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)
+  ))
+    
+mpad3d = MODI_MAILLAGE(reuse=mpad3d,
+                       MAILLAGE=mpad3d,
+                       TRANSLATION=(2*stepPadX, offsetPadBas, offsetPadDroit),
+                       )
+                   
+mcomb3d = ASSE_MAILLAGE(MAILLAGE_1=mcomb3g,
+                      MAILLAGE_2=mpad3d,
+                      OPERATION='SUPERPOSE')
+                      
+
+IMPR_RESU(RESU=_F(MAILLAGE=mcomb3d,
+                  TOUT='OUI'),
+          UNITE=80)
+
+FIN()

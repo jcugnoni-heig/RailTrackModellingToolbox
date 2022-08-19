@@ -1,0 +1,46 @@
+P actions make_etude
+P debug nodebug
+P memjob __memjob__
+P memory_limit __memlim__
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P ncpus __ncpus__
+P nomjob job1
+P origine AsterStudy 0.11
+P rep_trav __reptrav__
+P server __server__
+P studyid 97231-0001-caesrv1
+P time_limit 3600900.0
+P tpsjob 60016
+P version stable
+A memjeveux __memjeveux__
+A tpmax 3600900.0
+F comm phase1_computeModesMag.comm D  1
+F libr parameters.json D  2
+F libr sleeper.med D  21
+F libr padR.med D  23
+F libr rail.med D  25
+__meshUSP__
+F libr E_mat1.csv D  30
+F libr tanD_mat1.csv D  31
+F libr E_mat2.csv D  32
+F libr tanD_mat2.csv D  33
+__EUSP__
+__tanDUSP__
+F libr E_bal.csv D  36
+F libr tanD_bal.csv D  37
+F libr f1.txt D  40
+F libr modes_b1.med R  82
+F libr modeRail1_b1.med R  85
+F libr modeRail2_b1.med R  86
+F libr modeSlp_b1.med R  87
+F libr modeBal1_b1.med R  88
+F libr modeBal2_b1.med R  89
+F libr modeBal3_b1.med R  90
+F libr modeMag10_b1.txt R  91
+F libr modeMag45_b1.txt R  92
+F libr dispGene10_b1 R  8
+F libr dispGene45_b1 R  9
+F libr modesNumber.py R  10
+F mess __cwd__/Messages/message_phase1_b1.mess R  6

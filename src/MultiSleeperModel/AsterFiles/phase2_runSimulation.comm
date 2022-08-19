@@ -1,0 +1,1446 @@
+######################################################
+# CRAIG-BAMPTON MODELISATION with coupling modes : Phase 2 / Run simulation
+######################################################
+POURSUITE(PAR_LOT='NON')
+
+
+from Utilitai import partition
+from math import pi
+import time
+import numpy as np
+import sys
+import aster
+import pickle
+import json
+from modesNumber import *
+
+with open('fort.2', 'r') as f:
+    txt = f.read()
+f.close()
+
+parameters = json.loads(txt)
+nSlp = parameters['nSlp']
+includeUSP = parameters['USPON']
+freq1 = parameters['frequencies'][0]
+freq2 = parameters['frequencies'][-1]
+nuPadMat1 = parameters['nuMat1']
+nuPadMat2 = parameters['nuMat2']
+coefSlpBotArea = parameters['balAreaCoef']
+nuBal = parameters['nuBal']
+hBal = parameters['hBal']
+slpForce = parameters['slpForce']
+nForce = parameters['forceNode']
+nSelModesPerExcitDir = parameters['nModes']
+force = parameters['force']
+computeAcoustic = parameters['computeAcoustic']
+FRFtype = parameters['outputType']
+selectedSubstFRF = parameters['selectedSubstFRF']
+
+if computeAcoustic:
+    acMeshDim = parameters['acMeshDim']
+
+if includeUSP == True:
+    nuUSP = parameters['nuUSP']
+
+
+pyGrid = partition.MAIL_PY()
+pyMesh = partition.MAIL_PY()
+
+######################################################
+# Define functions
+######################################################
+
+def GetModesList(p_vectPath, p_nSelModes, p_nEigen, p_nRai1, p_nRai2, p_nSlp):
+# Returns the lists of eigenmodes and interface modes to be used for trimming complete sets of modes
+    with open(p_vectPath) as file:
+        fileContent = file.read().splitlines()
+    file.close()
+    
+    # Rebuild the file content in an 2D array
+    modeMag = []
+    for line in fileContent:
+        valListStr = line.split('\t')
+        valListFlt = []
+        for valStr in valListStr:
+            try:
+                val=float(valStr)
+            except:
+                continue
+                
+            valListFlt.append(val)
+        modeMag.append(valListFlt)
+        
+    # Initiate lists (of lists)
+    listEigenModes = []
+    listRails1 = []
+    listRails2 = []
+    listSleeper = []
+    
+    nMaEl = len(modeMag[0])
+    for ii in range(nMaEl):
+        listEigenModes.append([])
+        listRails1.append([])
+        listRails2.append([])
+        listSleeper.append([])
+    
+    # Get the mode lists once per macroelement
+    for mael in range(nMaEl):
+        vect = []
+        for elem in modeMag:
+            vect.append(elem[mael])
+    
+
+        vect_sorted = sorted(vect, reverse=True)
+        try:
+            threshold = (vect_sorted[p_nSelModes-1] + vect_sorted[p_nSelModes])/2
+        except:
+            threshold = 0
+
+        for i in range(len(vect)):
+            if vect[i] > threshold:
+                if i>=0 and i<p_nEigen:
+                    listEigenModes[mael].append(i+1)
+                elif i>=p_nEigen and i<p_nEigen + p_nRai1:
+                    listRails1[mael].append(i+1 - p_nEigen)
+                elif i >= p_nEigen + p_nRai1 and i < p_nEigen + p_nRai1 + p_nRai2:
+                    listRails2[mael].append(i + 1 -(p_nEigen + p_nRai1))
+                elif i >= p_nEigen + p_nRai1 + p_nRai2 and i < p_nEigen + p_nRai1 + p_nRai2 + p_nSlp:
+                    listSleeper[mael].append(i + 1 - (p_nEigen + p_nRai1 + p_nRai2))
+
+        if listEigenModes[mael] == []:
+            listEigenModes[mael].append(1)
+        if listRails1[mael] == []:
+            listRails1[mael].append(1)
+        if listRails2[mael] == []:
+            listRails2[mael].append(1)
+        if listSleeper[mael] == []:
+            listSleeper[mael].append(1)
+    
+    eigen = []
+    rai1 = []
+    rai2 = []
+    slp = []
+
+    for mael in range(nMaEl):
+        eigen = eigen + listEigenModes[mael]
+        rai1 = rai1 + listRails1[mael]
+        rai2 = rai2 + listRails2[mael]
+        slp = slp + listSleeper[mael]
+
+    eigenModes = sorted(list(set(eigen)))
+    rails1 = sorted(list(set(rai1)))
+    rails2 = sorted(list(set(rai2)))
+    sleeper = sorted(list(set(slp)))
+
+    return [eigenModes, rails1, rails2, sleeper]
+
+
+def GetAlphaBeta(freqList, dampingList):
+# Computes optimized Rayleigh's coefs alpha & beta ( eta=1/2*(alpha*w+beta/w) )
+# freqList in Hz ; both lists = np.array()
+    if len(freqList) == 1: # only 1 freq: set beta to 0 and alpha s.t. damping is exact
+        return [dampingList[0]/(pi*freqList[0]), 0] 
+    elif len(freqList) == 2: # only 2 freqs: return alpha, beta s.t. damping is exact at both freqs
+        f0 = freqList[0]
+        f1 = freqList[1]
+        eta0 = dampingList[0]
+        eta1 = dampingList[1]
+        alpha = eta0/(pi*f0)*(1 - f1/eta0 * (eta0*f1-eta1*f0)/(f1**2-f0**2))
+        beta = 4*pi*f0*f1 * (eta0*f1-eta1*f0)/(f1**2-f0**2)
+        return [alpha, beta]
+
+    # more than 2 freqs: use least squares method to optimize damping
+    A = np.trapz(dampingList*2*pi*freqList, 2*pi*freqList)
+    B = np.trapz(dampingList/(2*pi*freqList), 2*pi*freqList)
+    vect = np.array([[A], [B]])
+    w1 = 2*pi*freqList[0]
+    w2 = 2*pi*freqList[-1]
+    M = 12/((w2**3-w1**3)*(1/w1-1/w2) - 3*(w2-w1)**2) * np.array([[1/2*(1/w1-1/w2), -1/2*(w2-w1)], [-1/2*(w2-w1), 1/6*(w2**3-w1**3)]])
+    alphaBeta = np.dot(M, vect)
+    alpha = float(alphaBeta[0])
+    beta = float(alphaBeta[1])
+    return [alpha, beta]
+
+def DictToTuple(myDict):
+    temp = []
+    for val in myDict.values():
+        if val != ():
+            for id, grp in enumerate(val):
+                temp.append(grp)
+    
+    myTuple = tuple(temp)
+    return myTuple
+
+def computeDistance(femodel, femesh, coords, ac_grps, iElem, side):
+    # distance function [m]
+    
+    allGrps_dirI = DictToTuple(ac_grps)
+            
+    if side == 'R':
+        dist = FORMULE(NOM_PARA=('X', 'Y', 'Z'),
+                       VALE='sqrt(pow(X-XP+iElem*600,2)+pow(Y-YP,2)+pow(Z-ZP,2))/1000',
+                       XP=coords[0], YP=coords[1], ZP=coords[2], iElem=iElem)
+    elif side == 'L':
+        dist = FORMULE(NOM_PARA=('X', 'Y', 'Z'),
+                       VALE='sqrt(pow(-X-XP+iElem*600,2)+pow(Y-YP,2)+pow(-Z-ZP,2))/1000', # X-XP+XT (XT: translation vector)
+                       XP=coords[0], YP=coords[1], ZP=coords[2], iElem=iElem)
+
+    chFDist = CREA_CHAMP(AFFE=_F(GROUP_MA=allGrps_dirI,
+                             NOM_CMP=('X1', ),
+                             VALE_F=(dist, )),
+                     MODELE=femodel,
+                     OPERATION='AFFE',
+                     TYPE_CHAM='NOEU_NEUT_F')
+
+    chgeom = CREA_CHAMP(MAILLAGE=femesh,
+                    NOM_CHAM='GEOMETRIE',
+                    OPERATION='EXTR',
+                    TYPE_CHAM='NOEU_GEOM_R')
+
+    chDist = CREA_CHAMP(CHAM_F=chFDist,
+                    CHAM_PARA=(chgeom, ),
+                    OPERATION='EVAL',
+                    TYPE_CHAM='NOEU_NEUT_R')
+
+    DETRUIRE(CONCEPT=_F(NOM=(dist, chFDist, chgeom, )))
+
+    return chDist
+
+def computePressure(femodel, chFpress, ac_grps, velocR, velocI, side):
+
+    p_rails_R = 0.0
+    p_rails_I = 0.0
+    p_sleepers_R = 0.0
+    p_sleepers_I = 0.0
+    p_ballast_R = 0.0
+    p_ballast_I = 0.0
+
+    if side == 'R':
+        pressAcR = CREA_CHAMP(CHAM_F=chFpress,
+                              CHAM_PARA=(chDist, CHk, CHcoef, velocR, CH1),
+                              OPERATION='EVAL',
+                              TYPE_CHAM='NOEU_NEUT_R')
+                              
+        pressAcI = CREA_CHAMP(CHAM_F=chFpress,
+                              CHAM_PARA=(chDist, CHk, CHcoef, velocI, CH1),
+                              OPERATION='EVAL',
+                              TYPE_CHAM='NOEU_NEUT_R')
+    elif side == 'L':
+        pressAcR = CREA_CHAMP(CHAM_F=chFpress,
+                              CHAM_PARA=(chDist, CHk, CHcoef, velocR, CHm1),
+                              OPERATION='EVAL',
+                              TYPE_CHAM='NOEU_NEUT_R')
+                              
+        pressAcI = CREA_CHAMP(CHAM_F=chFpress,
+                              CHAM_PARA=(chDist, CHk, CHcoef, velocI, CHm1),
+                              OPERATION='EVAL',
+                              TYPE_CHAM='NOEU_NEUT_R')
+
+    if ac_grps['rails'] != ():
+        intR_R = POST_ELEM(CHAM_GD=pressAcR,
+                           INTEGRALE=_F(GROUP_MA=ac_grps['rails'],
+                                        NOM_CMP=('X5', 'X6'),
+                                        TYPE_MAILLE='2D'),
+                           MODELE=femodel)
+        intR_I = POST_ELEM(CHAM_GD=pressAcI,
+                           INTEGRALE=_F(GROUP_MA=ac_grps['rails'],
+                                        NOM_CMP=('X5', 'X6'),
+                                        TYPE_MAILLE='2D'),
+                           MODELE=femodel)
+                           
+        p_rails_R = (intR_R['INTE_X5', 1] - intR_I['INTE_X6', 1])/1e6
+        p_rails_I = (intR_R['INTE_X6', 1] + intR_I['INTE_X5', 1])/1e6
+        DETRUIRE(CONCEPT=_F(NOM=(intR_R, intR_I, )))    
+        
+    if ac_grps['sleepers'] != ():
+        intS_R = POST_ELEM(CHAM_GD=pressAcR,
+                           INTEGRALE=_F(GROUP_MA=ac_grps['sleepers'],
+                                        NOM_CMP=('X5', 'X6'),
+                                        TYPE_MAILLE='2D'),
+                           MODELE=femodel)
+        intS_I = POST_ELEM(CHAM_GD=pressAcI,
+                           INTEGRALE=_F(GROUP_MA=ac_grps['sleepers'],
+                                        NOM_CMP=('X5', 'X6'),
+                                        TYPE_MAILLE='2D'),
+                           MODELE=femodel)
+                           
+        p_sleepers_R = (intS_R['INTE_X5', 1] - intS_I['INTE_X6', 1])/1e6
+        p_sleepers_I = (intS_R['INTE_X6', 1] + intS_I['INTE_X5', 1])/1e6
+        DETRUIRE(CONCEPT=_F(NOM=(intS_R, intS_I, )))
+                       
+    if ac_grps['ballast'] != ():
+        intB_R = POST_ELEM(CHAM_GD=pressAcR,
+                           INTEGRALE=_F(GROUP_MA=ac_grps['ballast'],
+                                        NOM_CMP=('X5', 'X6'),
+                                        TYPE_MAILLE='2D'),
+                           MODELE=femodel)
+        intB_I = POST_ELEM(CHAM_GD=pressAcI,
+                           INTEGRALE=_F(GROUP_MA=ac_grps['ballast'],
+                                        NOM_CMP=('X5', 'X6'),
+                                        TYPE_MAILLE='2D'),
+                           MODELE=femodel)
+                           
+        p_ballast_R = (intB_R['INTE_X5', 1] - intB_I['INTE_X6', 1])/1e6
+        p_ballast_I = (intB_R['INTE_X6', 1] + intB_I['INTE_X5', 1])/1e6
+        DETRUIRE(CONCEPT=_F(NOM=(intB_R, intB_I, )))
+
+    DETRUIRE(CONCEPT=_F(NOM=(pressAcR, pressAcI, )))
+    return [p_rails_R, p_rails_I, p_sleepers_R, p_sleepers_I, p_ballast_R, p_ballast_I]
+
+    
+
+######################################################
+# Trim eigenmodes and define min number of interface modes to compute
+######################################################
+t0 = time.time()
+
+listEigenModesA, listRails1A, listRails2A, listSleeperA = GetModesList('fort.3', nSelModesPerExcitDir, nEigen, nModesRails, nModesRails, nModesSleeper)
+listEigenModesB, listRails1B, listRails2B, listSleeperB = GetModesList('fort.4', nSelModesPerExcitDir, nEigen, nModesRails, nModesRails, nModesSleeper)
+
+listEigenModes = sorted(list(set(listEigenModesA + listEigenModesB)))
+listRails1 = sorted(list(set(listRails1A + listRails1B)))
+listRails2 = sorted(list(set(listRails2A + listRails2B)))
+listSleeper = sorted(list(set(listSleeperA + listSleeperB)))
+
+nModesRails_trim = max(listRails1[-1], listRails2[-1])
+nModesSleeper_trim = listSleeper[-1]
+
+print(str(len(listEigenModes) + len(listRails1) + len(listRails2) + len(listSleeper)) + ' modes in total')
+print('Eigenmodes : ' + str(listEigenModes))
+print('Rail interface1 modes : ' + str(listRails1))
+print('Rail interface2 modes : ' + str(listRails2))
+print('Sleeper interface modes : ' + str(listSleeper))
+
+
+######################################################
+# Get list of frequencies from freq files
+######################################################
+with open('fort.40') as freqFile:
+    freqlines = freqFile.read().splitlines()
+freqFile.close()
+
+allFreqs = []
+for freqline in freqlines:
+    try:
+        frequency=float(freqline.split(' ')[0])
+    except:
+        continue
+    allFreqs.append(frequency)
+
+######################################################
+# MESHES AND MODEL
+######################################################
+meshSlp = LIRE_MAILLAGE(FORMAT="MED",UNITE=21);
+meshRaiR = LIRE_MAILLAGE(FORMAT="MED",UNITE=25);
+
+meshPadR = LIRE_MAILLAGE(FORMAT="MED",UNITE=23);
+offsetPadDroit = 757.54
+offsetPadBas = 214.0
+rotpadX=-1.43261
+
+meshPadR = MODI_MAILLAGE(reuse=meshPadR,
+                       MAILLAGE=meshPadR,
+                       ROTATION=_F(
+                         ANGLE=rotpadX, 
+                         POIN_1=(0.0, 0.0, 0.0), 
+                         POIN_2=(1000.0, 0.0, 0.0)))
+
+meshPadR = MODI_MAILLAGE(reuse=meshPadR,
+                       MAILLAGE=meshPadR,
+                       TRANSLATION=(0.0, offsetPadBas, offsetPadDroit),)
+
+if includeUSP == True:
+    USPthk = 8.5
+    
+    meshUSP = LIRE_MAILLAGE(FORMAT="MED",UNITE=26);
+    
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_MA = _F(TYPE_MAILLE='2D', NOM='USPbot', OPTION='FACE_NORMALE', VECT_NORMALE=(0,-1,0)))
+
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='USPbot', GROUP_MA='USPbot'))
+                         
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='USPtop', OPTION='PLAN', POINT=(0,USPthk,0), VECT_NORMALE=(0,1,0), PRECISION=1e-3))
+                         
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='tmp', OPTION='PLAN', POINT=(0,0,0), VECT_NORMALE=(0,0,1), PRECISION=1e-3))
+
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         CREA_GROUP_NO = _F(NOM='USPsym', DIFFE=('tmp', 'USPtop')))
+
+    meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
+                         DETR_GROUP_NO = _F(NOM='tmp'))
+                         
+    
+    # Translate components above USPs of USP's thickness
+    meshSlp = MODI_MAILLAGE(reuse=meshSlp, MAILLAGE=meshSlp, TRANSLATION=(0, USPthk, 0));
+    meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(0, USPthk, 0));
+    meshRaiR = MODI_MAILLAGE(reuse=meshRaiR, MAILLAGE=meshRaiR, TRANSLATION=(0, USPthk, 0));
+    
+    tmp2 = ASSE_MAILLAGE(MAILLAGE_1=meshUSP, MAILLAGE_2=meshSlp, OPERATION='SUPERPOSE')
+    tmp3 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')
+    mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp3, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
+    
+    mesh0 = DEFI_GROUP(reuse=mesh0, MAILLAGE=mesh0, 
+                       CREA_GROUP_NO = _F(NOM='slpSym2', UNION=('slpSym', 'USPsym')))
+    
+    discreteBalNodes = 'USPbot'
+    slpSym = 'slpSym2'
+else:
+    tmp2 = ASSE_MAILLAGE(MAILLAGE_1=meshSlp, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')
+    mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
+    discreteBalNodes = 'slpBot'
+    slpSym = 'slpSym'
+
+mesh0 = DEFI_GROUP(reuse=mesh0, MAILLAGE=mesh0, CREA_GROUP_MA=_F(NOM = 'TOUT', TOUT = 'OUI'))
+
+mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes, 
+                                  NOM_GROUP_MA=discreteBalNodes + '0D'), 
+                     MAILLAGE=mesh0) 
+
+# try:
+    # IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
+# except:
+    # pass
+# FIN()
+
+model = AFFE_MODELE(MAILLAGE=mesh,
+                    AFFE=(_F(TOUT='OUI',
+                            PHENOMENE='MECANIQUE',
+                            MODELISATION='3D',),
+                          _F(GROUP_MA=discreteBalNodes + '0D',
+                             PHENOMENE='MECANIQUE',
+                             MODELISATION='DIS_T',),));
+
+# Compute area of a half-sleeper bottom face
+CH_id = CREA_CHAMP(OPERATION = 'AFFE',
+                      TYPE_CHAM ='NOEU_NEUT_R',
+                      MAILLAGE = mesh ,
+                      AFFE = _F(GROUP_MA=discreteBalNodes, NOM_CMP=('X1'), VALE=1.0,))
+
+intCH_id = POST_ELEM(CHAM_GD=CH_id,
+                     INTEGRALE=_F(GROUP_MA=discreteBalNodes,
+                                  NOM_CMP=('X1'),
+                                  TYPE_MAILLE='2D'),
+                     MODELE=model)
+                     
+A_slpBot = intCH_id['INTE_X1',1]
+
+# Get number of nodes in discreteBalNodes
+pyMesh.FromAster('mesh')
+nodeGrps = mesh.LIST_GROUP_NO()
+for gp in nodeGrps:
+    gpName = gp[0]
+    if gpName == discreteBalNodes:
+        gpNodes = pyMesh.gno.get(gpName)
+        nNodesBal = len(gpNodes)
+        break
+print('nNodesBal = ' + str(nNodesBal))
+
+######################################################
+# Acoustic parameters / functions definition
+# More comments available in the 3-sleeper model command file
+######################################################
+if computeAcoustic == True:
+    c = 343.0
+    rho = 1.21
+    dirContribs = ['X', 'Y', 'Z']
+
+    # acoustic group_ma list for each direction (1 X, 2 Y, 3 Z) = directional acoustic contribution
+    ac_setList1 = {"rails" : (), "sleepers" : ("slpAcX",), "ballast" : ()}
+    ac_setList2 = {"rails" : ("railAcY",), "sleepers" : ("slpAcY",), "ballast" : ()}
+    ac_setList3 = {"rails" : ("railAcZ",), "sleepers" : (), "ballast" : ()}
+    ac_setList = {'X' : ac_setList1, 'Y' : ac_setList2, 'Z' : ac_setList3}
+    ac_grps = DictToTuple(ac_setList['X']) + DictToTuple(ac_setList['Y']) + DictToTuple(ac_setList['Z'])
+
+    # real and imaginary coefficients of the source radiation terms (X1=dist, X2=k, X3=coef)
+    coefDisR = FORMULE(NOM_PARA=('X1', 'X2', 'X3'),
+                       VALE='X3*sin(X2*X1)/X1')
+
+    coefDisI = FORMULE(NOM_PARA=('X1', 'X2', 'X3'),
+                       VALE='-X3*cos(X2*X1)/X1')
+
+    # pressure formulas; X4 will be equal to 1 if the macroelement instance is a simple translation
+    # and to -1 if it constitutes the left part of the track and hence has undergone a 180° rotation
+    # about Y. This means that the X and Z velocity components must be reversed.
+    pressFR1 = FORMULE(NOM_PARA=('X1', 'X2', 'X3', 'DX', 'X4'),
+                       VALE='X4*coefDisR(X1, X2, X3)*DX/1000.0',
+                       coefDisR=coefDisR)
+
+    pressFI1 = FORMULE(NOM_PARA=('X1', 'X2', 'X3', 'DX', 'X4'),
+                       VALE='X4*coefDisI(X1, X2, X3)*DX/1000.0',
+                       coefDisI=coefDisI)
+
+    pressFR2 = FORMULE(NOM_PARA=('X1', 'X2', 'X3', 'DY', 'X4'),
+                       VALE='coefDisR(X1, X2, X3)*DY/1000.0',
+                       coefDisR=coefDisR)
+
+    pressFI2 = FORMULE(NOM_PARA=('X1', 'X2', 'X3', 'DY', 'X4'),
+                       VALE='coefDisI(X1, X2, X3)*DY/1000.0',
+                       coefDisI=coefDisI)
+
+    pressFR3 = FORMULE(NOM_PARA=('X1', 'X2', 'X3', 'DZ', 'X4'),
+                       VALE='X4*coefDisR(X1, X2, X3)*DZ/1000.0',
+                       coefDisR=coefDisR)
+
+    pressFI3 = FORMULE(NOM_PARA=('X1', 'X2', 'X3', 'DZ', 'X4'),
+                       VALE='X4*coefDisI(X1, X2, X3)*DZ/1000.0',
+                       coefDisI=coefDisI)
+                       
+    # Pressure function fields
+    if ac_setList['X'] != None:
+        setListX = DictToTuple(ac_setList['X'])
+        chFpres1 = CREA_CHAMP(AFFE=_F(GROUP_MA=setListX,
+                                      NOM_CMP=('X5', 'X6'),
+                                      VALE_F=(pressFR1, pressFI1)),
+                              MODELE=model,
+                              OPERATION='AFFE',
+                              TYPE_CHAM='NOEU_NEUT_F')
+
+    if ac_setList['Y'] != None:
+        setListY = DictToTuple(ac_setList['Y'])
+        chFpres2 = CREA_CHAMP(AFFE=_F(GROUP_MA=setListY,
+                                       NOM_CMP=('X5', 'X6'),
+                                       VALE_F=(pressFR2, pressFI2)),
+                               MODELE=model,
+                               OPERATION='AFFE',
+                               TYPE_CHAM='NOEU_NEUT_F')
+
+    if ac_setList['Z'] != None:
+        setListZ = DictToTuple(ac_setList['Z'])
+        chFpres3 = CREA_CHAMP(AFFE=_F(GROUP_MA=setListZ,
+                                      NOM_CMP=('X5', 'X6'),
+                                      VALE_F=(pressFR3, pressFI3)),
+                              MODELE=model,
+                              OPERATION='AFFE',
+                              TYPE_CHAM='NOEU_NEUT_F')
+
+    # Acoustic mesh grid
+    grid = LIRE_MAILLAGE(FORMAT='MED', UNITE=19)
+
+    gridMod = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
+                                 PHENOMENE='MECANIQUE',
+                                 TOUT='OUI'),),
+                          MAILLAGE=grid)
+                          
+    # Get number of nodes in acGrid if no groups are defined
+    grid = DEFI_GROUP(reuse=grid, MAILLAGE=grid, CREA_GROUP_MA=_F(NOM = 'TOUTMA', TOUT = 'OUI'))
+    grid = DEFI_GROUP(reuse=grid, MAILLAGE=grid, CREA_GROUP_NO=_F(NOM = 'TOUT', GROUP_MA = 'TOUTMA'))
+    pyGrid.FromAster('grid')
+    gpTout = pyGrid.gno.get('TOUT')
+    nNodesGrid = len(gpTout)
+        
+
+    # Check dimension of acoustic grid
+    # testDim = CREA_CHAMP(OPERATION = 'AFFE',
+                          # TYPE_CHAM ='NOEU_NEUT_R',
+                          # MAILLAGE = grid ,
+                          # AFFE = _F(TOUT='OUI', NOM_CMP=('X1'), VALE=0.0,))
+
+    # acGridIs2D = True
+    # try:
+        # testDim2 = POST_ELEM(CHAM_GD=testDim,
+                             # INTEGRALE=_F(TOUT='OUI',
+                                          # NOM_CMP=('X1'),
+                                          # TYPE_MAILLE='2D'),
+                             # MODELE=gridMod)
+    # except:
+        # acGridIs2D = False
+
+    # Initialize acoustic results txt files
+    if acMeshDim == '2D':
+        # Initialize acoustic power file
+        fileHeader='Acoustic power [W/N2]\nFreq [Hz]\tTotal\tRails\tSleepers\tBallast\n'
+        filePow=open('fort.41','w')
+        filePow.write(fileHeader)
+        filePow.close()
+    elif acMeshDim == '1D':                          
+        # Initialize acoustic pressure file
+        fileHeader='f\t'
+        for i in range(1, nNodesGrid + 1):
+            grpName = 'N' + str(i)
+            fileHeader +=  grpName + '_pTot [Pa/N]\t' + grpName + '_pRai [Pa/N]\t' + grpName + '_pSlp [Pa/N]\t' + grpName + '_pBal [Pa/N]\t'
+            i += 1
+
+        fileHeader += '\n'
+        filePress=open('fort.41','w')
+        filePress.write(fileHeader)
+        filePress.close()
+                          
+                          
+######################################################
+# Import materials properties / functions
+######################################################
+f_EPad1=LIRE_FONCTION(UNITE = 30,
+                     NOM_PARA = 'FREQ',
+                     PROL_GAUCHE = 'CONSTANT',
+                     PROL_DROITE = 'CONSTANT')
+                 
+f_TDPad1=LIRE_FONCTION(UNITE = 31,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+
+
+f_EPad2=LIRE_FONCTION(UNITE = 32,
+                     NOM_PARA = 'FREQ',
+                     PROL_GAUCHE = 'CONSTANT',
+                     PROL_DROITE = 'CONSTANT')
+                 
+f_TDPad2=LIRE_FONCTION(UNITE = 33,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+
+if includeUSP:
+    f_EUSP=LIRE_FONCTION(UNITE = 34,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+                     
+    f_TDUSP=LIRE_FONCTION(UNITE = 35,
+                             NOM_PARA = 'FREQ',
+                             PROL_GAUCHE = 'CONSTANT',
+                             PROL_DROITE = 'CONSTANT')
+                         
+f_EBal=LIRE_FONCTION(UNITE = 36,
+                     NOM_PARA = 'FREQ',
+                     PROL_GAUCHE = 'CONSTANT',
+                     PROL_DROITE = 'CONSTANT')
+
+f_TDBal=LIRE_FONCTION(UNITE = 37,
+                         NOM_PARA = 'FREQ',
+                         PROL_GAUCHE = 'CONSTANT',
+                         PROL_DROITE = 'CONSTANT')
+
+# Materials frequency-independent hysteretic damping
+eta_concrete = 0.016
+eta_steel = 0.001
+
+######################################################
+# BOUNDARY CONDITIONS AND INTERACTIONS
+######################################################
+forceMag = (force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+
+if includeUSP == True:
+    tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ),
+                                           GROUP_MA_MAIT=('slpBotV', ),
+                                           TYPE_RACCORD='MASSIF')),
+                          MODELE=model)
+                          
+tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('botn', ),
+                                       GROUP_MA_MAIT=('slpUpad', ),
+                                       TYPE_RACCORD='MASSIF')),
+                      MODELE=model)
+                      
+tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('topn', ),
+                                       GROUP_MA_MAIT=('railBotV', ),
+                                       TYPE_RACCORD='MASSIF')),
+                      MODELE=model)
+                                    
+BCinterf=AFFE_CHAR_MECA(MODELE=model,
+                        DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', slpSym), #SANS_GROUP_NO='nope','USPsym'
+                                    DX=0.0,
+                                    DY=0.0,
+                                    DZ=0.0),);
+
+if includeUSP == True:
+    BCs = (BCinterf, tie1, tie2, tie3)
+else:
+    BCs = (BCinterf, tie2, tie3)
+                              
+load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force[0],
+                                      FY = force[1],
+                                      FZ = force[2],
+                                      GROUP_NO=(nForce, )),
+                      MODELE=model)
+
+
+# Loop over N bands within this frequency band => N macroelem with optimized Rayleigh damping
+
+normMode='TRAN'
+meanFreq = (allFreqs[0] + allFreqs[-1])/2
+
+
+
+# meanFreq is the frequency at which E' is gonna be taken. Since modes are damping independent, 
+# we decide to compute them (interface and eigen) only once per job. So we evaluate them with 
+# E' at the middle of allFreqs. However, the job is divided in nBands bands to better model Rayleigh 
+# damping. So the damping matrices are recomputed for each band, as well as the macroelement.
+
+# Materials
+allFreqsNP = np.array(allFreqs)
+AB_concrete = GetAlphaBeta(allFreqsNP, eta_concrete*np.ones(len(allFreqs)))
+AB_steel = GetAlphaBeta(allFreqsNP, eta_steel*np.ones(len(allFreqs)))
+
+eta_padMat1 = np.array([f_TDPad1(f) for f in allFreqs])
+AB_padMat1 = GetAlphaBeta(allFreqsNP, eta_padMat1)
+eta_padMat2 = np.array([f_TDPad2(f) for f in allFreqs])
+AB_padMat2 = GetAlphaBeta(allFreqsNP, eta_padMat2)
+
+if includeUSP:
+    eta_USP = np.array([f_TDUSP(f) for f in allFreqs])
+    AB_USP = GetAlphaBeta(allFreqsNP, eta_USP)
+                        
+concrRe = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_concrete[0],
+                                AMOR_BETA=AB_concrete[1],
+                                E=46300.0,
+                                NU=0.2,
+                                RHO=2.4356e-09))
+                            
+steel = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_steel[0],
+                              AMOR_BETA=AB_steel[1],
+                              E=210000.0,
+                              NU=0.3,
+                              RHO=7.85e-09))
+                            
+padMat1 = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_padMat1[0],
+                                AMOR_BETA=AB_padMat1[1],
+                                E=f_EPad1(meanFreq),
+                                NU=nuPadMat1,
+                                RHO=1.0e-09))
+                                
+padMat2 = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_padMat2[0],
+                                AMOR_BETA=AB_padMat2[1],
+                                E=f_EPad2(meanFreq),
+                                NU=nuPadMat2,
+                                RHO=1.0e-09))   
+    
+
+if includeUSP == True:
+    USPmat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_USP[0],
+                                   AMOR_BETA=AB_USP[1],
+                                   E=f_EUSP(meanFreq), 
+                                   NU=nuUSP,
+                                   RHO=0.375e-09)) 
+                               
+    fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('sleeper'),
+                                      MATER=(concrRe, )),
+                                   _F(GROUP_MA=('hard'),
+                                      MATER=(padMat1, )),
+                                   _F(GROUP_MA=('soft'),
+                                      MATER=(padMat2, )),
+                                   _F(GROUP_MA=('USP'),
+                                      MATER=(USPmat, )),
+                                   _F(GROUP_MA=('rail'),
+                                      MATER=(steel, ))),
+                             MAILLAGE=mesh,
+                             MODELE=model,)
+else:
+    fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('sleeper'),
+                                      MATER=(concrRe, )),
+                                   _F(GROUP_MA=('hard'),
+                                      MATER=(padMat1, )),
+                                   _F(GROUP_MA=('soft'),
+                                      MATER=(padMat2, )),
+                                   _F(GROUP_MA=('rail'),
+                                      MATER=(steel, ))),
+                             MAILLAGE=mesh,
+                             MODELE=model,)
+                    
+######################################################
+# Compute elementary matrices & assemble (K, M and vect are independent of damping)
+######################################################
+
+nodeStiff_Y = f_EBal(meanFreq)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
+nodeStiff_XZ = f_EBal(meanFreq)/2/(1+0.3)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
+nodeAmo_Y = nodeStiff_Y*f_TDBal(meanFreq)/(2*pi*meanFreq)
+nodeAmo_XZ = nodeStiff_XZ*f_TDBal(meanFreq)/(2*pi*meanFreq)
+
+
+elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N',
+                                      GROUP_MA=(discreteBalNodes+'0D'),
+                                      REPERE='GLOBAL',
+                                      VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),),
+                                   _F(CARA='M_T_D_N',
+                                      GROUP_MA=(discreteBalNodes+'0D'),
+                                      REPERE='GLOBAL',
+                                      VALE=0),
+                                   _F(CARA='A_T_D_N',
+                                      GROUP_MA=(discreteBalNodes+'0D'),
+                                      REPERE='GLOBAL',
+                                      VALE=(nodeAmo_XZ, nodeAmo_Y, nodeAmo_XZ)),
+                                      ),
+                          MODELE=model)
+                          
+
+mod_trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modes_1, NUME_MODE=listEigenModes))
+
+# If the first band (iBand=-1) was created artificially, its frequency is in principle far from the other frequencies
+# (very low, to compute ballast protection criterion). So it is worth computing the stiffness matrix one time for this band,
+# and a second time for the rest of the frequencies. On the other hand, damping properties are recomputed for EVERY band
+matEl_K1=CALC_MATR_ELEM(MODELE=model,
+                        CHAM_MATER=fieldmat,
+                        OPTION='RIGI_MECA',
+                        CHARGE=BCs,
+                        CARA_ELEM=elemprop)
+                        
+num2 = NUME_DDL(MATR_RIGI=matEl_K1)
+matAs_K1 = ASSE_MATRICE(MATR_ELEM=matEl_K1, NUME_DDL=num2)
+
+matEl_M1=CALC_MATR_ELEM(MODELE=model,
+                        CHAM_MATER=fieldmat,
+                        OPTION='MASS_MECA',
+                        CHARGE=BCs,
+                        CARA_ELEM=elemprop)
+                        
+matAs_M1 = ASSE_MATRICE(MATR_ELEM=matEl_M1, NUME_DDL=num2)
+
+vectEl=CALC_VECT_ELEM(OPTION='CHAR_MECA',
+                      CHARGE=load,
+                      CARA_ELEM=elemprop)
+
+vectAs = ASSE_VECTEUR(VECT_ELEM=vectEl, NUME_DDL=num2)
+
+matEl_A1=CALC_MATR_ELEM(MODELE=model,
+                        RIGI_MECA=matEl_K1,
+                        MASS_MECA=matEl_M1,
+                        CHAM_MATER=fieldmat,
+                        OPTION='AMOR_MECA',
+                        CHARGE=BCs,
+                        CARA_ELEM=elemprop)
+                        
+matAs_A1 = ASSE_MATRICE(MATR_ELEM=matEl_A1, NUME_DDL=num2)  
+
+######################################################
+# Compute eigen modes (once since damping-independent)
+######################################################
+t_modes0 = time.time()
+
+bamoRef = DEFI_BASE_MODALE(RITZ = _F(MODE_MECA=mod_trim))#, NUME_REF=num1)
+
+nddlgen = NUME_DDL_GENE(BASE=bamoRef, STOCKAGE= 'PLEIN',);
+
+matKgene = PROJ_MATR_BASE(BASE = bamoRef,
+                          NUME_DDL_GENE = nddlgen,
+                          MATR_ASSE = matAs_K1)
+
+matMgene = PROJ_MATR_BASE(BASE = bamoRef,
+                          NUME_DDL_GENE = nddlgen,
+                          MATR_ASSE = matAs_M1)
+               
+modGene=CALC_MODES(TYPE_RESU='DYNAMIQUE',
+                   MATR_RIGI=matKgene,
+                   MATR_MASS=matMgene,
+                   OPTION='TOUT',
+                   SOLVEUR_MODAL=_F(METHODE='QZ'),
+                   VERI_MODE=_F(STOP_ERREUR='NON',))
+
+modes_2 = REST_GENE_PHYS(RESU_GENE=modGene, NUME_DDL=num2)
+
+t_modes = time.time() - t_modes0
+t_modeStat0 = time.time()
+
+######################################################
+# Compute static interface modes (once as well cause damping indep)
+######################################################
+
+modStaR1=MODE_STATIQUE(MATR_RIGI=matAs_K1,
+                       MATR_MASS=matAs_M1,
+                       MODE_INTERF=_F(GROUP_NO = 'railBk',
+                                      TOUT_CMP='OUI',
+                                      NB_MODE=nModesRails_trim,
+                                      SHIFT=10.,),);
+
+modStaR2=MODE_STATIQUE(MATR_RIGI=matAs_K1,
+                       MATR_MASS=matAs_M1,
+                       MODE_INTERF=_F(GROUP_NO = 'railFt',
+                                      TOUT_CMP='OUI',
+                                      NB_MODE=nModesRails_trim,
+                                      SHIFT=10.,),);
+
+modStaS=MODE_STATIQUE(MATR_RIGI=matAs_K1,
+                       MATR_MASS=matAs_M1,
+                       MODE_INTERF=_F(GROUP_NO = slpSym,
+                                      TOUT_CMP='OUI',
+                                      NB_MODE=nModesSleeper_trim,
+                                      SHIFT=10.,),);
+
+
+# Normalize static modes
+modStaR1 = NORM_MODE(reuse=modStaR1, MODE=modStaR1, NORME=normMode)
+modStaR2 = NORM_MODE(reuse=modStaR2, MODE=modStaR2, NORME=normMode)
+modStaS = NORM_MODE(reuse=modStaS, MODE=modStaS, NORME=normMode)
+
+# Trim static modes list
+moR1Trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaR1, NUME_MODE=listRails1))
+moR2Trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaR2, NUME_MODE=listRails2))
+moSlTrim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaS, NUME_MODE=listSleeper))
+
+t_modeStat = time.time() - t_modeStat0
+
+# Define dynamic interfaces   
+Lint=DEFI_INTERF_DYNA(NUME_DDL=num1,
+                      INTERFACE=(
+                                 _F(NOM = 'I_slpSym',
+                                    TYPE = 'CRAIGB',
+                                    GROUP_NO = slpSym),
+                                 _F(NOM = 'I_raiRBk',
+                                    TYPE = 'CRAIGB',
+                                    GROUP_NO = 'railBk'),
+                                 _F(NOM = 'I_raiRFt',
+                                    TYPE = 'CRAIGB',
+                                    GROUP_NO = 'railFt'),
+                                    ))
+
+######################################################
+# Create modal basis
+######################################################      
+bamo1=DEFI_BASE_MODALE(RITZ=(_F(MODE_MECA = modes_2, ),
+                             _F(MODE_INTF = moR1Trim, )),
+                       INTERF_DYNA=Lint,
+                       NUME_REF=num2)
+
+bamo1=DEFI_BASE_MODALE(reuse=bamo1,
+                       RITZ=(_F(BASE_MODALE=bamo1),
+                             _F(MODE_INTF = moR2Trim, )),
+                       NUME_REF=num2)
+
+bamo1=DEFI_BASE_MODALE(reuse=bamo1,
+                       RITZ=(_F(BASE_MODALE=bamo1),
+                             _F(MODE_INTF = moSlTrim, )),
+                       NUME_REF=num2)
+
+    
+######################################################
+# Create macro element
+######################################################
+t_macroEl0 = time.time()
+
+macroEl1 = MACR_ELEM_DYNA(BASE_MODALE=bamo1,
+                          MATR_MASS=matAs_M1,
+                          MATR_RIGI=matAs_K1,
+                          MATR_AMOR=matAs_A1)
+                          
+t_macroEl = time.time() - t_macroEl0
+
+######################################################
+# Macroelements coupling and generalized model creation
+######################################################
+t_harmo0 = time.time()
+
+substructs = []
+liaisons = []
+print('nSlp is ' + str(nSlp))
+for i in range(nSlp):
+    print('elem'+str(i)+'R  ' + 'elem'+str(i)+'L')
+    substR = _F(NOM = 'elem'+str(i)+'R', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 0., 0.), TRANS=(i*600,0.,0.))
+    substL = _F(NOM = 'elem'+str(i)+'L', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 180., 0.), TRANS=(i*600,0.,0.))
+    substructs.append(substR)
+    substructs.append(substL)
+    
+    liais2 = _F(SOUS_STRUC_1 = 'elem'+str(i)+'R', SOUS_STRUC_2 = 'elem'+str(i)+'L', INTERFACE_1  = 'I_slpSym', INTERFACE_2  = 'I_slpSym', OPTION='REDUIT')
+    liaisons.append(liais2)
+    
+    if i != nSlp-1:
+        liais4 = _F(SOUS_STRUC_1 = 'elem'+str(i)+'R', SOUS_STRUC_2 = 'elem'+str(i+1)+'R', INTERFACE_1  = 'I_raiRFt', INTERFACE_2  = 'I_raiRBk', OPTION='REDUIT')
+        liais6 = _F(SOUS_STRUC_1 = 'elem'+str(i)+'L', SOUS_STRUC_2 = 'elem'+str(i+1)+'L', INTERFACE_1  = 'I_raiRBk', INTERFACE_2  = 'I_raiRFt', OPTION='REDUIT')
+        liaisons.append(liais4)
+        liaisons.append(liais6)
+
+modeGene=DEFI_MODELE_GENE(SOUS_STRUC=substructs, LIAISON=liaisons, VERIF=_F( STOP_ERREUR = 'OUI', PRECISION = 1.E-6, CRITERE = 'RELATIF'))
+numGene=NUME_DDL_GENE(MODELE_GENE=modeGene);
+
+######################################################
+# ASSEMBLAGE DES MATRICES RAIDEUR ET MASSE GENERALISEES STATIQUES
+######################################################
+masGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene, OPTION='MASS_GENE');
+
+rigGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene, OPTION='RIGI_GENE');
+                                  
+amoGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene, OPTION='AMOR_GENE');
+
+vectGene=ASSE_VECT_GENE(NUME_DDL_GENE=numGene,CHAR_SOUS_STRUC=(_F(SOUS_STRUC = 'elem'+str(slpForce-1)+'R',VECT_ASSE = vectAs),))        
+                
+######################################################
+# HARMONIC SIMULATION
+######################################################
+harmGene = DYNA_VIBRA(BASE_CALCUL='GENE',
+                      TYPE_CALCUL='HARM',
+                      MATR_MASS=masGene,
+                      MATR_RIGI=rigGene,
+                      MATR_AMOR=amoGene,
+                      FREQ=allFreqs,
+                      TOUT_CHAM='OUI', #NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                      EXCIT=_F(VECT_ASSE_GENE=vectGene, COEF_MULT=1.0,),
+                      SOLVEUR=_F(METHODE='LDLT',
+                                 RENUM='RCMK',
+                                 NPREC=8,
+                                 ELIM_LAGR='NON',
+                                 STOP_SINGULIER='OUI',),)
+
+
+t_harmo = time.time() - t_harmo0
+                                         
+
+
+
+######################################################
+# COMPUTE ACOUSTIC PART
+######################################################
+t_ac0 = time.time() 
+if computeAcoustic == True:
+    CH1 = CREA_CHAMP(OPERATION='AFFE',TYPE_CHAM='NOEU_NEUT_R', MODELE=model, AFFE=_F(TOUT='OUI', NOM_CMP=('X4'),VALE=1));
+    CHm1 = CREA_CHAMP(OPERATION='AFFE',TYPE_CHAM='NOEU_NEUT_R', MODELE=model, AFFE=_F(TOUT='OUI', NOM_CMP=('X4'),VALE=-1));
+
+    acousticData = []
+    for freq in allFreqs:
+        omega = 2 * pi * freq
+        k = omega / c
+        coef = rho * c * k / 2.0 / pi # try with *2 here ?
+        CHk = CREA_CHAMP(OPERATION='AFFE',TYPE_CHAM='NOEU_NEUT_R', MODELE=model, AFFE=_F(TOUT='OUI', NOM_CMP=('X2'),VALE=k));
+        CHcoef = CREA_CHAMP(OPERATION='AFFE',TYPE_CHAM='NOEU_NEUT_R', MODELE=model, AFFE=_F(TOUT='OUI', NOM_CMP=('X3'),VALE=coef));
+        
+        # All velocity fields extracted once per frequency. Then they will be reused but not recomputed afterwards
+        velR = [None]*nSlp*2
+        velI = [None]*nSlp*2
+        ii = 0
+        for iElem in range(nSlp):
+            for side in ['R', 'L']:
+                
+                resPhy = REST_SOUS_STRUC(RESU_GENE=harmGene,
+                                         TOUT_CHAM='OUI',
+                                         SOUS_STRUC='elem'+str(iElem)+side)
+
+                velocity = CREA_CHAMP(FREQ=freq, # define it only on acoustic groups ?
+                                      NOM_CHAM='VITE',
+                                      OPERATION='EXTR',
+                                      RESULTAT=resPhy,
+                                      TYPE_CHAM='NOEU_DEPL_C')
+                    
+                vel_Grps = CREA_CHAMP(MODELE=model, 
+                                      TYPE_CHAM='NOEU_DEPL_C',
+                                      OPERATION='ASSE',
+                                      ASSE=_F(GROUP_MA=ac_grps,
+                                              CHAM_GD=velocity))
+
+                # it seems that a dictionnary can't be used... so velR and velI are 2*nSlp-long lists               
+                velR[ii] = CREA_CHAMP(CHAM_GD=vel_Grps,
+                                      OPERATION='C2R',
+                                      PARTIE='REEL',
+                                      TYPE_CHAM='NOEU_DEPL_R')
+                                                          
+                velI[ii] = CREA_CHAMP(CHAM_GD=vel_Grps,
+                                      OPERATION='C2R',
+                                      PARTIE='IMAG',
+                                      TYPE_CHAM='NOEU_DEPL_R')
+                
+                DETRUIRE(CONCEPT=_F(NOM=(resPhy, velocity, vel_Grps)))
+                ii += 1
+
+
+
+        # Iterate over grid nodes (mesh groups)
+        listeAffe = []
+        listeAffeI = []
+        pressDataLine = [str(freq)]
+        
+        for acNode in range(1, nNodesGrid + 1):
+            grpName = 'N' + str(acNode)
+            # gpNode = pyGrid.gno.get(grpName)
+            # node = gpNode[0] # suppose exactly 1 node per GROUP_NO... Otherwise, should iterate over gpNode
+            # print(pyGrid.cn)
+            coords = pyGrid.cn[acNode-1]
+            print('coords ' + str(coords))
+    
+            nodeDict = None
+            for nd in acousticData:
+                if nd['ID'] == acNode:
+                    nodeDict = nd
+                    break
+            
+            if nodeDict == None:
+                nodeDict = {'ID' : acNode, 'coords' : coords, 'freqs' : [], 'p_tot_R' : [], 'p_tot_I' : [], 'p_rails_R' : [], 'p_rails_I' : [], 'p_sleepers_R' : [], 'p_sleepers_I' : [], 'p_ballast_R' : [], 'p_ballast_I' : [] }
+                acousticData.append(nodeDict)      
+    
+            p_rails_R = 0
+            p_rails_I = 0
+            p_sleepers_R = 0
+            p_sleepers_I = 0
+            p_ballast_R = 0
+            p_ballast_I = 0
+            
+            ii=0
+            for iElem in range(nSlp):
+                for side in ['R', 'L']: # in this section we deal with 1 particular macroelement
+
+                    # Iterate over directions
+                    for dir in dirContribs:
+                        chDist=computeDistance(model, mesh, nodeDict['coords'], ac_setList[dir], iElem, side)
+
+                        # acoustic computations (costliest commands): ComputePressure()~0.17s
+                        if dir == 'X':
+                            pI_rails_R, pI_rails_I, pI_sleepers_R, pI_sleepers_I, pI_ballast_R, pI_ballast_I = computePressure(model, chFpres1, ac_setList[dir], velR[ii], velI[ii], side)
+                        elif dir == 'Y':
+                            pI_rails_R, pI_rails_I, pI_sleepers_R, pI_sleepers_I, pI_ballast_R, pI_ballast_I = computePressure(model, chFpres2, ac_setList[dir], velR[ii], velI[ii], side)
+                        elif dir == 'Z':
+                            pI_rails_R, pI_rails_I, pI_sleepers_R, pI_sleepers_I, pI_ballast_R, pI_ballast_I = computePressure(model, chFpres3, ac_setList[dir], velR[ii], velI[ii], side)
+
+                        p_rails_R += pI_rails_R
+                        p_rails_I += pI_rails_I
+                        p_sleepers_R += pI_sleepers_R
+                        p_sleepers_I += pI_sleepers_I
+                        p_ballast_R += pI_ballast_R
+                        p_ballast_I += pI_ballast_I
+
+                        DETRUIRE(CONCEPT=_F(NOM=(chDist,)))
+                        
+                    ii += 1
+
+            p_tot_R = p_rails_R + p_sleepers_R + p_ballast_R
+            p_tot_I = p_rails_I + p_sleepers_I + p_ballast_I
+            
+            nodeDict['freqs'].append(frequency)
+            nodeDict['p_tot_R'].append(p_tot_R)
+            nodeDict['p_tot_I'].append(p_tot_I)
+            nodeDict['p_rails_R'].append(p_rails_R)
+            nodeDict['p_rails_I'].append(p_rails_I)
+            nodeDict['p_sleepers_R'].append(p_sleepers_R)
+            nodeDict['p_sleepers_I'].append(p_sleepers_I)
+            nodeDict['p_ballast_R'].append(p_ballast_R)
+            nodeDict['p_ballast_I'].append(p_ballast_I)
+
+            listeAffe.append(_F(NOEUD=grpName, NOM_CMP=('SIXX', 'SIYY', 'SIZZ', 'SIXY', 'SIXZ', 'SIYZ'), VALE=(p_tot_R, p_tot_I, p_rails_R, p_rails_I, p_sleepers_R, p_sleepers_I),))
+            
+            if acMeshDim == '2D':        
+                I_tot = (p_tot_R**2 + p_tot_I**2)/(rho*c)
+                I_rails = (p_rails_R**2 + p_rails_I**2)/(rho*c)
+                I_sleepers = (p_sleepers_R**2 + p_sleepers_I**2)/(rho*c)
+                I_ballast = (p_ballast_R**2 + p_ballast_I**2)/(rho*c)
+                listeAffeI.append(_F(NOEUD=grpName, NOM_CMP=('X1', 'X2', 'X3', 'X4'), VALE=(I_tot, I_rails, I_sleepers, I_ballast),))
+            elif acMeshDim == '1D':
+                pressDataLine += [str((p_tot_R**2+p_tot_I**2)**(1/2)/forceMag), str((p_rails_R**2+p_rails_I**2)**(1/2)/forceMag), str((p_sleepers_R**2+p_sleepers_I**2)**(1/2)/forceMag), str((p_ballast_R**2+p_ballast_I**2)**(1/2)/forceMag)]
+
+        if acMeshDim == '2D':
+            CH_Iac = CREA_CHAMP(OPERATION = 'AFFE',
+                                TYPE_CHAM ='NOEU_NEUT_R',
+                                MAILLAGE = grid ,
+                                AFFE = (listeAffeI))
+
+            intField = POST_ELEM(CHAM_GD=CH_Iac,
+                                 INTEGRALE=_F(TOUT='OUI',
+                                              NOM_CMP=('X1', 'X2', 'X3', 'X4'),
+                                              TYPE_MAILLE='2D'),
+                                 MODELE=gridMod)
+                  
+            W_tot = intField['INTE_X1',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2) # in W/N^2
+            W_rails = intField['INTE_X2',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
+            W_sleepers = intField['INTE_X3',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
+            W_ballast = intField['INTE_X4',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
+       
+            dataLine = [str(freq), str(W_tot), str(W_rails), str(W_sleepers), str(W_ballast)]
+            fileContent = '\t'.join(dataLine) + '\n'    #dataLine=["abc", "def", ...]
+            filePow=open('fort.41','a+')
+            filePow.write(fileContent)
+            filePow.close()
+        elif acMeshDim == '1D':
+            fileContent = '\t'.join(pressDataLine) + '\n'    #dataLine=["abc", "def", ...]
+            filePress=open('fort.41','a+')
+            filePress.write(fileContent)
+            filePress.close()   
+        
+        CH_pAc = CREA_CHAMP(OPERATION = 'AFFE',
+                            TYPE_CHAM ='NOEU_SIEF_R',
+                            MAILLAGE = grid ,
+                            AFFE = (listeAffe))
+        
+        if freq == allFreqs[0]:
+            RESpre=CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
+        else:
+            RESpre=CREA_RESU(reuse=RESpre, RESULTAT=RESpre, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
+
+        for j in range(len(velR)):
+            DETRUIRE(CONCEPT=_F(NOM=(velR[j], velI[j])))
+        if acMeshDim == '2D':
+            DETRUIRE(CONCEPT=_F(NOM=(CH_Iac, intField)))
+        DETRUIRE(CONCEPT=_F(NOM=(CHk, CHcoef, CH_pAc)))
+        
+    IMPR_RESU(FORMAT='MED',
+              RESU=_F(PARTIE='REEL',
+                      NOM_CHAM='SIEF_NOEU',
+                      NOM_CHAM_MED = 'acPressure',
+                      RESULTAT=RESpre,),
+              UNITE=81)
+                            
+    pickle_out = open('fort.44',"wb")
+    try: pickle.dump(acousticData, pickle_out, protocol=2)
+    except: pickle.dump(None, pickle_out, protocol=2)
+    pickle_out.close()
+                  
+t_ac = time.time() - t_ac0
+t_postPro0 = time.time()
+    
+######################################################
+# RECONSTRUCT PHYSICAL MODEL
+######################################################
+substructs2 = []
+for i in range(nSlp):
+    substructs2.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='TOUT'))
+    substructs2.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='TOUT'))
+                            
+squel=DEFI_SQUELETTE(MODELE_GENE=modeGene,
+                     SOUS_STRUC=substructs2);
+        
+harmGlob=REST_SOUS_STRUC(RESU_GENE=harmGene, 
+                         SQUELETTE=squel,
+                         NOM_CHAM=FRFtype,)
+
+for freq in allFreqs:
+    out = CREA_CHAMP(FREQ=freq,
+                          NOM_CHAM=FRFtype,
+                          OPERATION='EXTR',
+                          RESULTAT=harmGlob,
+                          TYPE_CHAM='NOEU_DEPL_C')
+                          
+    outMag = CREA_CHAMP(CHAM_GD=out,
+                          OPERATION='C2R',
+                          PARTIE='REEL',
+                          TYPE_CHAM='NOEU_DEPL_R')
+
+    # outPhas = CREA_CHAMP(CHAM_GD=out,
+                          # OPERATION='C2R',
+                          # PARTIE='PHASE',
+                          # TYPE_CHAM='NOEU_DEPL_R')
+        
+    if freq == allFreqs[0]:
+        resOut = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
+        # resOut2 = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
+    else:
+        resOut = CREA_RESU(reuse=resOut, RESULTAT=resOut, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
+        # resOut2 = CREA_RESU(reuse=resOut2, RESULTAT=resOut2, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
+        
+    DETRUIRE(CONCEPT=_F(NOM=(out, outMag, )))# outPhas)))
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=resOut,
+                  PARTIE='REEL',
+                  NOM_CHAM=FRFtype,
+                  NOM_CHAM_MED = 'resOut',),
+          UNITE=80)
+
+# IMPR_RESU(FORMAT='MED',
+          # RESU=_F(RESULTAT=resOut2,
+                  # PARTIE='REEL',
+                  # TOUT_CHAM='OUI'),
+          # UNITE=85)
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(MAILLAGE=squel,),
+          UNITE=28)
+
+######################################################
+# POST-PROCESSING : Get force-velocity FRF functions
+######################################################
+mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
+                  CREA_GROUP_NO = _F(NOM='tmp', OPTION='ENV_CYLINDRE', POINT=(0,0,753), RAYON=25, VECT_NORMALE=(0,1,0), PRECISION=25))
+     
+mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
+                  CREA_GROUP_NO = _F(NOM='Ba_Y', INTERSEC=(discreteBalNodes, 'tmp')))
+
+mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
+                     DETR_GROUP_NO = _F(NOM='tmp'))
+
+pyMesh.FromAster('mesh')
+
+# FRFgroups = ['Ra_Z', 'Ra_Y', 'Rb_Z', 'Rb_Y', 'Sc_Y', 'Ss_Y', 'Rf_Y']
+FRFgroups = ['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']
+FRFs = [None]*len(selectedSubstFRF)*len(FRFgroups)
+
+if FRFtype == 'VITE':
+    units = '[m/(s.N)]'
+    normCoef = 1/1000/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+elif FRFtype == 'ACCE':
+    units = '[g/N]'
+    normCoef = 1/1000/9.81/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+else:
+    units = '[?]'
+    normCoef = 1
+
+fileFRFContent = 'f [Hz]'
+for substr in selectedSubstFRF:   
+    for grp in FRFgroups:
+        fileFRFContent += '\tE' + str(substr) + '_' + grp + ' ' + units
+fileFRFContent += '\n'
+
+
+# pyGrid.FromAster('mesh')
+j = 0
+for substr in selectedSubstFRF:  
+
+    try:
+        DETRUIRE(CONCEPT=_F(NOM=(struR)))
+    except:
+        pass
+
+    struR = REST_SOUS_STRUC(RESU_GENE=harmGene,
+                            NOM_CHAM=FRFtype,
+                            SOUS_STRUC= 'elem' + str(substr - 1) + 'R' )
+
+    for grp in FRFgroups: # grp = 'Ra_Y' for example
+        gpNode = pyMesh.gno.get(grp)
+        print('gpNode is ')
+        print(gpNode)
+        
+        values = []
+        for node in gpNode: # node = 18673 for example
+            values.append([])
+            nodeName = 'N' + str(node)
+            f = RECU_FONCTION(NOEUD=nodeName, NOM_CHAM=FRFtype, NOM_CMP='D' + grp[-1], RESULTAT=struR,)
+            fMagn = CALC_FONCTION(EXTRACTION=_F(FONCTION=f, PARTIE='MODULE'))
+            for freq in allFreqs:
+                values[-1].append(fMagn(freq))
+                
+            DETRUIRE(CONCEPT=_F(NOM=(f, fMagn)))
+    
+        # averageFRF = np.array([0.0]*len(allFreqs))
+        # for vect in values:
+            # averageFRF += np.array(vect)
+        # averageFRF /= len(values)
+        
+        maxFRF = [0.0]*len(allFreqs)
+        for vect in values:
+            for k in range(len(vect)):
+                maxFRF[k] = max(maxFRF[k], vect[k])
+
+        # FRF function on a group on a macroelement
+        FRFs[j] = DEFI_FONCTION(NOM_PARA = 'FREQ', 
+                               ABSCISSE = allFreqs + [allFreqs[-1]+1e-2]*int(len(allFreqs)==1),
+                               ORDONNEE = maxFRF + [maxFRF[-1]]*int(len(allFreqs)==1))
+                               
+        j += 1
+      
+for freq in allFreqs:
+    FRFdataline = [str(freq)]
+    
+    for frf in FRFs:
+        FRFdataline.append(str(frf(freq)*normCoef))
+
+    fileFRFContent += '\t'.join(FRFdataline) + '\n'
+
+fileFRF=open('fort.83','w')
+fileFRF.write(fileFRFContent)
+fileFRF.close()
+
+
+######################################################
+# Compute pad deformation 
+######################################################
+# remember to modify export files 1-4 (deform_bi.med) and frequencies for 4 bands
+# n = 11
+
+# meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(n*600.0, 0, 0),)
+
+# padMod = AFFE_MODELE(MAILLAGE=meshPadR, AFFE=(_F(TOUT='OUI', PHENOMENE='MECANIQUE', MODELISATION='3D',),));
+
+# padMat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('hard'),
+                                  # MATER=(padMat1, )),
+                               # _F(GROUP_MA=('soft'),
+                                  # MATER=(padMat2, )),),
+                         # MAILLAGE=meshPadR,
+                         # MODELE=padMod,)
+
+# vmis_F = FORMULE(NOM_PARA=('EPXX', 'EPXX', 'EPZZ', 'EPXY', 'EPXZ', 'EPYZ'),
+                 # VALE='(2/9)**(1/2)*((EPXX-EPYY)**2+(EPYY-EPZZ)**2+(EPXX-EPZZ)**2+6*(EPXY**2+EPYZ**2+EPXZ**2))**(1/2)',)
+                   
+# vmis_CHF = CREA_CHAMP(AFFE=_F(GROUP_MA=('hard', 'soft'),
+                              # NOM_CMP=('X7'),
+                              # VALE_F=vmis_F),
+                      # MODELE=padMod,
+                      # OPERATION='AFFE',
+                      # TYPE_CHAM='NOEU_NEUT_F')
+                      
+
+
+
+
+# for freq in allFreqs:
+    # skel=DEFI_SQUELETTE(MODELE_GENE=modeGene, SOUS_STRUC=_F(NOM='elem' + str(n) + 'R', GROUP_MA=('hard','soft')));
+    # res=REST_SOUS_STRUC(RESU_GENE=harmGene, SQUELETTE=skel, FREQ=freq, NOM_CHAM='DEPL')
+    
+    # resProj = PROJ_CHAMP(MAILLAGE_1=skel, MAILLAGE_2=meshPadR, RESULTAT=res, NOM_CHAM='DEPL', FREQ=freq)                   
+    # resProj = CALC_CHAMP(reuse=resProj, RESULTAT=resProj, MODELE=padMod, CHAM_MATER=padMat, DEFORMATION=('EPSI_NOEU'))
+    
+    # chDepl = CREA_CHAMP(FREQ=freq,
+                          # NOM_CHAM='DEPL',
+                          # OPERATION='EXTR',
+                          # RESULTAT=resProj,
+                          # TYPE_CHAM='NOEU_DEPL_C')
+                          
+    # chDeplR = CREA_CHAMP(CHAM_GD=chDepl,
+                          # OPERATION='C2R',
+                          # PARTIE='REEL',
+                          # TYPE_CHAM='NOEU_DEPL_R')
+    
+    # cham = CREA_CHAMP(FREQ=freq,
+                          # NOM_CHAM='EPSI_NOEU',
+                          # OPERATION='EXTR',
+                          # RESULTAT=resProj,
+                          # TYPE_CHAM='NOEU_EPSI_C')
+
+    # chamR = CREA_CHAMP(CHAM_GD=cham,
+                          # OPERATION='C2R',
+                          # PARTIE='REEL',
+                          # TYPE_CHAM='NOEU_EPSI_R')
+
+    # vmis_CH = CREA_CHAMP(CHAM_F=vmis_CHF,
+                         # CHAM_PARA=(chamR),
+                         # OPERATION='EVAL',
+                         # TYPE_CHAM='NOEU_NEUT_R')
+
+    # if freq == allFreqs[0]:
+        # # resu = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmis_CH, FREQ=freq),);
+        # resu = CREA_RESU(OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmis_CH,MODELE=padMod, INST=freq),);
+        # resu2 = CREA_RESU(OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=chDeplR,MODELE=padMod, INST=freq),);   
+    # else:
+        # resu = CREA_RESU(reuse=resu, RESULTAT=resu, OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmis_CH,MODELE=padMod, INST=freq),);
+        # resu2 = CREA_RESU(reuse=resu2, RESULTAT=resu2, OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=chDeplR,MODELE=padMod, INST=freq),);   
+              
+    # DETRUIRE(CONCEPT=_F(NOM=(skel, res, resProj, cham, chamR, vmis_CH, chDepl, chDeplR)))
+
+
+# vmisMax = CREA_CHAMP(TYPE_CHAM='NOEU_NEUT_R', OPERATION='EXTR',RESULTAT=resu,NOM_CHAM='UT01_NOEU',TYPE_MAXI='MAXI');
+# resu = CREA_RESU(reuse=resu, RESULTAT=resu, OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmisMax, MODELE=padMod, INST=0.0),);
+
+# IMPR_RESU(FORMAT='MED',
+          # RESU=_F(RESULTAT=resu, PARTIE='REEL', GROUP_MA=('hard','soft'), NOM_RESU_MED='inva2'),
+          # UNITE=91)
+          
+# IMPR_RESU(FORMAT='MED',
+          # RESU=_F(RESULTAT=resu2, PARTIE='REEL', GROUP_MA=('hard','soft'), NOM_RESU_MED='depl'),
+          # UNITE=91)
+
+
+
+######################################################
+# Write result files (MED)
+######################################################
+IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=mod_trim,),
+          UNITE=82)
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=moR1Trim,),
+          UNITE=85)
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=moR2Trim,),
+          UNITE=86)
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=moSlTrim,),
+          UNITE=87)
+
+
+print('TOTAL TIME ' + str(time.time()-t0))
+print('MODES ' + str(t_modes))
+print('MODSTAT ' + str(t_modeStat))
+print('MACROEL ' + str(t_macroEl))
+print('HARMONIC MODEL ' + str(t_harmo) + ' (' + str(len(allFreqs)) + ' frequencies)')
+
+if computeAcoustic == True:
+    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies)')
+
+print('POSTPRO ' + str(time.time() - t_postPro0))
+          
+FIN()

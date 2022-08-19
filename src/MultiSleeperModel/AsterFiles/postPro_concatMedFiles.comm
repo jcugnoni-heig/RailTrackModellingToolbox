@@ -1,0 +1,118 @@
+import os
+import json
+
+DEBUT(PAR_LOT='NON')
+
+with open('fort.5', 'r') as f:
+	txt = f.read()
+f.close()
+
+parameters = json.loads(txt)
+computeAcoustic = parameters['computeAcoustic']
+FRFtype = parameters['outputType']
+nJobs = parameters['nJobs']
+
+squel = LIRE_MAILLAGE(FORMAT="MED",UNITE=2);
+
+if computeAcoustic:
+	grid = LIRE_MAILLAGE(FORMAT="MED",UNITE=7);
+
+for i in range(nJobs):
+    # Get frequencies of job i
+    with open('fort.' + str(70+i)) as freqFile:
+        freqlines = freqFile.read().splitlines()
+    freqFile.close()
+
+    allFreqs = []
+    for freqline in freqlines:
+        try:
+            frequency=float(freqline.split(' ')[0])
+        except:
+            continue
+        allFreqs.append(frequency)
+
+    # Get harmonic result of job i
+    resHarm = LIRE_RESU(FORMAT='MED',
+                      UNITE=10+i,
+                      FORMAT_MED=(_F(NOM_CHAM=FRFtype,
+                                     NOM_CHAM_MED='resOut',),),
+                      TYPE_RESU='DYNA_HARMO',
+                      TOUT_ORDRE='OUI',
+                      MAILLAGE=squel);
+    
+    # Get fields for each frequency and append them to the final result
+    for freq in allFreqs:                              
+        field = CREA_CHAMP(FREQ=freq,
+                              NOM_CHAM=FRFtype,
+                              OPERATION='EXTR',
+                              RESULTAT=resHarm,
+                              TYPE_CHAM='NOEU_DEPL_R')
+        
+        if i == 0 and freq == allFreqs[0]:
+            harmo = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=field, FREQ=freq),);
+        else:
+            harmo = CREA_RESU(reuse=harmo, RESULTAT=harmo, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=field, FREQ=freq),);
+
+        DETRUIRE(CONCEPT=_F(NOM=(field, )))
+        
+    DETRUIRE(CONCEPT=_F(NOM=(resHarm, )))
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=harmo,
+                  PARTIE='REEL',
+                  TOUT_CHAM='OUI'),
+          UNITE=3)
+
+
+
+
+if computeAcoustic == False:
+    FIN()
+
+for i in range(nJobs):
+    # Get frequencies of job i
+    with open('fort.' + str(70+i)) as freqFile:
+        freqlines = freqFile.read().splitlines()
+    freqFile.close()
+
+    allFreqs = []
+    for freqline in freqlines:
+        try:
+            frequency=float(freqline.split(' ')[0])
+        except:
+            continue
+        allFreqs.append(frequency)
+
+    resAcou = LIRE_RESU(FORMAT='MED',
+                      UNITE=40+i,
+                      FORMAT_MED=(_F(NOM_CHAM='SIEF_NOEU', #UT01_NOEU
+                                     NOM_CHAM_MED='acPressure',),),
+                      TYPE_RESU='DYNA_HARMO',
+                      TOUT_ORDRE='OUI',
+                      MAILLAGE=grid);
+    
+    # Get fields for each frequency and append them to the final result
+    for freq in allFreqs:                                                 
+        press = CREA_CHAMP(FREQ=freq,
+                              NOM_CHAM='SIEF_NOEU',
+                              OPERATION='EXTR',
+                              RESULTAT=resAcou,
+                              TYPE_CHAM='NOEU_SIEF_R')
+        
+        if i == 0 and freq == allFreqs[0]:
+            pressAc = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=press, FREQ=freq),);
+        else:
+            pressAc = CREA_RESU(reuse=pressAc, RESULTAT=pressAc, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=press, FREQ=freq),);
+
+        DETRUIRE(CONCEPT=_F(NOM=(press)))
+        
+    DETRUIRE(CONCEPT=_F(NOM=(resAcou)))
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=pressAc,
+                  PARTIE='REEL',
+                  TOUT_CHAM='OUI'),
+          UNITE=4)
+
+
+FIN()
