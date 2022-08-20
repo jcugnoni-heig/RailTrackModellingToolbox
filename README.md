@@ -70,8 +70,12 @@ To facilitate the use of the toolbox, a custom version of CAELinux 2020 is provi
 
 ## Getting Started
 
-This repository contain three folders: *Documentation*, *src* and *Toolbox-VM*. The first folder contain the documentation of the toolbox: description of the models, how to use the interface and so on. The second folder, *src*, contain the individual models. The last folder, *Toolbox-VM*, contain a virtual machine container with the whole toolbox ready to be used on any Linux distribution.
+This repository contain three folders: *Documentation*, *src* and *Toolbox-VM*. 
+
+The first folder contain the documentation of the toolbox: description of the models, how to use the interface and so on. The second folder, *src*, contain the individual models. The last folder, *Toolbox-VM*, contain a virtual machine container with the whole toolbox ready to be used on any Linux distribution.
+
 The easiest way to start using the toolbox is to download and use the *Toolbox-VM* virtual machine container.
+
 Once installed, the best way to start using the model is to use the GUI provided for each model. Part of the documentation describes the steps to follow in order to run a simulation with the selected model.
 
 ## Contributing
