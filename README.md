@@ -12,7 +12,7 @@ This project was founded by the [Swiss Federal Office for the ENvironment FOEN](
 - [School of Engineering and Management of Yverdon](https://heig-vd.ch/en) (HEIG-vd),  
 - [Swiss Federal Laboratories for Materials Science and Technology](https://www.empa.ch/) (EMPA).  
 
-For the last phase of the project, a company joins the consortium:
+For the last phase of the project, a company has joined the consortium to develop prototype railpad:
 
 - [Semperit Group](https://www.semperitgroup.com/) from Austria
 
@@ -77,6 +77,10 @@ The first folder contain the documentation of the toolbox: description of the mo
 The easiest way to start using the toolbox is to download and use the *Toolbox-VM* virtual machine container.
 
 Once installed, the best way to start using the model is to use the GUI provided for each model. Part of the documentation describes the steps to follow in order to run a simulation with the selected model.
+
+## Hardware requirements
+
+The FE models included in this toolbox require at least a 4 core CPU with 16Gb of RAM to run. However, to run simulations in parallel and with detaield 3D mesh, a 8 to 16 core CPU with at 64Gb of RAM is optimal. Most of the simulations that we have carried out have been running on AMD Threadripper 24 core 128Gb or 16core 64Gb workstations. To make use of the available computater resources, please edit the ".export" files in the "working_directory" folders of the models. See Code-Aster documentation for the details of the .export files.
 
 ## Contributing
 
