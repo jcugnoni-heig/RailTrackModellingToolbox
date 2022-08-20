@@ -4,11 +4,11 @@ P consbtc oui
 P corefilesize unlimited
 P cpresok RESNOOK
 P debug nodebug
-P display caesrv1:0.0
+P display caelinux:0.0
 P facmtps 1
 P follow_output yes
 P lang en
-P mclient caesrv1
+P mclient caelinux
 P memjob 8143872
 P memory_limit 7953.0
 P mode interactif
@@ -20,24 +20,24 @@ P noeud localhost
 P nomjob padStiffnessPhase1
 P origine ASTK 2018.1.final
 P platform Linux64
-P profastk cae@caesrv1:/home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padStiffnessPhase1.astk
+P profastk cae@caesrv1:/home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/padStiffnessPhase1.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
 P proxy_dir /tmp
-P rep_trav /scratch/caelinux-caelinux-interactif_17404
+P rep_trav /tmp/caelinux-caelinux-padstiff_phase1
 P serveur localhost
 P soumbtc oui
 P time_limit 18900.0
 P tpsjob 316
-P uclient cae
-P username cae
+P uclient caelinux
+P username caelinux
 P version stable
 A args 
 A dbgjeveux 
 A memjeveux 994.125
 A tpmax 18900.0
-F mmed /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padWithRF.mesh.med D  20
-F comm /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padStiffnessPhase1.comm D  1
-F mess /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/messages/messagePadStiffnessPhase1.mess R  6
-R base /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/base1 RC 0
+F mmed /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/padWithRF.mesh.med D  20
+F comm /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/padStiffnessPhase1.comm D  1
+F mess /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/messages/messagePadStiffnessPhase1.mess R  6
+R base /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/base1 RC 0

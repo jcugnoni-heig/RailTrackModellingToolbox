@@ -4,50 +4,50 @@ P consbtc oui
 P corefilesize unlimited
 P cpresok RESNOOK
 P debug nodebug
-P display lmafpc22:0.0
+P display caelinux:0.0
 P facmtps 1
 P follow_output yes
 P lang en
-P mclient lmafpc22
+P mclient caelinux
 P memjob 8255488
 P memory_limit 8062.0
 P mode interactif
 P mpi_nbcpu 1
 P mpi_nbnoeud 1
 P nbmaxnook 5
-P ncpus 4
+P ncpus 2
 P noeud localhost
 P nomjob padStiffnessPhase2_b2
 P origine ASTK 2017.0
 P platform Linux64
-P profastk cae@lmafpc22:/home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padStiffnessPhase2_b2.astk
+P profastk caelinux@caelinux:/home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/padStiffnessPhase2_b2.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
 P proxy_dir /tmp
-P rep_trav /scratch/cae-caesrv1-interactif_103772
+P rep_trav /tmp/caelinux-caelinux-padstiff_phase2b2
 P serveur localhost
 P soumbtc oui
 P time_limit 3600900.0
 P tpsjob 60016
-P uclient cae
-P username cae
+P uclient caelinux
+P username caelinux
 P version stable
 A args 
 A memjeveux 1007.75
 A tpmax 3600900.0
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/tanD_hard.csv D  39
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/E_hard.csv D  38
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/tanD_soft.csv D  29
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/E_soft.csv D  28
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/poisson_hard.csv D  27
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/poisson_soft.csv D  26
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/density_hard.csv D  25
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/density_soft.csv D  24
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/frequencies_b2.txt D  37
-R base /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/base1 DC 0
-F comm /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padStiffnessPhase2.comm D  1
-F mess /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/messages/messagePadStiffnessPhase2_b2.mess R  6
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/Stiffness_b2.txt R  40
-F libr /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/Static_Stiffness_b2.txt R  41
-F rmed /home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/resultPadStiffnessPhase2_b2.res.med R  81
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/tanD_hard.csv D  39
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/E_hard.csv D  38
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/tanD_soft.csv D  29
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/E_soft.csv D  28
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/poisson_hard.csv D  27
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/poisson_soft.csv D  26
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/density_hard.csv D  25
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/density_soft.csv D  24
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/frequencies_b2.txt D  37
+R base /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/base1 DC 0
+F comm /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/padStiffnessPhase2.comm D  1
+F mess /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/messages/messagePadStiffnessPhase2_b2.mess R  6
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/Stiffness_b2.txt R  40
+F libr /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/Static_Stiffness_b2.txt R  41
+F rmed /home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/resultPadStiffnessPhase2_b2.res.med R  81

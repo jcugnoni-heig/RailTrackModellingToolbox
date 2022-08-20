@@ -7,6 +7,12 @@
 import sys
 import salome
 
+# detect current script path to locate necessary files
+scriptpath='/home/caelinux/RailtrackModellingToolbox/src/PadStiffnessModel/working_directory/'
+import os
+scriptpath=os.path.dirname(os.path.abspath(__file__))
+print("Script directory: ", scriptpath)
+
 salome.salome_init()
 import salome_notebook
 notebook = salome_notebook.NoteBook()
@@ -54,8 +60,9 @@ smesh = smeshBuilder.New()
                                  # multiples meshes built in parallel, complex and numerous mesh edition (performance)
 
 
-([ma], status) = smesh.CreateMeshesFromMED(r'/home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/importedPad.mesh.med')
-print('importedPad mesh imported.')
+inputmesh=os.path.join(scriptpath,'importedPad.mesh.med')
+([ma], status) = smesh.CreateMeshesFromMED(inputmesh)
+print('importedPad.mesh.med mesh imported from ', scriptpath)
 #[ soft, hard, top, bot ] = ma.GetGroups()
 ma.GetGroups()
 print('Groups loaded.')
@@ -105,7 +112,8 @@ smesh.SetName(RF0D, 'RF0D')
 #smesh.SetName(top, 'top')
 
 try:
-  ma.ExportMED(r'/home/cae/Documents/Railpad2/PadStiffness_GUI/working_directory/padWithRF.mesh.med',auto_groups=0,minor=40,overwrite=1,meshPart=None,autoDimension=1)
+  outputmesh=os.path.join(scriptpath,'padWithRF.mesh.med')
+  ma.ExportMED(outputmesh,auto_groups=0,minor=40,overwrite=1,meshPart=None,autoDimension=1)
   print('New mesh exported as: padWithRF.mesh.med')
   pass
 except:
