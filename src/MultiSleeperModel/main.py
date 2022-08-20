@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt, QTimer, QObject, QThread, pyqtSignal
 import pyperclip as clipboard
+#import clipboard
 import module_run as mod
 import json
 from datetime import datetime
@@ -213,7 +214,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['simuDir'] = self.simuDir
 		
 		# 
-		nJobsMax = multiprocessing.cpu_count()/2
+		nJobsMax = multiprocessing.cpu_count()
 		
 		try:
 			nJobs = int(self.txt_nJobs.text())
