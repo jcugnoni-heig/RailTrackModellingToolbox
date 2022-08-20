@@ -9,7 +9,7 @@ messagesDir=./messages/
 TERMCMD="xterm -e"
 ASRUNPATH=/opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run
 PYTHONPATH=python
-SALOMEPATH=salome
+SALOMEPATH=/opt/SalomeMeca/appli_V2019_univ/salome
 
 #########################################################################################
 # FUNCTIONS
@@ -132,7 +132,7 @@ cp $meshesDir$mesh ./temp.mesh.med
 ## Include USPs to the standard FE mesh in ./ if required. 
 ## Note that ./genUSP.py generates ./Meshes/USPs.med with custom parameters on top of the file
 if [ $includeUSPs == True ]; then
- $TERMCMD $SALOMEPATH -t ./gen3sleepersUSP.py
+ $TERMCMD "$SALOMEPATH -t ./gen3sleepersUSP.py"
 fi
 
 ## Check if phase 1 needs to be run
@@ -191,10 +191,13 @@ lastLine3="0"
 if [ $runPhase1 == True ]; then
  ASRUNJOB1="harmoPhase1.export"
  t=0
- while (( t<5 )); do
+ count=0
+ while [ $t -le 5 ]  && [ $count -le 5 ]; do
   SECONDS=0
+
   $TERMCMD $ASRUNPATH $ASRUNJOB1
   t=$SECONDS
+  count=$(( $count + 1 ))
  done
  lastLine1=$(tail -1 $messagesDir"harmo1.mess")
  echo $simuName "Phase 1 exit code :" $lastLine1
@@ -212,8 +215,8 @@ fi
 ASRUNJOB2="harmoPhase2_b"
 t=0
 n=0
-
-while (( t<5 )); do
+count=0
+while [ $t -le 5 ]  && [ $count -le 5 ]; do
  n=$((n+1))
  if (( n>3 )); then
   lastLine2=$(tail -1 $messagesDir"harmo2_b1.mess")
@@ -228,7 +231,7 @@ while (( t<5 )); do
  fi
  
  SECONDS=0
- 
+ count=$(( $count + 1 )) 
  
  for (( i=1; i<=$nCPUs; i++ ))
  do

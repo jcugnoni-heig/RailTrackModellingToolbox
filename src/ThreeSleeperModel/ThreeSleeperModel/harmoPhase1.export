@@ -9,8 +9,8 @@ P facmtps 1
 P follow_output yes
 P lang en
 P mclient caesrv1
-P memjob 122880000
-P memory_limit 120000.0
+P memjob 12288000
+P memory_limit 12000.0
 P mode interactif
 P mpi_nbcpu 1
 P mpi_nbnoeud 1
@@ -20,7 +20,7 @@ P noeud localhost
 P nomjob harmoJCPhase1
 P origine ASTK 2018.1.final
 P platform Linux64
-P profastk cae@caesrv1:/home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoJCPhase1.astk
+P profastk cae@caesrv1:/home/caelinux/RailtrackModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoJCPhase1.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
@@ -35,10 +35,10 @@ P username cae
 P version stable
 A args 
 A dbgjeveux 
-A memjeveux 15000.0
+A memjeveux 1500.0
 A tpmax 18900.0
-F libr /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/temp_parameters/parameters_test.py D  22
-F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/gen3Sleeper.mesh.med D  20
-F comm /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoAcoust_Phase1.comm D  1
-F mess /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/messages/harmo1.mess R  6
-R base /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/base1 RC 0
+F libr /home/caelinux/RailtrackModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/temp_parameters/parameters_tst235.py D  22
+F mmed /home/caelinux/RailtrackModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/gen3Sleeper.mesh.med D  20
+F comm /home/caelinux/RailtrackModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/harmoAcoust_Phase1.comm D  1
+F mess /home/caelinux/RailtrackModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/messages/harmo1.mess R  6
+R base /home/caelinux/RailtrackModellingToolbox/src/ThreeSleeperModel/ThreeSleeperModel/base1 RC 0
