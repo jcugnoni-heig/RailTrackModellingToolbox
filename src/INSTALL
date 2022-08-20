@@ -1,0 +1,40 @@
+-- RAILTRACK MODELLING TOOLBOX v1 (8.2022)----
+
+The Toolbox was developped to run on the CAELinux 2020 Linux distribution, based on Ubuntu 18.04.
+It can however be adapted to run in other environments as long as the following prerequisites are installed and the paths are adapted to your installation.
+
+--- Prerequisites---
+To run the different models of the toolbox, you will need the following:
+1) Python 2.7 with Numpy, PyQt5 and Pyperclip libraries
+1) an installation of Salome-Meca 2019 for Linux (see www.code-aster.org). The default installation path (recommended) is /opt/SalomeMeca/. 
+2) an installation of Code-Aster with MFront support. By default an installation of Code-Aster 14.6 is expected in /opt/aster. 
+3) if you intend to convert mesh files from Abaqus format to Aster, you will also need CalculiX PrePost "cgx".
+Its default path is set to "/opt/CLCX-caelinux64/bin/cgx2.12"
+
+--- Setting the Model paths for your own installation ---
+The Code-Aster models included in the toolbox use absolute paths to locate the different files, and thus you will need to adapt some files to match your installation.
+In each folder containing the models , you will find a "changePath.sh" script that you can run to update the file paths to match your current install.
+You can locate all those scripts by running find -iname changePath.sh  in the root of the toolbox. Then just "cd" to each model directory and run ./changePath.sh to update the settings.
+Also some other scripts (".sh" extension) may contain harcoded paths, so make sure to review them and adapt them to your installation.
+
+
+--- Note about customization / prerequisites --- 
+a) If prerequisites are installed in a non default path, you will need to modify most of the shell scripts.
+Run find -iname "*.sh" at the root of the toolbox to list the files that might need editing 
+b) If you encounter problems running the models, please check / edit the options in the different .export files which are used to launch the Code-Aster jobs. You may need to edit the max memory, aster version and other settings there. Run find -iname "*.export" to list those files.
+
+-- Tips ---
+
+- Error in running Impulse model, mfront is not found -
+If you have installed Code-Aster 14-6 from source as required for running the Impulse model, 
+you might have issues when MFront needs to run to build the material constitutive law library.
+This can be caused by the fact that Aster looks for an executeable named "mfront" but by default, it is named mfront-3.2.1 and located in /opt/aster/public/tfel-3.2.1/bin
+To fix this issue, do the following:
+cd /opt/aster/public/tfel-3.2.1/bin
+sudo ln -s mfront-3.2.1 mfront
+
+If mfront is located at another location, please also edit ImpulseModelGUI.sh to add mfront executable path to the PATH env variable
+
+
+
+
