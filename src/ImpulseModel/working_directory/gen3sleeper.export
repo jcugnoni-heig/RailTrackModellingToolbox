@@ -19,12 +19,12 @@ P noeud localhost
 P nomjob gen3sleeper
 P origine ASTK 2017.0
 P platform Linux64
-P profastk caelinux@caelinux:/home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3sleeper.astk
+P profastk caelinux@caelinux:/home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/gen3sleeper.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
 P proxy_dir /tmp
-P rep_trav /tmp/caelinux-caelinux-interactif_40109
+P rep_trav /tmp/caelinux-caelinux-gen3sleeper
 P serveur caelinux
 P soumbtc oui
 P time_limit 900.0
@@ -35,8 +35,8 @@ P version stable
 A args 
 A memjeveux 625.0
 A tpmax 900.0
-F comm /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3Sleepers.comm D  1
-F mmed /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/importedPad.mesh.med D  3
-F mmed /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/base3Sleeper.med D  2
-F mess /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3Sleepers.mess R  6
-F rmed /home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory/gen3Sleeper.mesh.med R  80
+F comm /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/gen3Sleepers.comm D  1
+F mmed /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/importedPad.mesh.med D  3
+F mmed /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/base3Sleeper.med D  2
+F mess /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/gen3Sleepers.mess R  6
+F rmed /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/gen3Sleeper.mesh.med R  80
