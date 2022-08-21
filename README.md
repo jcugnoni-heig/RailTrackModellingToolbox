@@ -44,9 +44,13 @@ A overview of each model is presented in the following paragraphs, please refer 
 The Pad Stiffness Model aim to estimate the static and dynamic stiffness of the input pad design. It is a digital twin of an experimental compression system.
 After validation in static and low dynamic (10 and 20 Hz) compression with the experimental results, the model have been extended to provide the stiffness in various directions and with an extended frequency range.  
 
-### The Semi-Analytical model
+### The Semi-Analytical Track model
+
+TODO
 
 ### The Three Sleepers model
+
+TODO
 
 ### The Impulse model
 
@@ -54,6 +58,8 @@ The Impulse model is a variation of the three sleepers model, operating in the t
 It aims to reproduce a pass-by of a bogie on a sleeper. Therefore a *M* shaped impulse is imposed to both rails above the middle sleeper.
 
 ### The Multi-Sleepers model
+
+TODO
 
 ## Download
 
@@ -66,7 +72,9 @@ The toolbox requires the following software installed on the system to run:
 2. Salome-Meca 2019 
 3. Python 2.7 with PyQT5, pyperclip and numpy libraries
 
-To facilitate the use of the toolbox, a custom version of CAELinux 2020 is provided as a ISO image which can be used to install a physical or virtual machine with all software preconfigured.
+To facilitate the use of the toolbox, a custom version of CAELinux 2020 is provided as a ISO image which can be used to install a physical or virtual machine with all software preconfigured. 
+
+Download link to the virtual machine image: Coming soon...
 
 ## Getting Started
 
