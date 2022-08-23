@@ -46,20 +46,19 @@ After validation in static and low dynamic (10 and 20 Hz) compression with the e
 
 ### The Semi-Analytical Track model
 
-TODO
+The Semi-Analytical Track Model is aimed at simulating the dynamic response in terms of point mobility and track decay rate (TDR) of a nearly infinite track as well evaluate the radiate noise. This model uses as input the frequency dependent stiffness and damping of the pads as evaluated by the PadStiffness model. 
 
 ### The Three Sleepers model
 
-TODO
+The Three-sleeper model is a Digital Twin of an existing test setup consisting of three sleepers with two 1.8m rails installed in our lab. It carries out an harmonic simulation of the system over a user defined frequency range (multiple bands on multiple CPUs) and is able to compute the frequency response of the setup as well as the radiated noise using a monopole superposition method. This model and experimental setup form together an efficient method to validate the modeling assumptions such as for example the frequency dependant complex moduli of the railpad material(s) or the effective properties of the prestressed concrete in the sleepers. This model allows to optionnally include undersleeper pads as well.
 
 ### The Impulse model
 
-The Impulse model is a variation of the three sleepers model, operating in the time and not the frequency domain.  
-It aims to reproduce a pass-by of a bogie on a sleeper. Therefore a *M* shaped impulse is imposed to both rails above the middle sleeper.
+The Impulse model is a variation of the three sleepers model, operating in the time and not the frequency domain. The rail pad materials are modelled as a generalized Maxwell model described by a Prony series.  It aims to reproduce a pass-by of a bogie on a sleeper. Therefore a *M* shaped impulse is imposed to both rails above the middle sleeper. The model output can be used to evaluate the rail pad deformation / stresses, the clamping system deformation, the ballast deflection and the mean stress acting on the ballast. These results cab thus be used to evaluate fatigue of fastening component, rail pad visco elastic recovery time as well as ballas settlement. 
 
 ### The Multi-Sleepers model
 
-TODO
+The multi-sleeper FE model is a large scale 3D structural model of a railtrack (with an arbitrary number of sleepers) using frequency dependent dynamic substructuring to evaluate quickly but in great details the vibration response of the rail and sleepers as well as compute the radiated noise level. This model allows to optionnally include undersleeper pads as well.
 
 ## Download
 
@@ -88,7 +87,7 @@ Once installed, the best way to start using the model is to use the GUI provided
 
 ## Hardware requirements
 
-The FE models included in this toolbox require at least a 4 core CPU with 16Gb of RAM to run. However, to run simulations in parallel and with detaield 3D mesh, a 8 to 16 core CPU with at 64Gb of RAM is optimal. Most of the simulations that we have carried out have been running on AMD Threadripper 24 core 128Gb or 16core 64Gb workstations. To make use of the available computater resources, please edit the ".export" files in the "working_directory" folders of the models. See Code-Aster documentation for the details of the .export files.
+The FE models included in this toolbox require at least a 4 core CPU with 16Gb of RAM to run. However, to run simulations in parallel and with detailed 3D mesh, a 8 to 16 core CPU with at 64Gb of RAM is optimal. Most of the simulations that we have carried out have been running on AMD Threadripper 24 core 128Gb or 16core 64Gb workstations. To make use of the available computer resources, please edit the ".export" files in the "working_directory" folders of the models. See Code-Aster documentation for the details of the .export files.
 
 ## Contributing
 
