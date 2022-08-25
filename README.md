@@ -83,6 +83,15 @@ The first folder contain the documentation of the toolbox: description of the mo
 
 The easiest way to start using the toolbox is to download and use the *ISO* image in *Toolbox-VM*. This image can be used to create a bootable USB disk (using Ventoy https://www.ventoy.net is recommended) in order to boot and install the OS + toolbox on a physical PC. Or even simpler, the ISO image can be used directly to install a Virtual Machine, on any OS, for example in VMware player https://www.vmware.com/fr/products/workstation-player.html.
 
+Once booted from the ISO image, the (virtual) machine can be installed by running.  
+
+> sudo ubiquity gtk_ui
+
+Please note the default username / passworkd is :
+
+username: caelinux
+passworkd: caelinux
+
 If you decide to install "from scratch", you will need to have first a working installation of all the prerequisites (see src/INSTALL, src/dependencies.txt and src/installDependencies.sh) and then run the setup.sh script in the root of the toolbox:
 
 > cd PathToToolBox
