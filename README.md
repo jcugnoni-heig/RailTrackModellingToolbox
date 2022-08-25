@@ -87,10 +87,10 @@ Once booted from the ISO image, the (virtual) machine can be installed by runnin
 
 > sudo ubiquity gtk_ui
 
-Please note the default username / passworkd is :
+Please note the default username / password is :
 
-username: caelinux
-passworkd: caelinux
+*username*: caelinux
+*passworkd*: caelinux
 
 If you decide to install "from scratch", you will need to have first a working installation of all the prerequisites (see src/INSTALL, src/dependencies.txt and src/installDependencies.sh) and then run the setup.sh script in the root of the toolbox:
 
