@@ -1,0 +1,2448 @@
+# ------------------------------------------------------------------------------------------
+# Impression du contenu du fichier de commandes à exécuter :
+# ------------------------------------------------------------------------------------------
+from Utilitai import partition
+
+import time
+
+
+# Often changed parameters
+nuPadHard=0.495
+nuPadSoft=0.495
+rhoPadHard=1e-09
+rhoPadSoft=1e-09
+
+with open('fort.27') as fp:
+			Lines = fp.readlines()
+			nuPadHard = float(Lines[0].split('\\')[0])
+
+with open('fort.26') as fp:
+			Lines = fp.readlines()
+			nuPadSoft = float(Lines[0].split('\\')[0])
+
+with open('fort.25') as fp:
+			Lines = fp.readlines()
+			rhoPadHard = float(Lines[0].split('\\')[0])
+
+with open('fort.24') as fp:
+			Lines = fp.readlines()
+			rhoPadSoft = float(Lines[0].split('\\')[0])
+
+
+
+POURSUITE(PAR_LOT='NON')
+
+
+# ---------  PARAMETERS   -------------------------
+
+#Already define in phase 1. For pad stiffness we need only on pad :
+
+topNodes = ('topn')
+botNodes = ('botn')
+rfNodes = ('RF')
+hardElem = ('hard')
+softElem = ('soft')
+rf0dElem = ('RF0D')
+
+# --------- Materials --------------
+
+
+
+EtaHard=LIRE_FONCTION(UNITE = 39,
+                      NOM_PARA = 'FREQ',
+                      PROL_GAUCHE = 'CONSTANT',
+                      PROL_DROITE = 'CONSTANT')
+
+EHard=LIRE_FONCTION(UNITE = 38,
+                    NOM_PARA = 'FREQ',
+                    PROL_GAUCHE = 'CONSTANT',
+                    PROL_DROITE = 'CONSTANT')
+
+EtaSoft=LIRE_FONCTION(UNITE = 29,
+                      NOM_PARA = 'FREQ',
+                      PROL_GAUCHE = 'CONSTANT',
+                      PROL_DROITE = 'CONSTANT')
+
+ESoft=LIRE_FONCTION(UNITE = 28,
+                    NOM_PARA = 'FREQ',
+                    PROL_GAUCHE = 'CONSTANT',
+                    PROL_DROITE = 'CONSTANT')
+
+# ---------  Loads  --------------
+
+
+BCcomp = AFFE_CHAR_MECA(FORCE_NODALE=_F(FY=-1.0,
+                                         GROUP_NO=('RF', )),
+                         MODELE=model)
+
+BCtorX = AFFE_CHAR_MECA(FORCE_NODALE=_F(MX=1.0,
+                                         GROUP_NO=('RF', )),
+                         MODELE=model)
+
+BCtorZ = AFFE_CHAR_MECA(FORCE_NODALE=_F(MZ=1.0,
+                                         GROUP_NO=('RF', )),
+                         MODELE=model)
+
+BCshearZ = AFFE_CHAR_MECA(FORCE_NODALE=_F(FZ=1.0,
+                                         GROUP_NO=('RF', )),
+                         MODELE=model)
+
+BCloads = [BCcomp, BCtorX, BCtorZ, BCshearZ]
+
+fixedBC = (BCfix, RFCtltop, )
+
+
+
+# ---------  Solution  --------------
+
+
+
+fileName='fort.37'
+with open(fileName) as file:
+    freqlines = file.read().splitlines()
+file.close()
+
+listeAffe = []
+
+fileDisp=open('fort.40','w')
+fileDisp.close()
+
+for BCload in BCloads:
+
+    # --------- INIT OUTPUT FILES ------------------
+
+    fileDisp=open('fort.40','a+')
+    fileHeader='FREQ [Hz]\t'
+
+    if BCload == BCcomp :
+        name = 'vertical stiffness'
+        fileHeader += name + ' Real [N/mm]\t' + name + ' Imanginary [N/mm]\t'
+
+    elif BCload == BCtorX :
+        name = 'stiffness around X'
+        fileHeader += name + ' Real [Nmm/rad]\t' + name + ' Imanginary [Nmm/rad]\t'
+
+    elif BCload == BCtorZ :
+        name = 'stiffness around Z'
+        fileHeader += name + ' Real [Nmm/rad]\t' + name + ' Imanginary [Nmm/rad]\t'
+
+    else:
+        name = 'lateral stiffness'
+        fileHeader += name + ' Real [N/mm]\t' + name + ' Imanginary [N/mm]\t'
+
+    fileHeader+='\n'
+
+    fileDisp.write(fileHeader)
+    fileDisp.close()
+
+    first=True
+
+    for freqline in freqlines:
+        t0 = time.time()
+        try:
+            frequency=float(freqline.split(' ')[0])
+
+        except:
+            continue
+
+
+        EH=EHard(frequency)
+        EtaH=EtaHard(frequency)
+
+        padhard = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=EtaH,
+                                        E=EH,
+                                        NU=nuPadHard,
+                                        RHO=rhoPadHard))
+
+        ES=ESoft(frequency)
+        EtaS=EtaSoft(frequency)
+
+        padsoft = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=EtaS,
+                                        E=ES,
+                                        NU=nuPadSoft,
+                                        RHO=rhoPadSoft))
+
+        fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=hardElem,
+                                          MATER=(padhard, )),
+                                       _F(GROUP_MA=softElem,
+                                          MATER=(padsoft, ))),
+                                 MAILLAGE=mesh,
+                                 MODELE=model)  
+
+        ASSEMBLAGE(CARA_ELEM=RFprop,
+                   CHAM_MATER=fieldmat,
+                   CHARGE=fixedBC,
+                   MATR_ASSE=(_F(MATRICE=CO('K'),
+                                 OPTION='RIGI_MECA'),
+                              _F(MATRICE=CO('Khyst'),
+                                 OPTION='RIGI_MECA_HYST'),
+                              _F(MATRICE=CO('M'),
+                                 OPTION='MASS_MECA')),
+                   MODELE=model,
+                   NUME_DDL=CO('nddl'),
+                   VECT_ASSE=_F(CHARGE=(BCload),
+                                OPTION='CHAR_MECA',
+                                VECTEUR=CO("f"))
+                   )
+
+        if freqline == freqlines[0]:
+
+            resharm = DYNA_VIBRA(BASE_CALCUL='PHYS',
+                                 CARA_ELEM=RFprop,
+                                 CHAM_MATER=fieldmat,
+                                 EXCIT=_F(COEF_MULT=1.0,
+                                          VECT_ASSE=f),
+                                 FREQ=(frequency),
+                                 MATR_MASS=M,
+                                 MATR_RIGI=Khyst,
+                                 MODELE=model,
+                                 SOLVEUR=_F(METHODE='MUMPS', RENUM='METIS', PCENT_PIVOT=150),
+                                 NOM_CHAM=('DEPL','VITE','ACCE'),
+                                 TYPE_CALCUL='HARM')
+        else:   
+
+            resharm = DYNA_VIBRA(reuse = resharm,
+                                 RESULTAT = resharm,
+                                 BASE_CALCUL='PHYS',
+                                 CARA_ELEM=RFprop,
+                                 CHAM_MATER=fieldmat,
+                                 EXCIT=_F(COEF_MULT=1.0,
+                                          VECT_ASSE=f),
+                                 FREQ=(frequency),
+                                 MATR_MASS=M,
+                                 MATR_RIGI=Khyst,
+                                 MODELE=model,
+                                 SOLVEUR=_F(METHODE='MUMPS', RENUM='METIS', PCENT_PIVOT=150),
+                                 NOM_CHAM=('DEPL','VITE','ACCE'),
+                                 TYPE_CALCUL='HARM')
+    
+
+        t00 = time.time()
+        print('harmonic f=' + str(int(frequency)) + 'Hz, ' + str(t00-t0) + ' s.')
+                       
+
+        # Stiffness extraction loop
+
+        dataline=[str(frequency),]
+
+
+        if BCload == BCcomp :
+
+            DisplY = RECU_FONCTION(GROUP_NO=('RF', ),
+                                   NOM_CHAM='DEPL',
+                                   NOM_CMP='DY',
+                                   RESULTAT=resharm)
+
+            DisplY_R=CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY, PARTIE='REEL'))
+            DisplY_I=CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY, PARTIE='IMAG'))
+
+            
+            dataline.append(str(-DisplY_R(frequency)/(DisplY_R(frequency)*DisplY_R(frequency)+DisplY_I(frequency)*DisplY_I(frequency))))
+            dataline.append(str(DisplY_I(frequency)/(DisplY_R(frequency)*DisplY_R(frequency)+DisplY_I(frequency)*DisplY_I(frequency))))
+
+            DETRUIRE(CONCEPT=_F(NOM=(DisplY, DisplY_R, DisplY_I,)))
+
+        elif BCload == BCtorX :
+
+            RotX = RECU_FONCTION(GROUP_NO=('RF', ),
+                                 NOM_CHAM='DEPL',
+                                 NOM_CMP='DRX',
+                                 RESULTAT=resharm)
+
+            RotX_R=CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX, PARTIE='REEL'))
+            RotX_I=CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX, PARTIE='IMAG'))
+
+            dataline.append(str(RotX_R(frequency)/(RotX_R(frequency)*RotX_R(frequency)+RotX_I(frequency)*RotX_I(frequency))))
+            dataline.append(str(-RotX_I(frequency)/(RotX_R(frequency)*RotX_R(frequency)+RotX_I(frequency)*RotX_I(frequency))))
+
+            DETRUIRE(CONCEPT=_F(NOM=(RotX, RotX_R, RotX_I,)))
+
+        elif BCload == BCtorZ :
+
+            RotZ = RECU_FONCTION(GROUP_NO=('RF', ),
+                                 NOM_CHAM='DEPL',
+                                 NOM_CMP='DRZ',
+                                 RESULTAT=resharm)
+
+            RotZ_R=CALC_FONCTION(EXTRACTION=_F(FONCTION=RotZ, PARTIE='REEL'))
+            RotZ_I=CALC_FONCTION(EXTRACTION=_F(FONCTION=RotZ, PARTIE='IMAG'))
+
+            dataline.append(str(RotZ_R(frequency)/(RotZ_R(frequency)*RotZ_R(frequency)+RotZ_I(frequency)*RotZ_I(frequency))))
+            dataline.append(str(-RotZ_I(frequency)/(RotZ_R(frequency)*RotZ_R(frequency)+RotZ_I(frequency)*RotZ_I(frequency))))
+
+            DETRUIRE(CONCEPT=_F(NOM=(RotZ, RotZ_R, RotZ_I,)))
+
+        else:
+
+            DisplZ = RECU_FONCTION(GROUP_NO=('RF', ),
+                                   NOM_CHAM='DEPL',
+                                   NOM_CMP='DZ',
+                                   RESULTAT=resharm)
+
+            DisplZ_R=CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplZ, PARTIE='REEL'))
+            DisplZ_I=CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplZ, PARTIE='IMAG'))
+
+            dataline.append(str(DisplZ_R(frequency)/(DisplZ_R(frequency)*DisplZ_R(frequency)+DisplZ_I(frequency)*DisplZ_I(frequency))))
+            dataline.append(str(-DisplZ_I(frequency)/(DisplZ_R(frequency)*DisplZ_R(frequency)+DisplZ_I(frequency)*DisplZ_I(frequency))))
+
+            DETRUIRE(CONCEPT=_F(NOM=(DisplZ, DisplZ_R, DisplZ_I,)))
+
+
+
+        #  end displacement/rotations extraction loop: write data line to file
+
+        fileDisp=open('fort.40','a+')
+        fileContent='\t'.join(dataline) + '\n'
+        fileDisp.write(fileContent)
+        fileDisp.close()
+
+   
+
+        DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat)))
+
+
+
+        # 'nddl' seems to be needed in IMPR_RESU() at the end
+        if BCload == BCloads[-1] and freqline == freqlines[-1]:
+            continue
+        else:
+            DETRUIRE(OBJET=_F(CHAINE=('K','Khyst','M','f','nddl')))
+
+    if BCload == BCloads[-1] and freqline == freqlines[-1]:
+            continue
+    else:
+        DETRUIRE(OBJET=_F(CHAINE=('resharm')))
+    
+
+
+
+# ------ END OF SOLUTION LOOP --------
+
+
+
+IMPR_RESU(INFO=2, FORMAT='MED',
+          RESU=_F(PARTIE='REEL',
+                  NOM_CHAM=('DEPL','VITE'),
+                  NOM_CHAM_MED = ('displacement', 'velocity'),
+                  RESULTAT=resharm,),
+                  # FREQ=frequency),
+          UNITE=81)
+
+EH=EHard(0)
+padhard = DEFI_MATERIAU(ELAS=_F(E=EH,
+                                NU=nuPadHard,))
+
+EH=ESoft(0)
+padsoft = DEFI_MATERIAU(ELAS=_F(E=EH,
+                                NU=nuPadSoft,))
+
+fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=hardElem,
+                                  MATER=(padhard, )),
+                               _F(GROUP_MA=softElem,
+                                  MATER=(padsoft, ))),
+                               MAILLAGE=mesh,
+                               MODELE=model)
+
+Comp = AFFE_CHAR_MECA(FORCE_NODALE=_F(FY=-1.0,
+                                      GROUP_NO=('RF', )),
+                      MODELE=model)
+
+BCbot = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
+                                   DY=0.0,
+                                   DZ=0.0,
+                                   GROUP_NO=('botn', )),
+                       MODELE=model)
+
+RFnTop = AFFE_CHAR_MECA(LIAISON_SOLIDE=_F(GROUP_NO=('topn', 'RF', ),
+					    DIST_MIN=1.8,), #Top nodes and RF node are link to be rigid
+                        MODELE=model)
+
+mest1 = MECA_STATIQUE(MODELE = model, 
+                      CHAM_MATER=fieldmat,
+                      CARA_ELEM=RFprop,
+                      EXCIT=(_F(CHARGE=Comp),
+                             _F(CHARGE=BCbot),
+                             _F(CHARGE=RFnTop),
+                            ),
+                      )
+
+t_dY = POST_RELEVE_T(ACTION=_F (INTITULE = 'DEPL',
+                              RESULTAT = mest1,
+                              NOM_CHAM = 'DEPL',
+                              NOM_CMP = ('DY',),
+                              GROUP_NO = 'RF',
+                              OPERATION = 'EXTRACTION' , ) , )
+
+t_dY2 = t_dY.EXTR_TABLE()
+
+dY = t_dY2.DY[0]
+
+stiff= -0.001/dY
+
+fileDisp2=open('fort.41','w')
+fileDisp2.write('Static stiffness in compression: ' + str(stiff) + ' kN/mm')
+fileDisp2.close()
+
+
+FIN()
+
+
+
+
+# ------------------------------------------------------------------------------------------
+
+  Ouverture en écriture du fichier ./vola.1
+
+ <INFO> Démarrage de l'exécution.
+                                                                                
+                                                                                
+              -- CODE_ASTER -- VERSION : EXPLOITATION (stable) --               
+                                                                                
+                     Version 14.4.0 modifiée le 21/08/2019                      
+                 révision 2708712c2a40 - branche 'v14.4_smeca'                  
+                         Copyright EDF R&D 1991 - 2022                          
+                                                                                
+                    Exécution du : Thu Aug 25 15:05:43 2022                     
+                         Nom de la machine : caelinuxVM                         
+                              Architecture : 64bit                              
+                          Type de processeur : x86_64                           
+Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid 
+                        Langue des messages : en (UTF-8)                        
+                                                                                
+                           Version de Python : 3.6.5                            
+                           Version de NumPy : 1.15.1                            
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS2_2>                                                                  !
+   !                                                                                    !
+   !     Vous utilisez une vieille version de Code_Aster.                               !
+   !                                                                                    !
+   !     En mettant à jour votre version, vous bénéficierez des dernières améliorations !
+   !     apportées au code depuis 15 mois.                                              !
+   !     Si vous avez des développements privés, vous risquez d'avoir un travail        !
+   !     important de portage si vous ne suivez pas les mises à jour.                   !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+                           Parallélisme MPI : inactif                           
+                          Parallélisme OpenMP : actif                           
+                        Nombre de processus utilisés : 2                        
+                     Version de la librairie HDF5 : 1.10.3                      
+                      Version de la librairie MED : 4.0.0                       
+                     Version de la librairie MFront : 3.2.1                     
+                     Version de la librairie MUMPS : 5.1.2                      
+                        Librairie PETSc : non disponible                        
+                     Version de la librairie SCOTCH : 6.0.4                     
+
+                  Mémoire limite pour l'exécution : 8062.00 Mo                  
+                   consommée par l'initialisation : 320.72 Mo                   
+                  par les objets du jeu de commandes : 0.00 Mo                  
+                 reste pour l'allocation dynamique : 7740.12 Mo                 
+                Taille limite des fichiers d'échange : 48.00 Go                 
+                                                                                
+   
+   !---------------------------------------------------!
+   ! <I> <SUPERVIS_41>                                 !
+   !                                                   !
+   ! La version 14.4.0 a été modifiée par 1 révisions. !
+   !---------------------------------------------------!
+   
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS_1>                                                                   !
+   !                                                                                    !
+   !  L'utilisation du mot-clé PAR_LOT='NON' permet d'accéder en lecture et en écriture !
+   !  au contenu des concepts Aster. De ce fait, votre étude est exclue du périmètre    !
+   !  qualifié de Code_Aster puisque toutes ses étapes ne peuvent être certifiées.      !
+   !                                                                                    !
+   !  Conseils :                                                                        !
+   !    - Il n'y a pas particulièrement de risque de résultat faux... sauf si votre     !
+   !      programmation l'introduit.                                                    !
+   !    - Distinguez le calcul lui-même (qui doit sans doute passer en PAR_LOT='OUI')   !
+   !      des post-traitements (qui nécessiteraient le mode PAR_LOT='NON') qui peuvent  !
+   !      être réalisés en POURSUITE.                                                   !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+
+  Valeur initiale du temps CPU maximum =   3600900 secondes
+  Valeur du temps CPU maximum passé aux commandes =   3600000 secondes
+  Réserve CPU prévue = 900 secondes
+
+  Ouverture en lecture du fichier ./glob.1
+
+     Nom de la base                          :  GLOBALE
+     Créée avec la version                   :  14.04.00
+     Nombre d'enregistrements utilisés       :  139
+     Nombre d'enregistrements maximum        :  62914
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre d'identificateurs utilisés       :  375
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  18 %
+
+  Ouverture en lecture du fichier ./glob.1
+
+  Ouverture en écriture du fichier ./vola.1
+
+  Fin de lecture (durée  0.000001  s.) 
+
+ Lecture du fichier pick.1...
+
+  La signature de la base relue est conforme à celle attendue (à l'adresse 0) :
+    a8c92cecc7d8964510e479a958beac6bb8ad4100
+
+  Liste des concepts issus de la base :
+    Nom         Type du concept
+    mesh        maillage_sdaster        
+    model       modele_sdaster          
+    BCfix       char_meca               
+    BCfixTop    char_meca               
+    RFprop      cara_elem               
+    RFCtltop    char_meca               
+
+  L'exécution précédente s'est terminée correctement.
+
+.. __stg1_txt30
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0001            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  POURSUITE(PAR_LOT='NON',
+            FORMAT_HDF='NON',
+            IMPR_MACRO='NON',
+            DEBUG=_F(JXVERI='NON',
+                     SDVERI='NON',
+                     JEVEUX='NON',
+                     HIST_ETAPE='NON',),
+            MESURE_TEMPS=_F(NIVE_DETAIL=1,
+                            MOYENNE='NON',),
+            MEMOIRE=_F(TAILLE_BLOC=800.0,
+                       TAILLE_GROUP_ELEM=1000,),
+            RESERVE_CPU=_F(BORNE=900,),
+            CODE='NON',
+            INFO=1,)
+
+  # Mémoire (Mo) :   365.84 /   358.20 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0001   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt51
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0002            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  EtaHard = LIRE_FONCTION(UNITE=39,
+                          NOM_PARA='FREQ',
+                          PROL_DROITE='CONSTANT',
+                          PROL_GAUCHE='CONSTANT',
+                          INDIC_RESU=(1, 2),
+                          FORMAT='LIBRE',
+                          TYPE='FONCTION',
+                          SEPAR='None',
+                          INDIC_PARA=(1, 1),
+                          NOM_RESU='TOUTRESU',
+                          INTERPOL=('LIN', ),
+                          VERIF='CROISSANT',
+                          INFO=1,)
+
+  # Mémoire (Mo) :   365.84 /   358.69 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0002   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt56
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0006            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  EHard = LIRE_FONCTION(UNITE=38,
+                        NOM_PARA='FREQ',
+                        PROL_DROITE='CONSTANT',
+                        PROL_GAUCHE='CONSTANT',
+                        INDIC_RESU=(1, 2),
+                        FORMAT='LIBRE',
+                        TYPE='FONCTION',
+                        SEPAR='None',
+                        INDIC_PARA=(1, 1),
+                        NOM_RESU='TOUTRESU',
+                        INTERPOL=('LIN', ),
+                        VERIF='CROISSANT',
+                        INFO=1,)
+
+  # Mémoire (Mo) :   365.84 /   358.69 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0006   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt61
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0010            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  EtaSoft = LIRE_FONCTION(UNITE=29,
+                          NOM_PARA='FREQ',
+                          PROL_DROITE='CONSTANT',
+                          PROL_GAUCHE='CONSTANT',
+                          INDIC_RESU=(1, 2),
+                          FORMAT='LIBRE',
+                          TYPE='FONCTION',
+                          SEPAR='None',
+                          INDIC_PARA=(1, 1),
+                          NOM_RESU='TOUTRESU',
+                          INTERPOL=('LIN', ),
+                          VERIF='CROISSANT',
+                          INFO=1,)
+
+  # Mémoire (Mo) :   365.84 /   358.69 /     7.60 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0010   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt66
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0014            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  ESoft = LIRE_FONCTION(UNITE=28,
+                        NOM_PARA='FREQ',
+                        PROL_DROITE='CONSTANT',
+                        PROL_GAUCHE='CONSTANT',
+                        INDIC_RESU=(1, 2),
+                        FORMAT='LIBRE',
+                        TYPE='FONCTION',
+                        SEPAR='None',
+                        INDIC_PARA=(1, 1),
+                        NOM_RESU='TOUTRESU',
+                        INTERPOL=('LIN', ),
+                        VERIF='CROISSANT',
+                        INFO=1,)
+
+  # Mémoire (Mo) :   365.84 /   358.69 /     7.60 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0014   user+syst:        0.01s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt73
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0018            Concept de type : char_meca
+  # ------------------------------------------------------------------------------------------
+  BCcomp = AFFE_CHAR_MECA(MODELE=model,
+                          FORCE_NODALE=_F(GROUP_NO=('RF', ),
+                                          FY=-1.0,),
+                          VERI_NORM='OUI',
+                          DOUBLE_LAGRANGE='OUI',
+                          INFO=1,)
+
+  # Mémoire (Mo) :   382.78 /   382.78 /    31.70 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0018   user+syst:        0.03s (syst:        0.02s, elaps:        0.03s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt77
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0019            Concept de type : char_meca
+  # ------------------------------------------------------------------------------------------
+  BCtorX = AFFE_CHAR_MECA(MODELE=model,
+                          FORCE_NODALE=_F(GROUP_NO=('RF', ),
+                                          MX=1.0,),
+                          VERI_NORM='OUI',
+                          DOUBLE_LAGRANGE='OUI',
+                          INFO=1,)
+
+  # Mémoire (Mo) :   385.72 /   384.00 /    34.66 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0019   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt81
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0020            Concept de type : char_meca
+  # ------------------------------------------------------------------------------------------
+  BCtorZ = AFFE_CHAR_MECA(MODELE=model,
+                          FORCE_NODALE=_F(GROUP_NO=('RF', ),
+                                          MZ=1.0,),
+                          VERI_NORM='OUI',
+                          DOUBLE_LAGRANGE='OUI',
+                          INFO=1,)
+
+  # Mémoire (Mo) :   386.95 /   385.23 /    35.89 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0020   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt85
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0021            Concept de type : char_meca
+  # ------------------------------------------------------------------------------------------
+  BCshearZ = AFFE_CHAR_MECA(MODELE=model,
+                            FORCE_NODALE=_F(GROUP_NO=('RF', ),
+                                            FZ=1.0,),
+                            VERI_NORM='OUI',
+                            DOUBLE_LAGRANGE='OUI',
+                            INFO=1,)
+
+  # Mémoire (Mo) :   388.17 /   386.46 /    37.11 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0021   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0022            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=9.24,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.04811,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :   388.17 /   386.46 /    37.11 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0022   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0023            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=9.24,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.04811,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :   388.17 /   386.46 /    37.11 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0023   user+syst:        0.01s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0024            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :   388.17 /   386.87 /    37.11 /    25.96 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0024   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0025            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCcomp, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.81      0.08      0.81
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     27.24      0.33     27.31
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.58      0.01      0.59
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.27      0.10      0.27
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.55      0.03      0.55
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.25      0.07      0.27
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.38      0.01      0.45
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.04      0.02      0.03
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.00      0.02
+  # Mémoire (Mo) :  1022.29 /  1022.29 /   629.87 /   252.79 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0025   user+syst:       30.18s (syst:        0.65s, elaps:       30.34s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt198
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0035            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(1.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 1.00000e+00
+    >> fréquence maximale : 1.00000e+00
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+[100%] Fréquence calculée : 1.00000e+00, archivée au numéro d'ordre :     1
+
+======================================================================================
+                                                                        Fin du calcul
+
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    138.70     31.74    146.64
+  # Mémoire (Mo) :  7026.01 /  1011.50 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0035   user+syst:      139.06s (syst:       31.85s, elaps:      147.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt231
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0036            Concept de type : fonction_c
+  # ------------------------------------------------------------------------------------------
+  DisplY = RECU_FONCTION(RESULTAT=resharm,
+                         NOM_CHAM='DEPL',
+                         NOM_CMP='DY',
+                         GROUP_NO='RF',
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /  1011.50 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0036   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt233
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0037            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  DisplY_R = CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY,
+                                         PARTIE='REEL',),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /  1011.50 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0037   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt234
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0039            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  DisplY_I = CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY,
+                                         PARTIE='IMAG',),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /  1011.50 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0039   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt240
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0041            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(DisplY, DisplY_R, DisplY_I),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /  1011.50 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0041   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt298
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0042            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /  1011.50 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0042   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt306
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0043            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('K', 'Khyst', 'M', 'f', 'nddl'),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /   786.44 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0043   user+syst:        0.05s (syst:        0.01s, elaps:        0.04s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0044            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=9.981,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.06017,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7026.01 /   786.44 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0044   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0045            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=9.981,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.06017,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7026.01 /   786.44 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0045   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0046            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7026.01 /   786.44 /   785.36 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0046   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0047            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCcomp, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.75      0.06      0.91
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     22.45      0.34     22.50
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.52      0.03      0.52
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.25      0.08      0.26
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.67      0.05      0.67
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.21      0.06      0.24
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.35      0.02      0.36
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.00      0.02
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.00      0.03
+  # Mémoire (Mo) :  7026.01 /  1337.03 /   936.09 /   265.05 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0047   user+syst:       25.29s (syst:        0.64s, elaps:       25.54s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt214
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0057            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(reuse=resharm,
+                       BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       RESULTAT=resharm,
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(10.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 1.00000e+01
+    >> fréquence maximale : 1.00000e+01
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+[100%] Fréquence calculée : 1.00000e+01, archivée au numéro d'ordre :     1
+
+======================================================================================
+                                                                        Fin du calcul
+
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    212.55     32.87    215.07
+  # Mémoire (Mo) :  7332.70 /  1317.09 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0057   user+syst:      212.84s (syst:       32.96s, elaps:      215.37s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt231
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0058            Concept de type : fonction_c
+  # ------------------------------------------------------------------------------------------
+  DisplY = RECU_FONCTION(RESULTAT=resharm,
+                         NOM_CHAM='DEPL',
+                         NOM_CMP='DY',
+                         GROUP_NO='RF',
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1317.09 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0058   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt233
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0059            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  DisplY_R = CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY,
+                                         PARTIE='REEL',),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1317.09 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0059   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt234
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0061            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  DisplY_I = CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY,
+                                         PARTIE='IMAG',),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1317.09 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0061   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt240
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0063            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(DisplY, DisplY_R, DisplY_I),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1317.09 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0063   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt298
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0064            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1317.09 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0064   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt306
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0065            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('K', 'Khyst', 'M', 'f', 'nddl'),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1092.04 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0065   user+syst:        0.06s (syst:        0.02s, elaps:        0.06s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0066            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=10.62,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.08131,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7332.70 /  1092.04 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0066   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0067            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=10.62,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.08131,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7332.70 /  1092.04 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0067   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0068            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7332.70 /  1092.04 /  1091.57 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0068   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0069            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCcomp, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.66      0.05      0.68
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     14.71      0.26     14.93
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.46      0.01      0.46
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.24      0.07      0.25
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.47      0.02      0.48
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.21      0.04      0.23
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.35      0.02      0.36
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.00      0.02
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.00      0.03
+  # Mémoire (Mo) :  7332.70 /  1643.68 /  1242.30 /   265.08 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0069   user+syst:       17.18s (syst:        0.47s, elaps:       17.46s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt214
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0079            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(reuse=resharm,
+                       BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       RESULTAT=resharm,
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(30.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 3.00000e+01
+    >> fréquence maximale : 3.00000e+01
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+[100%] Fréquence calculée : 3.00000e+01, archivée au numéro d'ordre :     1
+
+======================================================================================
+                                                                        Fin du calcul
+
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    167.30     35.51    173.13
+  # Mémoire (Mo) :  7443.59 /  1622.94 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0079   user+syst:      167.56s (syst:       35.60s, elaps:      173.40s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt231
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0080            Concept de type : fonction_c
+  # ------------------------------------------------------------------------------------------
+  DisplY = RECU_FONCTION(RESULTAT=resharm,
+                         NOM_CHAM='DEPL',
+                         NOM_CMP='DY',
+                         GROUP_NO='RF',
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1622.94 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0080   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt233
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0081            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  DisplY_R = CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY,
+                                         PARTIE='REEL',),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1622.94 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0081   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt234
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0083            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  DisplY_I = CALC_FONCTION(EXTRACTION=_F(FONCTION=DisplY,
+                                         PARTIE='IMAG',),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1622.94 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0083   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt240
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0085            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(DisplY, DisplY_R, DisplY_I),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1622.94 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0085   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt298
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0086            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1622.94 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0086   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt306
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0087            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('K', 'Khyst', 'M', 'f', 'nddl'),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1397.88 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0087   user+syst:        0.04s (syst:        0.01s, elaps:        0.04s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt311
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0088            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('resharm', ),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1371.13 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0088   user+syst:        0.02s (syst:        0.01s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0089            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=9.24,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.04811,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7443.59 /  1371.13 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0089   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0090            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=9.24,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.04811,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7443.59 /  1371.13 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0090   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0091            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7443.59 /  1371.13 /  1397.78 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0091   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0092            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCtorX, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.74      0.06      1.02
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     16.91      0.30     18.14
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.44      0.02      0.45
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.23      0.07      0.26
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.50      0.02      0.55
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.19      0.04      0.17
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.34      0.01      0.35
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.00      0.02
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.00      0.03
+  # Mémoire (Mo) :  7443.59 /  1923.54 /  1521.75 /   265.11 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0092   user+syst:       19.40s (syst:        0.52s, elaps:       21.03s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt198
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0102            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(1.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 1.00000e+00
+    >> fréquence maximale : 1.00000e+00
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+[100%] Fréquence calculée : 1.00000e+00, archivée au numéro d'ordre :     1
+
+======================================================================================
+                                                                        Fin du calcul
+
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    144.23     29.58    146.72
+  # Mémoire (Mo) :  7469.89 /  1902.92 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0102   user+syst:      144.48s (syst:       29.67s, elaps:      146.99s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt247
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0103            Concept de type : fonction_c
+  # ------------------------------------------------------------------------------------------
+  RotX = RECU_FONCTION(RESULTAT=resharm,
+                       NOM_CHAM='DEPL',
+                       NOM_CMP='DRX',
+                       GROUP_NO='RF',
+                       INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1902.92 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0103   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt249
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0104            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  RotX_R = CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX,
+                                       PARTIE='REEL',),
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1902.92 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0104   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt250
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0106            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  RotX_I = CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX,
+                                       PARTIE='IMAG',),
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1902.92 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0106   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt255
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0108            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(RotX, RotX_R, RotX_I),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1902.92 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0108   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt298
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0109            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1902.92 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0109   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt306
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0110            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('K', 'Khyst', 'M', 'f', 'nddl'),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1677.86 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0110   user+syst:        0.04s (syst:        0.01s, elaps:        0.05s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0111            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=9.981,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.06017,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7469.89 /  1677.86 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0111   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0112            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=9.981,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.06017,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7469.89 /  1677.86 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0112   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0113            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7469.89 /  1677.86 /  1677.24 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0113   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0114            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCtorX, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.74      0.06      0.78
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     15.00      0.29     15.19
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.45      0.02      0.46
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.24      0.07      0.27
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.55      0.03      0.58
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.20      0.05      0.21
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.34      0.02      0.36
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.01      0.00      0.02
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.00      0.02
+  # Mémoire (Mo) :  7469.89 /  2230.14 /  1827.96 /   265.14 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0114   user+syst:       17.60s (syst:        0.55s, elaps:       17.92s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt214
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0124            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(reuse=resharm,
+                       BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       RESULTAT=resharm,
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(10.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 1.00000e+01
+    >> fréquence maximale : 1.00000e+01
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+[100%] Fréquence calculée : 1.00000e+01, archivée au numéro d'ordre :     1
+
+======================================================================================
+                                                                        Fin du calcul
+
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    151.43     30.26    157.17
+  # Mémoire (Mo) :  7498.44 /  2209.94 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0124   user+syst:      151.74s (syst:       30.38s, elaps:      157.51s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt247
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0125            Concept de type : fonction_c
+  # ------------------------------------------------------------------------------------------
+  RotX = RECU_FONCTION(RESULTAT=resharm,
+                       NOM_CHAM='DEPL',
+                       NOM_CMP='DRX',
+                       GROUP_NO='RF',
+                       INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2209.94 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0125   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt249
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0126            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  RotX_R = CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX,
+                                       PARTIE='REEL',),
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2209.94 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0126   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt250
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0128            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  RotX_I = CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX,
+                                       PARTIE='IMAG',),
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2209.94 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0128   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt255
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0130            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(RotX, RotX_R, RotX_I),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2209.94 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0130   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt298
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0131            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2209.94 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0131   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt306
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0132            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('K', 'Khyst', 'M', 'f', 'nddl'),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  1984.88 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0132   user+syst:        0.03s (syst:        0.00s, elaps:        0.05s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0133            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=10.62,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.08131,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7498.44 /  1984.88 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0133   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0134            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=10.62,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.08131,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7498.44 /  1984.88 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0134   user+syst:        0.02s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0135            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  1984.88 /  1983.45 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0135   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0136            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCtorX, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.75      0.06      0.93
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     15.34      0.27     15.92
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.47      0.02      0.48
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.23      0.07      0.21
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.52      0.03      0.66
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.18      0.04      0.15
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.36      0.01      0.43
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.00      0.02
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.00      0.03
+  # Mémoire (Mo) :  7498.44 /  2536.78 /  2134.17 /   265.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0136   user+syst:       17.92s (syst:        0.50s, elaps:       18.86s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt214
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0146            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(reuse=resharm,
+                       BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       RESULTAT=resharm,
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(30.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 3.00000e+01
+    >> fréquence maximale : 3.00000e+01
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+ ** ERROR RETURN ** FROM ZMUMPS INFO(1)=  -13
+ ** INFO(2)=       305638127
+[100%] Fréquence calculée : 3.00000e+01, archivée au numéro d'ordre :     1
+
+======================================================================================
+                                                                        Fin du calcul
+
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    192.94     33.54    196.34
+  # Mémoire (Mo) :  7498.44 /  2651.03 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0146   user+syst:      193.26s (syst:       33.67s, elaps:      196.72s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt247
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0147            Concept de type : fonction_c
+  # ------------------------------------------------------------------------------------------
+  RotX = RECU_FONCTION(RESULTAT=resharm,
+                       NOM_CHAM='DEPL',
+                       NOM_CMP='DRX',
+                       GROUP_NO='RF',
+                       INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2651.03 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0147   user+syst:        0.00s (syst:        0.00s, elaps:        0.05s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt249
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0148            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  RotX_R = CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX,
+                                       PARTIE='REEL',),
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2651.03 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0148   user+syst:        0.01s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt250
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0150            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  RotX_I = CALC_FONCTION(EXTRACTION=_F(FONCTION=RotX,
+                                       PARTIE='IMAG',),
+                         INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2651.03 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0150   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt255
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0152            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(RotX, RotX_R, RotX_I),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2651.03 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0152   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt298
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0153            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(padsoft, padhard, fieldmat),),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2651.03 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0153   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt306
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0154            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('K', 'Khyst', 'M', 'f', 'nddl'),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2425.98 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0154   user+syst:        0.04s (syst:        0.01s, elaps:        0.05s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt311
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0155            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(OBJET=_F(CHAINE=('resharm', ),
+                    CLASSE='G',),
+           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2399.22 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0155   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt152
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0156            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=9.24,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.04811,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7498.44 /  2399.22 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0156   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt160
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0157            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=9.24,
+                                  NU=0.3,
+                                  RHO=1.E-09,
+                                  AMOR_HYST=0.04811,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :  7498.44 /  2399.22 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0157   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt167
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0158            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('hard', ),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft', ),
+                                    MATER=(padsoft, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :  7498.44 /  2399.22 /  2289.66 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0158   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt182
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0159            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  ASSEMBLAGE(MODELE=model,
+             CHAM_MATER=fieldmat,
+             CARA_ELEM=RFprop,
+             CHARGE=(BCfix, RFCtltop),
+             NUME_DDL=CO(nddl),
+             MATR_ASSE=(_F(MATRICE=CO(K),
+                           OPTION='RIGI_MECA',
+                           MODE_FOURIER=0,),
+                        _F(MATRICE=CO(Khyst),
+                           OPTION='RIGI_MECA_HYST',),
+                        _F(MATRICE=CO(M),
+                           OPTION='MASS_MECA',),
+                        ),
+             VECT_ASSE=_F(VECTEUR=CO(f),
+                          OPTION='CHAR_MECA',
+                          CHARGE=(BCtorZ, ),
+                          MODE_FOURIER=0,),
+             INST=0.0,
+             INFO=1,)
+
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.69      0.05      0.79
+  Le système linéaire à résoudre a 194667 degrés de liberté:
+   - 96219 sont des degrés de liberté physiques
+     (ils sont portés par 32072 noeuds du maillage)
+   - 98448 sont les couples de paramètres de Lagrange associés
+     aux 49224 relations linéaires dualisées.
+  La matrice est de taille 194667 équations.
+  Elle contient 6902145 termes non nuls si elle est symétrique et 13609623 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.036 %.
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     15.18      0.27     15.32
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.44      0.01      0.45
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.22      0.09      0.20
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.53      0.03      0.55
+   
+   !---------------------------------------------------------------------------------------------------!
+   ! <A> <DISCRETS_26>                                                                                 !
+   !                                                                                                   !
+   ! Vous utilisez la matrice de MASSE pour un discret MECA_DIS_TR_N alors que vous n'avez pas affecté !
+   ! les caractéristiques de masses. Par défaut la masse est nulle.                                    !
+   ! Il faut vérifier les affectations sous AFFE_CARA_ELEM/DISCRET.                                    !
+   ! Informations :                                                                                    !
+   !    Maille de nom M1, de 1 noeud(s).                                                               !
+   !    Nom et coordonnées des noeuds :                                                                !
+   !         N32072    0.00000E+00    1.00000E+01    0.00000E+00                                       !
+   !                                                                                                   !
+   !                                                                                                   !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                                    !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                                            !
+   !---------------------------------------------------------------------------------------------------!
+   
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.21      0.07      0.22
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.35      0.01      0.37
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.01      0.00      0.02
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.00      0.03
+  # Mémoire (Mo) :  7498.44 /  2949.97 /  2413.62 /   265.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0159   user+syst:       17.69s (syst:        0.53s, elaps:       17.97s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt198
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0169            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resharm = DYNA_VIBRA(BASE_CALCUL='PHYS',
+                       TYPE_CALCUL='HARM',
+                       MODELE=model,
+                       CHAM_MATER=fieldmat,
+                       CARA_ELEM=RFprop,
+                       MATR_MASS=M,
+                       MATR_RIGI=Khyst,
+                       FREQ=(1.0, ),
+                       NOM_CHAM=('DEPL', 'VITE', 'ACCE'),
+                       EXCIT=_F(VECT_ASSE=f,
+                                COEF_MULT=1.0,
+                                PHAS_DEG=0.0,
+                                PUIS_PULS=0,),
+                       SOLVEUR=_F(METHODE='MUMPS',
+                                  RENUM='METIS',
+                                  PCENT_PIVOT=150,
+                                  NPREC=8,
+                                  ELIM_LAGR='LAGR2',
+                                  STOP_SINGULIER='OUI',
+                                  TYPE_RESOL='AUTO',
+                                  ACCELERATION='AUTO',
+                                  LOW_RANK_SEUIL=0.0,
+                                  PRETRAITEMENTS='AUTO',
+                                  POSTTRAITEMENTS='AUTO',
+                                  RESI_RELA=-1.0,
+                                  GESTION_MEMOIRE='AUTO',),
+                       )
+
+
+--------------------------------------------------------------------------------------
+
+D Y N A _ V I B R A
+=====================================================================================
+                     Calcul HARMonique sur base PHYSique
+=====================================================================================
+
+Modèle physique
+--------------------------------------------------------------------------------------
+    >> modèle mécanique : model
+    >> nombre de DDL physiques : 194667
+
+Matrices dynamiques pour la résolution
+--------------------------------------------------------------------------------------
+    >> matrice de masse        : M
+    >> matrice de rigidité     : Khyst
+    >> système conservatif, sans amortissement.
+
+Résolution
+--------------------------------------------------------------------------------------
+    >> fréquence minimale : 1.00000e+00
+    >> fréquence maximale : 1.00000e+00
+    >> nombre de fréquences calculées : 1
+
+Archivage
+--------------------------------------------------------------------------------------
+    >> fréquences archivées : toutes (1 fréquences)
+    >> champs archivés      : DEPL  VITE  ACCE
+
+======================================================================================
+
+Avancement du calcul
+--------------------------------------------------------------------------------------
+
+ <I>_EXIT_CODE = 2

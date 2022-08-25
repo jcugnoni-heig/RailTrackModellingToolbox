@@ -7,6 +7,7 @@ meshesDir=./Meshes/
 materialsDir=./Materials_properties/
 messagesDir=./messages/
 TERMCMD="xterm -e"
+TERMCMDHOLD="xterm -hold  -e"
 ASRUNPATH=/opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run
 PYTHONPATH=python
 SALOMEPATH=/opt/SalomeMeca/appli_V2019_univ/salome
@@ -137,11 +138,15 @@ fi
 
 ## Check if phase 1 needs to be run
 ## temp is the mesh for next simu. gen3Sleeper is the mesh of last simu
-if [[ $(stat -c%s "./temp.mesh.med") -eq $(stat -c%s "./gen3Sleeper.mesh.med") ]]; then
- runPhase1=False
-else
- runPhase1=True
-fi
+runPhase1=True
+
+## NOTE uncomment the following line to avoid recomputing the phase 1 (model buildup) when not necessary
+#if [[ $(stat -c%s "./temp.mesh.med") -eq $(stat -c%s "./gen3Sleeper.mesh.med") ]]; then
+# runPhase1=False
+#else
+# runPhase1=True
+#fi
+
 cp "./temp.mesh.med" "./gen3Sleeper.mesh.med"
 rm "./temp.mesh.med"
 # gen3Sleeper.mesh.med is now the FE mesh file for the coming simu

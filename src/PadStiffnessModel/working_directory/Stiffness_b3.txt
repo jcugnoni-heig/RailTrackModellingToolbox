@@ -1,0 +1,9 @@
+FREQ [Hz]	vertical stiffness Real [N/mm]	vertical stiffness Imanginary [N/mm]	
+460.0	26585.087332652165	2286.7389912507856
+620.0	26923.568152531258	1890.987309247207
+800.0	26933.470363124816	2854.047427231694
+FREQ [Hz]	stiffness around X Real [Nmm/rad]	stiffness around X Imanginary [Nmm/rad]	
+460.0	71763389.1158876	6176190.45530442
+620.0	72645111.40179747	5107360.084551646
+800.0	72623146.85214412	7708665.2947094785
+FREQ [Hz]	stiffness around Z Real [Nmm/rad]	stiffness around Z Imanginary [Nmm/rad]	
