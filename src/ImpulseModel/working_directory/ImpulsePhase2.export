@@ -20,7 +20,7 @@ P noeud caelinux
 P nomjob ImpulsePhase2
 P origine ASTK 2020.0.final
 P platform LINUX64
-P profastk caelinux@caelinux:/home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/ImpulsePhase2.astk
+P profastk caelinux@caelinux:/opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/ImpulsePhase2.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
@@ -36,23 +36,23 @@ P version stable
 A args 
 A memjeveux 1257.75
 A tpmax 3600900.0
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/GeneralizedMaxwell.mfront D  10
-R base /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/base1 DC 0
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/E_mx1.csv D  20
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/poisson_mx1.csv D  21
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/density_mx1.csv D  22
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/K_mx1.csv D  23
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/G_mx1.csv D  24
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/tau_mx1.csv D  25
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/E_mx2.csv D  26
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/poisson_mx2.csv D  27
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/density_mx2.csv D  28
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/K_mx2.csv D  29
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/G_mx2.csv D  30
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/tau_mx2.csv D  31
-F comm /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/ImpulsePhase2.comm D  1
-F mess /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/messages/messageImpulsePhase2.mess R  6
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/Resultats_impulse.txt R  40
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/Resultats_ballast_impulse_INVAR.txt R  8
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/Resultats_ballast_impulse_SGIM.txt R  9
-F libr /home/caelinux/RailtrackModellingToolbox/src/ImpulseModel/working_directory/resultImpulse.res.med R  81
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/GeneralizedMaxwell.mfront D  10
+R base /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/base1 DC 0
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/E_mx1.csv D  20
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/poisson_mx1.csv D  21
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/density_mx1.csv D  22
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/K_mx1.csv D  23
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/G_mx1.csv D  24
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/tau_mx1.csv D  25
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/E_mx2.csv D  26
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/poisson_mx2.csv D  27
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/density_mx2.csv D  28
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/K_mx2.csv D  29
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/G_mx2.csv D  30
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/tau_mx2.csv D  31
+F comm /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/ImpulsePhase2.comm D  1
+F mess /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/messages/messageImpulsePhase2.mess R  6
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/Resultats_impulse.txt R  40
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/Resultats_ballast_impulse_INVAR.txt R  8
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/Resultats_ballast_impulse_SGIM.txt R  9
+F libr /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/resultImpulse.res.med R  81

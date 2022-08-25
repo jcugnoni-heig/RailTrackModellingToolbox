@@ -6,7 +6,7 @@ option,ORBInitRef 0
 etude,fich,4,donnee 0
 option,nbmaxnook 1
 etude,fich,2,resultat 0
-nom_fich_export /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3sleeper.export
+nom_fich_export /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3sleeper.export
 option,rep_dex 0
 etude,fich,4,compress 0
 etude oui
@@ -16,7 +16,7 @@ etude,fich,4,serv Local
 etude,fich,3,donnee 1
 surcharge,nbfic 0
 serv_fich_export -1
-path_etude /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh
+path_etude /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh
 option,rep_outils 0
 etude,fich,3,resultat 0
 option,cpresok 1
@@ -51,7 +51,7 @@ make_etude run
 option,depart 1
 option,only_nook 1
 args _VIDE
-nom_profil /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3sleeper.astk
+nom_profil /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3sleeper.astk
 opt_val,ORBInitRef _VIDE
 etude,fich,0,donnee 1
 etude,fich,3,serv Local

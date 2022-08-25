@@ -35,8 +35,8 @@ P version stable
 A args 
 A memjeveux 625.0
 A tpmax 900.0
-F comm /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3Sleeper.comm D  1
-F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/importedPad.mesh.med D  3
-F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/base3Sleeper.med D  2
-F mess /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3Sleeper.mess R  6
-F rmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/ThreeSleeperMesh.mesh.med R  80
+F comm /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3Sleeper.comm D  1
+F mmed /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/importedPad.mesh.med D  3
+F mmed /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/base3Sleeper.med D  2
+F mess /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/gen3Sleeper.mess R  6
+F rmed /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/Generate3SleeperMesh/ThreeSleeperMesh.mesh.med R  80

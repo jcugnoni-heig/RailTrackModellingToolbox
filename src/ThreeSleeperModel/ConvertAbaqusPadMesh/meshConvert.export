@@ -19,7 +19,7 @@ P noeud localhost
 P nomjob meshConvert
 P origine ASTK 2017.0
 P platform Linux64
-P profastk caelinux@caelinux:/home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.astk
+P profastk caelinux@caelinux:/opt/RailTrackModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
@@ -35,7 +35,7 @@ P version stable
 A args 
 A memjeveux 189.0
 A tpmax 900.0
-F mail /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/all.mail D  71
-F comm /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.comm D  1
-F mmed /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/importedPad.mesh.med R  72
-F mess /home/cae/Documents/Railpad2/ModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.mess R  6
+F mail /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/all.mail D  71
+F comm /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.comm D  1
+F mmed /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/importedPad.mesh.med R  72
+F mess /opt/RailTrackModellingToolbox/src/ThreeSleeperModel/ConvertAbaqusPadMesh/meshConvert.mess R  6
