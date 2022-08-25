@@ -84,10 +84,11 @@ The first folder contain the documentation of the toolbox: description of the mo
 The easiest way to start using the toolbox is to download and use the *Toolbox-VM* virtual machine container.
 
 If you decide to install "from scratch", you will need to have first a working installation of all the prerequisites (see src/INSTALL, src/dependencies.txt and src/installDependencies.sh) and then run the setup.sh script in the root of the toolbox:
-'''
+
 > cd PathToToolBox
+> 
 > ./setup.sh
-'''
+
 
 Once installed, the best way to start using the model is to use the GUI provided for each model. Part of the documentation describes the steps to follow in order to run a simulation with the selected model.
 
