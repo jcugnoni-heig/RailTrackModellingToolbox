@@ -79,9 +79,9 @@ Download link to the virtual machine image: Coming soon...
 
 This repository contain three folders: *Documentation*, *src* and *Toolbox-VM*. 
 
-The first folder contain the documentation of the toolbox: description of the models, how to use the interface and so on. The second folder, *src*, contain the individual models. The last folder, *Toolbox-VM*, contain a virtual machine container with the whole toolbox ready to be used on any Linux distribution.
+The first folder contain the documentation of the toolbox: description of the models, how to use the interface and so on. The second folder, *src*, contain the individual models. The last folder, *Toolbox-VM*, contain a ISO image of a customized CAELinux/Ubuntu 18.04 environment with the whole toolbox ready to be used. 
 
-The easiest way to start using the toolbox is to download and use the *Toolbox-VM* virtual machine container.
+The easiest way to start using the toolbox is to download and use the *ISO* image in *Toolbox-VM*. This image can be used to create a bootable USB disk (using Ventoy https://www.ventoy.net is recommended) in order to boot and install the OS + toolbox on a physical PC. Or even simpler, the ISO image can be used directly to install a Virtual Machine, on any OS, for example in VMware player https://www.vmware.com/fr/products/workstation-player.html.
 
 If you decide to install "from scratch", you will need to have first a working installation of all the prerequisites (see src/INSTALL, src/dependencies.txt and src/installDependencies.sh) and then run the setup.sh script in the root of the toolbox:
 
