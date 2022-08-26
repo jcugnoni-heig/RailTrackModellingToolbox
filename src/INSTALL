@@ -13,11 +13,25 @@ Its default path is set to "/opt/CLCX-caelinux64/bin/cgx2.12"
 
 PLEASE READ dependencies.txt and installDependencies.sh for more details.
 
+--- Download and Installation ---
+
+Option 1: Download directly using the git command:
+
+git clone https://github.com/jcugnoni-heig/RailTrackModellingToolbox.git
+
+then 
+
+cd RailTrackModellingToolbox
+./setup.sh
+
+(this scrip adapt all paths for the Code-Aster models and make sure that the all the installed directories and files can be written by the users)
+
+Option 2: Download the archived Zip code from GitHub.com
+then unzip the toolbox and run ./setup.sh in the toolbox root directory 
 
 --- Setting the Model paths for your own installation ---
 The Code-Aster models included in the toolbox use absolute paths to locate the different files, and thus you will need to adapt some files to match your installation.
-In each folder containing the models , you will find a "changePath.sh" script that you can run to update the file paths to match your current install.
-You can locate all those scripts by running find -iname changePath.sh  in the root of the toolbox. Then just "cd" to each model directory and run ./changePath.sh to update the settings.
+Note also, that if you move a single model to another directory, there is in each folder containing the models a  "changePath.sh" script that you can run to update the file paths to match your current install.
 Also some other scripts (".sh" extension) may contain harcoded paths, so make sure to review them and adapt them to your installation.
 
 
