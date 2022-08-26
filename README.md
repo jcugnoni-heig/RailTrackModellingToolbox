@@ -35,6 +35,8 @@ This toolbox is composed of four finite element models and one semi-analytical m
 4. The *Impulse* Model
 5. The *Multi-Sleepers* Model
 
+![Railtrack Modelling Toolbox Overview](./src/RailTrackModellingToolbox.png?raw=true "Toolbox Overview")
+
 Each model can be found separately in the *src* directory. Alternatively the full toolbox can be downloaded as a Virtual Machine container and run on any Linux distribution.
 
 A overview of each model is presented in the following paragraphs, please refer to the specific chapter in the documentation for more information on the models.
