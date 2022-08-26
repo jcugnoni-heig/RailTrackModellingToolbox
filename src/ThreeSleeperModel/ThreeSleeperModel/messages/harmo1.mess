@@ -286,7 +286,7 @@ FIN()
                 the revision 2708712c2a40 - branch  v14.4_smeca                 
                         Copyright EDF R & D 1991 - 2022                         
                                                                                 
-                    Exécution of:  Thu Aug 25 14:53:26 2022                     
+                    Exécution of:  Thu Aug 25 18:41:44 2022                     
                         Name of the machine:  caelinuxVM                        
                                Structure:  64bit                                
                                CPU type:  x86_64                                
@@ -322,9 +322,9 @@ FIN()
                      Version of the SCOTCH library : 6.0.4                      
 
                  Mémoire limite pour l'exécution : 12000.00 Mo                  
-                   consommée par l'initialisation : 277.94 Mo                   
+                   consommée par l'initialisation : 280.71 Mo                   
                   par les objets du jeu de commandes : 0.00 Mo                  
-                reste pour l'allocation dynamique : 11719.09 Mo                 
+                reste pour l'allocation dynamique : 11716.41 Mo                 
                    Cut limiting files of exchange:  48.00 Go                    
                                                                                 
 
@@ -412,9 +412,9 @@ FIN()
 
  Second reading of the catalogues of the elements made. 
 
- End of reading (lasted 0.495648 S.)   
-  # Memory (Mo):    304.12 /    290.43 /     22.92 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0001 user+syst:          0.51S (syst:          0.51S, Elaps:          0.52S)
+ End of reading (lasted 0.086785 S.)   
+  # Memory (Mo):    306.80 /    293.10 /     22.92 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0001 user+syst:          0.07S (syst:          0.06S, Elaps:          0.10S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt13
@@ -541,8 +541,8 @@ NOMBRE DE GROUPES DE MAILLES              74
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    320.59 /    292.66 /     38.21 /     38.20 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0002 user+syst:          0.46S (syst:          0.08S, Elaps:          0.47S)
+  # Memory (Mo):    323.23 /    295.21 /     38.21 /     38.20 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0002 user+syst:          0.32S (syst:          0.05S, Elaps:          0.32S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt34
@@ -19363,9 +19363,9 @@ M150279  M150280  M150281  M150282  M150283  M150284  M150285  M150286
 M150287  M150288  M150289  M150290  M150291  M150292  M150293  M150294 
 M150295  M150296  M150297  M150298  M150299  M150300  M150301  M150302 
 M150303  M150304  M150305  M150306                                     
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.11      0.03      0.11
-  # Memory (Mo):    375.52 /    329.74 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0004 user+syst:          4.16S (syst:          0.38S, Elaps:          4.18S)
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.09      0.03      0.09
+  # Memory (Mo):    378.19 /    332.46 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0004 user+syst:          3.33S (syst:          0.57S, Elaps:          3.46S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt63
@@ -19381,8 +19381,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.09 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0005 user+syst:          2.64S (syst:          0.96S, Elaps:          2.65S)
+  # Memory (Mo):    378.19 /    334.78 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0005 user+syst:          2.19S (syst:          0.91S, Elaps:          2.19S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt109
@@ -19398,8 +19398,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.49 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0006 user+syst:          0.71S (syst:          0.30S, Elaps:          0.71S)
+  # Memory (Mo):    378.19 /    335.07 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0006 user+syst:          0.53S (syst:          0.22S, Elaps:          0.55S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt114
@@ -19415,8 +19415,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.72 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0007 user+syst:          0.56S (syst:          0.14S, Elaps:          0.56S)
+  # Memory (Mo):    378.19 /    335.31 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0007 user+syst:          0.41S (syst:          0.11S, Elaps:          0.42S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt120
@@ -19432,8 +19432,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0008 user+syst:          0.48S (syst:          0.09S, Elaps:          0.48S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0008 user+syst:          0.38S (syst:          0.07S, Elaps:          0.39S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt128
@@ -19449,8 +19449,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0009 user+syst:          3.23S (syst:          1.90S, Elaps:          3.23S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0009 user+syst:          2.71S (syst:          1.81S, Elaps:          2.71S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt136
@@ -19466,8 +19466,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0010 user+syst:          3.18S (syst:          1.87S, Elaps:          3.20S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0010 user+syst:          2.55S (syst:          1.63S, Elaps:          2.55S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt144
@@ -19483,8 +19483,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0011 user+syst:          3.15S (syst:          1.94S, Elaps:          3.15S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0011 user+syst:          2.54S (syst:          1.59S, Elaps:          2.55S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt152
@@ -19500,8 +19500,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0012 user+syst:          3.18S (syst:          1.96S, Elaps:          3.19S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0012 user+syst:          2.55S (syst:          1.65S, Elaps:          2.55S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt161
@@ -19517,8 +19517,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0013 user+syst:          3.36S (syst:          2.04S, Elaps:          3.37S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0013 user+syst:          2.53S (syst:          1.67S, Elaps:          2.53S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt169
@@ -19534,8 +19534,8 @@ M150303  M150304  M150305  M150306
                         DOUBLE_LAGRANGE='OUI',
                         INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0014 user+syst:          3.25S (syst:          1.96S, Elaps:          3.26S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0014 user+syst:          2.55S (syst:          1.54S, Elaps:          2.56S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt177
@@ -19551,8 +19551,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0015 user+syst:          4.11S (syst:          2.58S, Elaps:          4.11S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0015 user+syst:          3.33S (syst:          2.13S, Elaps:          3.33S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt185
@@ -19568,8 +19568,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0016 user+syst:          4.11S (syst:          2.55S, Elaps:          4.12S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0016 user+syst:          3.48S (syst:          2.29S, Elaps:          3.48S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt193
@@ -19585,8 +19585,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0017 user+syst:          4.31S (syst:          2.79S, Elaps:          4.33S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0017 user+syst:          3.38S (syst:          2.16S, Elaps:          3.38S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt201
@@ -19602,8 +19602,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0018 user+syst:          4.32S (syst:          2.74S, Elaps:          4.32S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0018 user+syst:          3.48S (syst:          2.25S, Elaps:          3.48S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt209
@@ -19619,8 +19619,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0019 user+syst:          4.10S (syst:          2.73S, Elaps:          4.12S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0019 user+syst:          3.32S (syst:          2.22S, Elaps:          3.33S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt217
@@ -19636,8 +19636,8 @@ M150303  M150304  M150305  M150306
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    375.52 /    332.96 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0020 user+syst:          4.09S (syst:          2.61S, Elaps:          4.10S)
+  # Memory (Mo):    378.19 /    335.55 /     59.55 /     55.07 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0020 user+syst:          3.34S (syst:          2.15S, Elaps:          3.34S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt271
@@ -19730,7 +19730,7 @@ M150303  M150304  M150305  M150306
  <I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
 
  The memory requested from launching is over-estimated, it is of 12000.00 Mo. 
- The peak report used is of 381.67 Mo. 
+ The peak report used is of 384.34 Mo. 
  
 
 
@@ -19748,7 +19748,7 @@ M150303  M150304  M150305  M150306
   
  <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                      55.07 Mo
  <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                      65.38 Mo
- <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :     381.67 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :     384.34 Mo
   
  <I>       FERMETURE DES BASES EFFECTUEE
   
@@ -19768,55 +19768,55 @@ M150303  M150304  M150305  M150306
    MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :      65.38 Mo
      - LIMITE LES ACCES DISQUE
      - AMELIORE LA VITESSE D'EXECUTION
-   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :     381.67 Mo
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :     384.34 Mo
      - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX, 
        LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
   
- <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 14:54:20
+ <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 18:42:27
 
 
   <I> Informations sur les temps d'exécution
-      Temps cpu user total                   24.26 s
-      Temps cpu systeme total                30.29 s
-      Temps elapsed total                    54.71 s
-      Temps restant                       17945.29 s
+      Temps cpu user total                   18.19 s
+      Temps cpu systeme total                25.19 s
+      Temps elapsed total                    43.74 s
+      Temps restant                       17956.26 s
 
 
  The signup of the saved base is (with the address 0): 
-  cf9e9b8caa08613fba0ead3f23a644280e67a630 
+  594b7a1404f77eba238e1d80a946f6fddd6d3057 
 
  ********************************************************************************
  * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
  ********************************************************************************
- * init (jdc)               :      24.26 :      30.29 :      54.55 :      54.72 *
+ * init (jdc)               :      18.19 :      25.19 :      43.38 :      43.75 *
  *  . compile               :       0.00 :       0.00 :       0.00 :       0.00 *
- *  . exec_compile          :      23.99 :      30.27 :      54.26 :      54.43 *
- * DEBUT                    :       0.00 :       0.51 :       0.51 :       0.52 *
- * LIRE_MAILLAGE            :       0.38 :       0.08 :       0.46 :       0.47 *
- * AFFE_MODELE              :       3.78 :       0.38 :       4.16 :       4.18 *
- * AFFE_CHAR_MECA           :       1.68 :       0.96 :       2.64 :       2.65 *
- * AFFE_CHAR_MECA           :       0.41 :       0.30 :       0.71 :       0.71 *
- * AFFE_CHAR_MECA           :       0.42 :       0.14 :       0.56 :       0.56 *
- * AFFE_CHAR_MECA           :       0.39 :       0.09 :       0.48 :       0.48 *
- * AFFE_CHAR_MECA           :       1.33 :       1.90 :       3.23 :       3.23 *
- * AFFE_CHAR_MECA           :       1.31 :       1.87 :       3.18 :       3.20 *
- * AFFE_CHAR_MECA           :       1.21 :       1.94 :       3.15 :       3.15 *
- * AFFE_CHAR_MECA           :       1.22 :       1.96 :       3.18 :       3.19 *
- * AFFE_CHAR_MECA           :       1.32 :       2.04 :       3.36 :       3.37 *
- * AFFE_CHAR_MECA           :       1.29 :       1.96 :       3.25 :       3.26 *
- * AFFE_CHAR_MECA           :       1.53 :       2.58 :       4.11 :       4.11 *
- * AFFE_CHAR_MECA           :       1.56 :       2.55 :       4.11 :       4.12 *
- * AFFE_CHAR_MECA           :       1.52 :       2.79 :       4.31 :       4.33 *
- * AFFE_CHAR_MECA           :       1.58 :       2.74 :       4.32 :       4.32 *
- * AFFE_CHAR_MECA           :       1.37 :       2.73 :       4.10 :       4.12 *
- * AFFE_CHAR_MECA           :       1.48 :       2.61 :       4.09 :       4.10 *
- * FIN                      :       0.03 :       0.11 :       0.14 :       0.14 *
- *  . part Superviseur      :       0.45 :       0.56 :       1.01 :       1.04 *
- *  . part Fortran          :      23.81 :      29.73 :      53.54 :      53.67 *
+ *  . exec_compile          :      18.03 :      25.14 :      43.17 :      43.46 *
+ * DEBUT                    :       0.01 :       0.06 :       0.07 :       0.10 *
+ * LIRE_MAILLAGE            :       0.27 :       0.05 :       0.32 :       0.32 *
+ * AFFE_MODELE              :       2.76 :       0.57 :       3.33 :       3.46 *
+ * AFFE_CHAR_MECA           :       1.28 :       0.91 :       2.19 :       2.19 *
+ * AFFE_CHAR_MECA           :       0.31 :       0.22 :       0.53 :       0.55 *
+ * AFFE_CHAR_MECA           :       0.30 :       0.11 :       0.41 :       0.42 *
+ * AFFE_CHAR_MECA           :       0.31 :       0.07 :       0.38 :       0.39 *
+ * AFFE_CHAR_MECA           :       0.90 :       1.81 :       2.71 :       2.71 *
+ * AFFE_CHAR_MECA           :       0.92 :       1.63 :       2.55 :       2.55 *
+ * AFFE_CHAR_MECA           :       0.95 :       1.59 :       2.54 :       2.55 *
+ * AFFE_CHAR_MECA           :       0.90 :       1.65 :       2.55 :       2.55 *
+ * AFFE_CHAR_MECA           :       0.86 :       1.67 :       2.53 :       2.53 *
+ * AFFE_CHAR_MECA           :       1.01 :       1.54 :       2.55 :       2.56 *
+ * AFFE_CHAR_MECA           :       1.20 :       2.13 :       3.33 :       3.33 *
+ * AFFE_CHAR_MECA           :       1.19 :       2.29 :       3.48 :       3.48 *
+ * AFFE_CHAR_MECA           :       1.22 :       2.16 :       3.38 :       3.38 *
+ * AFFE_CHAR_MECA           :       1.23 :       2.25 :       3.48 :       3.48 *
+ * AFFE_CHAR_MECA           :       1.10 :       2.22 :       3.32 :       3.33 *
+ * AFFE_CHAR_MECA           :       1.19 :       2.15 :       3.34 :       3.34 *
+ * FIN                      :       0.02 :       0.04 :       0.06 :       0.06 *
+ *  . part Superviseur      :       0.28 :       0.13 :       0.41 :       0.58 *
+ *  . part Fortran          :      17.91 :      25.06 :      42.97 :      43.16 *
  ********************************************************************************
- * TOTAL_JOB                :      24.26 :      30.29 :      54.55 :      54.71 *
+ * TOTAL_JOB                :      18.19 :      25.19 :      43.38 :      43.74 *
  ********************************************************************************
 
 WARNING: can not pickle object: paramFile <class '_io.TextIOWrapper'>
 --- End of the execution
-EXECUTION_CODE_ASTER_EXIT_90567=0
+EXECUTION_CODE_ASTER_EXIT_90613=0

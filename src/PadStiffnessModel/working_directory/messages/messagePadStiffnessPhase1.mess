@@ -103,7 +103,7 @@ FIN()
                 the revision 2708712c2a40 - branch  v14.4_smeca                 
                         Copyright EDF R & D 1991 - 2022                         
                                                                                 
-                    Exécution of:  Thu Aug 25 15:04:18 2022                     
+                    Exécution of:  Thu Aug 25 18:45:20 2022                     
                         Name of the machine:  caelinuxVM                        
                                Structure:  64bit                                
                                CPU type:  x86_64                                
@@ -229,9 +229,9 @@ FIN()
 
  Second reading of the catalogues of the elements made. 
 
- End of reading (lasted 0.059306 S.)   
-  # Memory (Mo):    306.77 /    293.10 /     22.92 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0001 user+syst:          0.07S (syst:          0.04S, Elaps:          0.08S)
+ End of reading (lasted 0.041141 S.)   
+  # Memory (Mo):    306.77 /    293.11 /     22.92 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0001 user+syst:          0.04S (syst:          0.04S, Elaps:          0.06S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt6
@@ -249,7 +249,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mesh     - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:04:18                                                        
+JE-25-AOUT-2022 18:45:20                                                        
 
 NOMBRE DE NOEUDS                       32072
 
@@ -271,8 +271,8 @@ NOMBRE DE GROUPES DE MAILLES               3
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    306.77 /    294.29 /     22.92 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0002 user+syst:          0.07S (syst:          0.01S, Elaps:          0.07S)
+  # Memory (Mo):    306.77 /    294.25 /     22.92 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0002 user+syst:          0.04S (syst:          0.01S, Elaps:          0.04S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt35
@@ -947,9 +947,9 @@ M5074    M5075    M5076    M5077    M5078    M5079    M5080    M5081
 M5082    M5083    M5084    M5085    M5086    M5087    M5088    M5089   
 M5090    M5091    M5092    M5093    M5094    M5095    M5096    M5097   
 M5098    M5099    M5100    M5101    M5102    M5103    M5104            
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.04      0.02      0.04
-  # Memory (Mo):    356.05 /    329.27 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0004 user+syst:          0.32S (syst:          0.06S, Elaps:          0.32S)
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.01      0.03
+  # Memory (Mo):    356.02 /    329.22 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0004 user+syst:          0.15S (syst:          0.04S, Elaps:          0.16S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt48
@@ -965,8 +965,8 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
                          DOUBLE_LAGRANGE='OUI',
                          INFO=1,)
 
-  # Memory (Mo):    356.05 /    329.85 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0005 user+syst:         41.96S (syst:         29.56S, Elaps:         42.14S)
+  # Memory (Mo):    356.02 /    329.81 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0005 user+syst:         34.20S (syst:         24.28S, Elaps:         34.32S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt57
@@ -981,8 +981,8 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
                             DOUBLE_LAGRANGE='OUI',
                             INFO=1,)
 
-  # Memory (Mo):    356.05 /    330.26 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0006 user+syst:          8.11S (syst:          5.40S, Elaps:          8.13S)
+  # Memory (Mo):    356.02 /    330.22 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0006 user+syst:          6.63S (syst:          4.62S, Elaps:          6.63S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt71
@@ -1001,9 +1001,9 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
      LE MODELE model    CONTIENT : 
                                         1 ELEMENT(S) DISCRET         
                                      5103 ELEMENT(S) MASSIF          
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.01      0.01      0.01
-  # Memory (Mo):    356.05 /    332.98 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0007 user+syst:          0.15S (syst:          0.08S, Elaps:          0.15S)
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.01      0.01      0.02
+  # Memory (Mo):    356.02 /    330.22 /     38.32 /     36.54 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0007 user+syst:          0.16S (syst:          0.09S, Elaps:          0.15S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt83
@@ -1018,8 +1018,8 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
                             DOUBLE_LAGRANGE='OUI',
                             INFO=1,)
 
-  # Memory (Mo):    360.28 /    332.98 /     41.31 /     38.94 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0009 user+syst:         29.50S (syst:         20.71S, Elaps:         29.52S)
+  # Memory (Mo):    359.58 /    330.22 /     41.31 /     38.94 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0009 user+syst:         27.72S (syst:         20.08S, Elaps:         27.83S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt88
@@ -1100,7 +1100,7 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
  <I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
 
  The memory requested from launching is over-estimated, it is of 7953.00 Mo. 
- The peak report used is of 360.28 Mo. 
+ The peak report used is of 359.58 Mo. 
  
 
 
@@ -1118,7 +1118,7 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
   
  <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                      38.94 Mo
  <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                      41.31 Mo
- <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :     360.28 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :     359.58 Mo
   
  <I>       FERMETURE DES BASES EFFECTUEE
   
@@ -1138,42 +1138,42 @@ M5098    M5099    M5100    M5101    M5102    M5103    M5104
    MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :      41.31 Mo
      - LIMITE LES ACCES DISQUE
      - AMELIORE LA VITESSE D'EXECUTION
-   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :     360.28 Mo
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :     359.58 Mo
      - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX, 
        LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
   
- <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 15:05:38
+ <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 18:46:29
 
 
   <I> Informations sur les temps d'exécution
-      Temps cpu user total                   24.70 s
-      Temps cpu systeme total                55.90 s
-      Temps elapsed total                    80.84 s
-      Temps restant                       17919.16 s
+      Temps cpu user total                   20.04 s
+      Temps cpu systeme total                49.20 s
+      Temps elapsed total                    69.46 s
+      Temps restant                       17930.54 s
 
 
  The signup of the saved base is (with the address 0): 
-  a8c92cecc7d8964510e479a958beac6bb8ad4100 
+  51e8e34d3ff187ec44550e4c14a70c029dbfa702 
 
  ********************************************************************************
  * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
  ********************************************************************************
- * init (jdc)               :      24.70 :      55.91 :      80.61 :      80.86 *
+ * init (jdc)               :      20.04 :      49.20 :      69.24 :      69.47 *
  *  . compile               :       0.00 :       0.00 :       0.00 :       0.00 *
- *  . exec_compile          :      24.43 :      55.89 :      80.32 :      80.57 *
- * DEBUT                    :       0.03 :       0.04 :       0.07 :       0.08 *
- * LIRE_MAILLAGE            :       0.06 :       0.01 :       0.07 :       0.07 *
- * AFFE_MODELE              :       0.26 :       0.06 :       0.32 :       0.32 *
- * AFFE_CHAR_MECA           :      12.40 :      29.56 :      41.96 :      42.14 *
- * AFFE_CHAR_MECA           :       2.71 :       5.40 :       8.11 :       8.13 *
- * AFFE_CARA_ELEM           :       0.07 :       0.08 :       0.15 :       0.15 *
- * AFFE_CHAR_MECA           :       8.79 :      20.71 :      29.50 :      29.52 *
- * FIN                      :       0.01 :       0.02 :       0.03 :       0.04 *
- *  . part Superviseur      :       0.41 :       0.07 :       0.48 :       0.50 *
- *  . part Fortran          :      24.29 :      55.84 :      80.13 :      80.36 *
+ *  . exec_compile          :      19.87 :      49.19 :      69.06 :      69.30 *
+ * DEBUT                    :       0.00 :       0.04 :       0.04 :       0.06 *
+ * LIRE_MAILLAGE            :       0.03 :       0.01 :       0.04 :       0.04 *
+ * AFFE_MODELE              :       0.11 :       0.04 :       0.15 :       0.16 *
+ * AFFE_CHAR_MECA           :       9.92 :      24.28 :      34.20 :      34.32 *
+ * AFFE_CHAR_MECA           :       2.01 :       4.62 :       6.63 :       6.63 *
+ * AFFE_CARA_ELEM           :       0.07 :       0.09 :       0.16 :       0.15 *
+ * AFFE_CHAR_MECA           :       7.64 :      20.08 :      27.72 :      27.83 *
+ * FIN                      :       0.02 :       0.01 :       0.03 :       0.03 *
+ *  . part Superviseur      :       0.24 :       0.08 :       0.32 :       0.31 *
+ *  . part Fortran          :      19.80 :      49.12 :      68.92 :      69.16 *
  ********************************************************************************
- * TOTAL_JOB                :      24.70 :      55.90 :      80.60 :      80.84 *
+ * TOTAL_JOB                :      20.04 :      49.20 :      69.24 :      69.46 *
  ********************************************************************************
 
 --- End of the execution
-EXECUTION_CODE_ASTER_EXIT_92287=0
+EXECUTION_CODE_ASTER_EXIT_90941=0

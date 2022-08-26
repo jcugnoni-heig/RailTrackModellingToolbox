@@ -1,0 +1,36 @@
+{
+library : {
+name   : "AsterBehaviour";
+type   : SHARED_LIBRARY;
+prefix : "lib";
+suffix : "so";
+install_path : "";
+sources : {
+"asterGeneralizedMaxwell.cxx",
+"GeneralizedMaxwell.cxx"
+};
+cppflags : {
+"$(shell tfel-config-3.2.1 --cppflags --compiler-flags)",
+"-DASTER_ARCH=64"
+};
+include_directories : {
+"$(shell tfel-config-3.2.1 --include-path)"
+};
+link_directories : {
+"$(shell tfel-config-3.2.1 --library-path)"
+};
+link_libraries : {
+"AsterInterface-3.2.1",
+"$(shell tfel-config-3.2.1 --library-dependency --material --mfront-profiling --physical-constants)"
+};
+epts : {
+"astergeneralizedmaxwell"
+};
+};
+headers : {
+"MFront/Aster/asterGeneralizedMaxwell.hxx",
+"TFEL/Material/GeneralizedMaxwell.hxx",
+"TFEL/Material/GeneralizedMaxwellBehaviourData.hxx",
+"TFEL/Material/GeneralizedMaxwellIntegrationData.hxx"
+};
+};

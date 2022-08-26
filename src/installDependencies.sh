@@ -2,6 +2,8 @@ apt install language-pack-en gcc gfortran g++ cmake python python-dev python-pyq
 
 apt install tk bison flex liblapack-dev libboost-numpy-dev zlib1g-dev libgfortran3 net-tools libopenblas-base libopenblas-dev grace make
 
-apt install  libgtk2.0-0 libnlopt0 libqt5x11extras5 libqt5opengl5 libglu1-mesa 
+apt install libgtk2.0-0 libnlopt0 libqt5x11extras5 libqt5opengl5 libglu1-mesa 
+
+apt install python3-scipy python3-matplotlib python3-pyqt5
 
 

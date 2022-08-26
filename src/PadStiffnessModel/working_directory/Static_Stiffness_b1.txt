@@ -1,0 +1,1 @@
+Static stiffness in compression: 277.58373307768704 kN/mm

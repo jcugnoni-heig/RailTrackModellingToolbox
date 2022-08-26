@@ -740,7 +740,7 @@ FIN()
                  révision 2708712c2a40 - branche 'v14.4_smeca'                  
                          Copyright EDF R&D 1991 - 2022                          
                                                                                 
-                    Exécution du : Thu Aug 25 14:54:38 2022                     
+                    Exécution du : Thu Aug 25 18:42:36 2022                     
                          Nom de la machine : caelinuxVM                         
                               Architecture : 64bit                              
                           Type de processeur : x86_64                           
@@ -776,9 +776,9 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
                      Version de la librairie SCOTCH : 6.0.4                     
 
                  Mémoire limite pour l'exécution : 10062.00 Mo                  
-                   consommée par l'initialisation : 318.07 Mo                   
+                   consommée par l'initialisation : 320.72 Mo                   
                   par les objets du jeu de commandes : 0.00 Mo                  
-                 reste pour l'allocation dynamique : 9740.57 Mo                 
+                 reste pour l'allocation dynamique : 9739.47 Mo                 
                 Taille limite des fichiers d'échange : 48.00 Go                 
                                                                                 
    
@@ -833,7 +833,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
  Lecture du fichier pick.1...
 
   La signature de la base relue est conforme à celle attendue (à l'adresse 0) :
-    cf9e9b8caa08613fba0ead3f23a644280e67a630
+    594b7a1404f77eba238e1d80a946f6fddd6d3057
 
   Liste des concepts issus de la base :
     Nom         Type du concept
@@ -877,7 +877,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
             CODE='NON',
             INFO=1,)
 
-  # Mémoire (Mo) :   363.16 /   355.53 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.21 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0001   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -888,7 +888,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   coefDisR = FORMULE(VALE='X3*sin(X2*X1)/X1',
                      NOM_PARA=('X1', 'X2', 'X3'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0002   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -899,7 +899,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   coefDisI = FORMULE(VALE='-X3*cos(X2*X1)/X1',
                      NOM_PARA=('X1', 'X2', 'X3'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0003   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -910,7 +910,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   pressFR1 = FORMULE(VALE='coefDisR(X1, X2, X3)*DX/1000.0',
                      NOM_PARA=('X1', 'X2', 'X3', 'DX'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0004   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -921,7 +921,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   pressFI1 = FORMULE(VALE='coefDisI(X1, X2, X3)*DX/1000.0',
                      NOM_PARA=('X1', 'X2', 'X3', 'DX'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0005   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -932,7 +932,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   pressFR2 = FORMULE(VALE='coefDisR(X1, X2, X3)*DY/1000.0',
                      NOM_PARA=('X1', 'X2', 'X3', 'DY'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0006   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -943,8 +943,8 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   pressFI2 = FORMULE(VALE='coefDisI(X1, X2, X3)*DY/1000.0',
                      NOM_PARA=('X1', 'X2', 'X3', 'DY'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0007   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0007   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt204
@@ -954,7 +954,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   pressFR3 = FORMULE(VALE='coefDisR(X1, X2, X3)*DZ/1000.0',
                      NOM_PARA=('X1', 'X2', 'X3', 'DZ'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0008   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -965,7 +965,7 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
   pressFI3 = FORMULE(VALE='coefDisI(X1, X2, X3)*DZ/1000.0',
                      NOM_PARA=('X1', 'X2', 'X3', 'DZ'),)
 
-  # Mémoire (Mo) :   363.16 /   355.66 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   365.84 /   358.32 /     7.59 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0009   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -981,8 +981,8 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
                                 VALE_F=(pressFR1, pressFI1),),
                         INFO=1,)
 
-  # Mémoire (Mo) :   372.38 /   370.23 /    23.99 /    21.30 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0010   user+syst:        0.08s (syst:        0.02s, elaps:        0.07s)
+  # Mémoire (Mo) :   375.09 /   372.94 /    23.99 /    21.30 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0010   user+syst:        0.02s (syst:        0.01s, elaps:        0.04s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt227
@@ -997,8 +997,8 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
                                 VALE_F=(pressFR2, pressFI2),),
                         INFO=1,)
 
-  # Mémoire (Mo) :   375.82 /   373.73 /    27.41 /    21.32 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0011   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   378.61 /   376.45 /    27.41 /    21.32 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0011   user+syst:        0.02s (syst:        0.00s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt236
@@ -1013,8 +1013,8 @@ Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid
                                 VALE_F=(pressFR3, pressFI3),),
                         INFO=1,)
 
-  # Mémoire (Mo) :   378.92 /   376.83 /    30.50 /    21.32 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0012   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   381.63 /   379.54 /    30.50 /    21.32 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0012   user+syst:        0.01s (syst:        0.00s, elaps:        0.02s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt264
@@ -1032,7 +1032,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE grid     - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 14:54:38                                                        
+JE-25-AOUT-2022 18:42:36                                                        
 
 NOMBRE DE NOEUDS                         389
 
@@ -1433,8 +1433,8 @@ NOMBRE DE GROUPES DE NOEUDS              389
 
 --------------------------------------------------------------------------------
 
-  # Mémoire (Mo) :   378.92 /   378.03 /    30.50 /    21.32 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0013   user+syst:        0.10s (syst:        0.02s, elaps:        0.10s)
+  # Mémoire (Mo) :   381.63 /   380.74 /    30.50 /    21.32 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0013   user+syst:        0.06s (syst:        0.00s, elaps:        0.06s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt273
@@ -1582,9 +1582,9 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
  Modélisation     Type maille  Élément fini     Nombre
                   SEG2         MECA_ARETE2      44
                   TRIA3        MECA_FACE3       732
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.03      0.02      0.01
-  # Mémoire (Mo) :   436.78 /   436.75 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0015   user+syst:        0.07s (syst:        0.05s, elaps:        0.03s)
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.02      0.02      0.01
+  # Mémoire (Mo) :   439.45 /   439.43 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0015   user+syst:        0.06s (syst:        0.04s, elaps:        0.03s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt281
@@ -1605,8 +1605,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                           VERIF='CROISSANT',
                           INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0016   user+syst:        0.02s (syst:        0.01s, elaps:        0.00s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0016   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt286
@@ -1627,8 +1627,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                         VERIF='CROISSANT',
                         INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0020   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0020   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt291
@@ -1649,8 +1649,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                           VERIF='CROISSANT',
                           INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0024   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0024   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt296
@@ -1671,8 +1671,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                         VERIF='CROISSANT',
                         INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0028   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0028   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt301
@@ -1693,8 +1693,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                          VERIF='CROISSANT',
                          INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0032   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0032   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt306
@@ -1715,7 +1715,7 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                        VERIF='CROISSANT',
                        INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0036   user+syst:        0.02s (syst:        0.01s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -1737,8 +1737,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                         VERIF='CROISSANT',
                         INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0040   user+syst:        0.01s (syst:        0.01s, elaps:        0.01s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0040   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt316
@@ -1759,8 +1759,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                           VERIF='CROISSANT',
                           INFO=1,)
 
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0044   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0044   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt323
@@ -1775,8 +1775,8 @@ Sur les 776 mailles du maillage grid, on a demandé l'affectation de 776, on a p
                           INFO=1,)
 
 Propriétés définies dans le matériau: ELAS.
-  # Mémoire (Mo) :   436.89 /   436.89 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0048   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
+  # Mémoire (Mo) :   439.59 /   439.59 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0048   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt339
@@ -1791,8 +1791,8 @@ Propriétés définies dans le matériau: ELAS.
                         INFO=1,)
 
 Propriétés définies dans le matériau: ELAS.
-  # Mémoire (Mo) :   437.02 /   437.02 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0049   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   439.71 /   439.71 /    54.92 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0049   user+syst:        0.02s (syst:        0.01s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt359
@@ -1802,14 +1802,14 @@ Propriétés définies dans le matériau: ELAS.
   BCload = AFFE_CHAR_MECA(MODELE=model,
                           FORCE_NODALE=_F(GROUP_NO=('noeuForc', ),
                                           FX=0,
-                                          FY=-1.E5,
-                                          FZ=1.E4,),
+                                          FY=-1.73205E5,
+                                          FZ=-1.73205E5,),
                           VERI_NORM='OUI',
                           DOUBLE_LAGRANGE='OUI',
                           INFO=1,)
 
-  # Mémoire (Mo) :   458.32 /   453.57 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0050   user+syst:        0.03s (syst:        0.01s, elaps:        0.03s)
+  # Mémoire (Mo) :   461.01 /   456.27 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0050   user+syst:        0.04s (syst:        0.02s, elaps:        0.03s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt399
@@ -1824,24 +1824,24 @@ Propriétés définies dans le matériau: ELAS.
                           INFO=1,)
 
 Propriétés définies dans le matériau: ELAS.
-  # Mémoire (Mo) :   458.32 /   453.72 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0051   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # Mémoire (Mo) :   461.01 /   456.27 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0051   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt404
   # ------------------------------------------------------------------------------------------
   # Commande No :  0052            Concept de type : mater_sdaster
   # ------------------------------------------------------------------------------------------
-  matSoft = DEFI_MATERIAU(ELAS=_F(E=139.7902,
-                                  NU=0.484,
+  matSoft = DEFI_MATERIAU(ELAS=_F(E=11.667752142857143,
+                                  NU=0.3,
                                   RHO=1.E-09,
-                                  AMOR_HYST=0.159230216,
+                                  AMOR_HYST=0.07914357142857142,
                                   COEF_AMOR=1.0,),
                           INFO=1,)
 
 Propriétés définies dans le matériau: ELAS.
-  # Mémoire (Mo) :   458.32 /   453.72 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0052   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :   461.01 /   456.27 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0052   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt409
@@ -1856,7 +1856,7 @@ Propriétés définies dans le matériau: ELAS.
                        INFO=1,)
 
 Propriétés définies dans le matériau: ELAS.
-  # Mémoire (Mo) :   458.32 /   453.72 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :   461.01 /   456.27 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0053   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -1879,8 +1879,8 @@ Propriétés définies dans le matériau: ELAS.
                                  ),
                            INFO=1,)
 
-  # Mémoire (Mo) :   458.32 /   456.16 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0054   user+syst:        0.01s (syst:        0.01s, elaps:        0.02s)
+  # Mémoire (Mo) :   461.01 /   458.86 /    76.16 /    32.31 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0054   user+syst:        0.01s (syst:        0.01s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt462
@@ -1906,7 +1906,7 @@ Propriétés définies dans le matériau: ELAS.
              INST=0.0,
              INFO=1,)
 
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      3.40      2.07      3.31
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      1.17      0.19      1.09
   Le système linéaire à résoudre a 511665 degrés de liberté:
    - 364641 sont des degrés de liberté physiques
      (ils sont portés par 121547 noeuds du maillage)
@@ -1915,16 +1915,16 @@ Propriétés définies dans le matériau: ELAS.
   La matrice est de taille 511665 équations.
   Elle contient 16101129 termes non nuls si elle est symétrique et 31690593 termes non nuls si elle n'est pas symétrique.
   Soit un taux de remplissage de   0.012 %.
-#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):      8.70      5.73      8.71
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      1.22      0.02      1.22
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      4.04      3.52      3.96
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      1.74      0.39      1.75
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.80      0.15      0.72
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.85      0.03      0.86
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.17      0.04      0.17
-#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.12      0.00      0.13
-  # Mémoire (Mo) :  2141.45 /  2141.45 /  1746.82 /   596.84 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0055   user+syst:       21.18s (syst:       12.02s, elaps:       20.96s)
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):      2.45      0.48      2.45
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.73      0.03      0.74
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.49      0.20      0.42
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.83      0.06      0.83
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.46      0.11      0.40
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.49      0.03      0.48
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.10      0.04      0.10
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.07      0.00      0.07
+  # Mémoire (Mo) :  2144.14 /  2144.14 /  1746.82 /   596.84 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0055   user+syst:        6.82s (syst:        1.14s, elaps:        6.66s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt476
@@ -1997,9 +1997,9 @@ Avancement du calcul
 ======================================================================================
                                                                         Fin du calcul
 
-#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):    187.99     53.78     80.88
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0065   user+syst:      189.56s (syst:       54.97s, elaps:       82.52s)
+#1      Resolution des systemes lineaires                 CPU (USER+SYST/SYST/ELAPS):     98.57     14.02     42.36
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0065   user+syst:       98.98s (syst:       14.19s, elaps:       42.78s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt502
@@ -2012,8 +2012,8 @@ Avancement du calcul
                          GROUP_NO='frfrailm',
                          INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0066   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0066   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt507
@@ -2026,8 +2026,8 @@ Avancement du calcul
                          GROUP_NO='frfrailm',
                          INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0067   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0067   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt509
@@ -2038,8 +2038,8 @@ Avancement du calcul
                                          PARTIE='MODULE',),
                            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0068   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0068   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt510
@@ -2050,8 +2050,8 @@ Avancement du calcul
                                          PARTIE='MODULE',),
                            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0070   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0070   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt518
@@ -2061,8 +2061,8 @@ Avancement du calcul
   DETRUIRE(CONCEPT=_F(NOM=(newPtZ, newPtY, newPtZ_R, newPtY_R),),
            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0072   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0072   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt502
@@ -2075,7 +2075,7 @@ Avancement du calcul
                          GROUP_NO='frfrailc',
                          INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :  9289.01 /  2105.67 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0073   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -2089,7 +2089,7 @@ Avancement du calcul
                          GROUP_NO='frfrailc',
                          INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :  9289.01 /  2104.48 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0074   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -2101,7 +2101,7 @@ Avancement du calcul
                                          PARTIE='MODULE',),
                            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :  9289.01 /  2104.48 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0075   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -2113,7 +2113,7 @@ Avancement du calcul
                                          PARTIE='MODULE',),
                            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :  9289.01 /  2104.48 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0077   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -2124,7 +2124,7 @@ Avancement du calcul
   DETRUIRE(CONCEPT=_F(NOM=(newPtZ, newPtY, newPtZ_R, newPtY_R),),
            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2102.01 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :  9289.01 /  2104.48 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0079   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -2135,7 +2135,7 @@ Avancement du calcul
   DETRUIRE(CONCEPT=_F(NOM=(matSoft, matHard, grav, fieldmat),),
            INFO=1,)
 
-  # Mémoire (Mo) :  9288.83 /  2101.09 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Mémoire (Mo) :  9289.01 /  2103.56 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
   # Fin commande No : 0080   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
   # ------------------------------------------------------------------------------------------
 
@@ -3685,9 +3685,9 @@ DX      , DY      , DZ
 
   -> Véritable écriture des tableaux de valeurs
   . NBREPG =   1, TYPENT =   3, TYPGEO =   0
-  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  1 :     0.264144E-01   -0.102671    
-  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  2 :     0.224378E-01    0.695150    
-  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  3 :    -0.459725E-01   -0.533648    
+  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  1 :     0.275154E-01   -0.854650    
+  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  2 :     0.196894E-01     8.52486    
+  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  3 :    -0.411450E-01    -4.55274    
   . ECRITURE DES  3 *   121547 VALEURS POUR LE NUMERO D'ORDRE :      1
      ( PAS DE TEMPS NUMERO :    1, T =    300.00     )
   . PAS DE PROFIL
@@ -3752,9 +3752,9 @@ DX      , DY      , DZ
 
   -> Véritable écriture des tableaux de valeurs
   . NBREPG =   1, TYPENT =   3, TYPGEO =   0
-  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  1 :     -76.8660        -486.016    
-  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  2 :     -62.9789        -833.879    
-  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  3 :      126.526        -356.754    
+  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  1 :     -97.7630         2596.12    
+  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  2 :     -76.5081        -20541.6    
+  . PREMIERE ET DERNIERE VALEURS A ECRIRE POUR LA COMPOSANTE  3 :      134.922         24968.0    
   . ECRITURE DES  3 *   121547 VALEURS POUR LE NUMERO D'ORDRE :      1
      ( PAS DE TEMPS NUMERO :    1, T =    300.00     )
   . PAS DE PROFIL
@@ -3774,8 +3774,8 @@ DX      , DY      , DZ
 
 ---------------------------------------------------------------------------------
 
-  # Mémoire (Mo) :  9288.83 /  2104.13 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin commande No : 0081   user+syst:        0.20s (syst:        0.07s, elaps:        0.21s)
+  # Mémoire (Mo) :  9289.01 /  2106.35 /  2117.31 /   610.21 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0081   user+syst:        0.14s (syst:        0.03s, elaps:        0.14s)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt726
@@ -3926,7 +3926,7 @@ DX      , DY      , DZ
   
  <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                     610.21 Mo
  <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                    2117.31 Mo
- <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :    9288.83 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :    9289.01 Mo
   
  <I>       FERMETURE DES BASES EFFECTUEE
   
@@ -3946,77 +3946,77 @@ DX      , DY      , DZ
    MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :    2117.31 Mo
      - LIMITE LES ACCES DISQUE
      - AMELIORE LA VITESSE D'EXECUTION
-   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :    9288.83 Mo
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :    9289.01 Mo
      - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX, 
        LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
   
- <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 14:56:23
+ <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 18:43:27
 
 
   <I> Informations sur les temps d'exécution
-      Temps cpu user total                  145.07 s
-      Temps cpu systeme total                67.96 s
-      Temps elapsed total                   105.76 s
-      Temps restant                     3599894.24 s
+      Temps cpu user total                   91.48 s
+      Temps cpu systeme total                16.08 s
+      Temps elapsed total                    51.20 s
+      Temps restant                     3599948.80 s
 
 
   La signature de la base sauvegardée est (à l'adresse 0) :
-    40e1723758f2a175182b25305532e249625f880c
+    687d97047595f6d1cf2a61749ce982c4080f5ed9
 
  ********************************************************************************
  * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
  ********************************************************************************
- * init (jdc)               :     145.07 :      67.97 :     213.04 :     105.77 *
- *  . compile               :       0.01 :       0.00 :       0.01 :       0.00 *
- *  . exec_compile          :     144.88 :      67.94 :     212.82 :     105.56 *
+ * init (jdc)               :      91.48 :      16.09 :     107.57 :      51.20 *
+ *  . compile               :       0.00 :       0.00 :       0.00 :       0.01 *
+ *  . exec_compile          :      91.32 :      16.08 :     107.40 :      51.02 *
  * POURSUITE                :       0.00 :       0.00 :       0.00 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
- * FORMULE                  :       0.01 :       0.00 :       0.01 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
  * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
- * CREA_CHAMP               :       0.06 :       0.02 :       0.08 :       0.07 *
- * CREA_CHAMP               :       0.01 :       0.00 :       0.01 :       0.01 *
- * CREA_CHAMP               :       0.01 :       0.00 :       0.01 :       0.01 *
- * LIRE_MAILLAGE            :       0.08 :       0.02 :       0.10 :       0.10 *
- * AFFE_MODELE              :       0.02 :       0.05 :       0.07 :       0.03 *
- * LIRE_FONCTION            :       0.01 :       0.01 :       0.02 :       0.00 *
- * LIRE_FONCTION            :       0.00 :       0.00 :       0.00 :       0.01 *
+ * FORMULE                  :       0.00 :       0.00 :       0.00 :       0.00 *
+ * CREA_CHAMP               :       0.01 :       0.01 :       0.02 :       0.04 *
+ * CREA_CHAMP               :       0.02 :       0.00 :       0.02 :       0.01 *
+ * CREA_CHAMP               :       0.01 :       0.00 :       0.01 :       0.02 *
+ * LIRE_MAILLAGE            :       0.06 :       0.00 :       0.06 :       0.06 *
+ * AFFE_MODELE              :       0.02 :       0.04 :       0.06 :       0.03 *
+ * LIRE_FONCTION            :       0.01 :       0.00 :       0.01 :       0.01 *
  * LIRE_FONCTION            :       0.00 :       0.01 :       0.01 :       0.00 *
  * LIRE_FONCTION            :       0.01 :       0.00 :       0.01 :       0.01 *
- * LIRE_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * LIRE_FONCTION            :       0.00 :       0.01 :       0.01 :       0.00 *
+ * LIRE_FONCTION            :       0.00 :       0.00 :       0.00 :       0.01 *
  * LIRE_FONCTION            :       0.01 :       0.01 :       0.02 :       0.00 *
- * LIRE_FONCTION            :       0.00 :       0.01 :       0.01 :       0.01 *
- * LIRE_FONCTION            :       0.01 :       0.00 :       0.01 :       0.01 *
- * DEFI_MATERIAU            :       0.00 :       0.01 :       0.01 :       0.00 *
- * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.01 *
- * AFFE_CHAR_MECA           :       0.02 :       0.01 :       0.03 :       0.03 *
- * DEFI_MATERIAU            :       0.01 :       0.00 :       0.01 :       0.00 *
- * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.01 *
+ * LIRE_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * LIRE_FONCTION            :       0.01 :       0.00 :       0.01 :       0.00 *
  * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.00 *
- * AFFE_MATERIAU            :       0.00 :       0.01 :       0.01 :       0.02 *
- * ASSEMBLAGE               :       9.16 :      12.02 :      21.18 :      20.96 *
- * DYNA_VIBRA               :     134.59 :      54.97 :     189.56 :      82.52 *
+ * DEFI_MATERIAU            :       0.01 :       0.01 :       0.02 :       0.01 *
+ * AFFE_CHAR_MECA           :       0.02 :       0.02 :       0.04 :       0.03 *
+ * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * AFFE_MATERIAU            :       0.00 :       0.01 :       0.01 :       0.01 *
+ * ASSEMBLAGE               :       5.68 :       1.14 :       6.82 :       6.66 *
+ * DYNA_VIBRA               :      84.79 :      14.19 :      98.98 :      42.78 *
+ * RECU_FONCTION            :       0.00 :       0.00 :       0.00 :       0.01 *
  * RECU_FONCTION            :       0.01 :       0.00 :       0.01 :       0.01 *
- * RECU_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
- * CALC_FONCTION            :       0.00 :       0.00 :       0.00 :       0.01 *
- * CALC_FONCTION            :       0.01 :       0.00 :       0.01 :       0.00 *
- * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.01 *
+ * CALC_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * CALC_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.00 *
  * RECU_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
  * RECU_FONCTION            :       0.01 :       0.00 :       0.01 :       0.00 *
  * CALC_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
  * CALC_FONCTION            :       0.00 :       0.00 :       0.00 :       0.00 *
  * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.00 *
  * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.00 *
- * IMPR_RESU                :       0.13 :       0.07 :       0.20 :       0.21 *
- * FIN                      :       0.17 :       0.69 :       0.86 :       0.90 *
- *  . part Superviseur      :       0.79 :       0.10 :       0.89 :       0.90 *
- *  . part Fortran          :     144.28 :      67.86 :     212.14 :     104.86 *
+ * IMPR_RESU                :       0.11 :       0.03 :       0.14 :       0.14 *
+ * FIN                      :       0.15 :       0.58 :       0.73 :       0.74 *
+ *  . part Superviseur      :       0.61 :       0.05 :       0.66 :       0.66 *
+ *  . part Fortran          :      90.87 :      16.04 :     106.91 :      50.54 *
  ********************************************************************************
- * TOTAL_JOB                :     145.07 :      67.96 :     213.03 :     105.76 *
+ * TOTAL_JOB                :      91.48 :      16.08 :     107.56 :      51.20 *
  ********************************************************************************
 
   Lecture des blocs du fichier 'fort.39'...
@@ -4027,11 +4027,11 @@ DX      , DY      , DZ
   Lecture des blocs du fichier 'fort.48'...
   Lecture des blocs du fichier 'fort.58'...
   Lecture des blocs du fichier 'fort.59'...
-harmonic f=300Hz, 103.62048077583313 s.
+harmonic f=300Hz, 49.54407548904419 s.
 False
 WARNING: can not pickle object: paramFile <class '_io.TextIOWrapper'>
 WARNING: can not pickle object: fileFRF <class '_io.TextIOWrapper'>
 WARNING: can not pickle object: filePow <class '_io.TextIOWrapper'>
 WARNING: can not pickle object: freqFile <class '_io.TextIOWrapper'>
 --- Fin de l'exécution
-EXECUTION_CODE_ASTER_EXIT_90665=0
+EXECUTION_CODE_ASTER_EXIT_90701=0

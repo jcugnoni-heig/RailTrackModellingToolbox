@@ -1,0 +1,1011 @@
+# ------------------------------------------------------------------------------------------
+# Impression du contenu du fichier de commandes à exécuter :
+# ------------------------------------------------------------------------------------------
+from Utilitai import partition
+
+import time
+
+
+# Propetries for Material 1
+###########################
+
+with open('fort.20') as fp: 
+			Lines = fp.readlines()
+			E_mx1 = float(Lines[0].split('\\')[0])
+
+with open('fort.21') as fp: 
+			Lines = fp.readlines()
+			nu_mx1 = float(Lines[0].split('\\')[0])
+
+with open('fort.22') as fp: 
+			Lines = fp.readlines()
+			rho_mx1 = float(Lines[0].split('\\')[0])
+
+with open('fort.23') as fp: 
+			Lines = fp.readlines()
+			K0_mx1 = float(Lines[0].split('\\')[0])
+			K1_mx1 = float(Lines[1].split('\\')[0])
+			K2_mx1 = float(Lines[2].split('\\')[0])
+			K3_mx1 = float(Lines[3].split('\\')[0])
+			K4_mx1 = float(Lines[4].split('\\')[0])
+
+with open('fort.24') as fp: 
+			Lines = fp.readlines()
+			G0_mx1 = float(Lines[0].split('\\')[0])
+			G1_mx1 = float(Lines[1].split('\\')[0])
+			G2_mx1 = float(Lines[2].split('\\')[0])
+			G3_mx1 = float(Lines[3].split('\\')[0])
+			G4_mx1 = float(Lines[4].split('\\')[0])
+
+with open('fort.25') as fp: 
+			Lines = fp.readlines()
+			tau1_mx1 = float(Lines[0].split('\\')[0])
+			tau2_mx1 = float(Lines[1].split('\\')[0])
+			tau3_mx1 = float(Lines[2].split('\\')[0])
+			tau4_mx1 = float(Lines[3].split('\\')[0])
+
+# Propetries for Material 2
+###########################
+
+with open('fort.26') as fp: 
+			Lines = fp.readlines()
+			E_mx2 = float(Lines[0].split('\\')[0])
+
+with open('fort.27') as fp: 
+			Lines = fp.readlines()
+			nu_mx2 = float(Lines[0].split('\\')[0])
+
+with open('fort.28') as fp: 
+			Lines = fp.readlines()
+			rho_mx2 = float(Lines[0].split('\\')[0])
+
+with open('fort.29') as fp: 
+			Lines = fp.readlines()
+			K0_mx2 = float(Lines[0].split('\\')[0])
+			K1_mx2 = float(Lines[1].split('\\')[0])
+			K2_mx2 = float(Lines[2].split('\\')[0])
+			K3_mx2 = float(Lines[3].split('\\')[0])
+			K4_mx2 = float(Lines[4].split('\\')[0])
+
+with open('fort.30') as fp: 
+			Lines = fp.readlines()
+			G0_mx2 = float(Lines[0].split('\\')[0])
+			G1_mx2 = float(Lines[1].split('\\')[0])
+			G2_mx2 = float(Lines[2].split('\\')[0])
+			G3_mx2 = float(Lines[3].split('\\')[0])
+			G4_mx2 = float(Lines[4].split('\\')[0])
+
+with open('fort.31') as fp: 
+			Lines = fp.readlines()
+			tau1_mx2 = float(Lines[0].split('\\')[0])
+			tau2_mx2 = float(Lines[1].split('\\')[0])
+			tau3_mx2 = float(Lines[2].split('\\')[0])
+			tau4_mx2 = float(Lines[3].split('\\')[0])
+
+POURSUITE(PAR_LOT='NON')
+
+
+# --------- INIT OUTPUT FILES ------------------
+
+
+
+fileRES=open('fort.40','w')
+
+
+fileHeader = 'TIME\t'+'Clamp rail side\t'+'Clamp sleeper side\t'+'Bottom sleeper\t'
+fileHeader+='\n'
+
+fileHeader += '[s]\t'+'[mm]\t'+'[mm]\t'+'[mm]\t'
+fileHeader+='\n'
+
+
+
+fileRES.write(fileHeader)
+fileRES.close()
+
+
+
+# ---------  PARAMETERS   -------------------------
+
+
+groupsPadHard=('hard___0','hard___1','hard___2','hard___3','hard___4','hard',)
+groupsPadSoft=('soft___0','soft___1','soft___2','soft___3','soft___4','soft',)
+groupsAllPad=('hard___0','hard___1','hard___2','hard___3','hard___4','hard','soft___0','soft___1','soft___2','soft___3','soft___4','soft',)
+
+
+# --------- Materials --------------
+
+CREA_LIB_MFRONT(UNITE_MFRONT=10,
+                UNITE_LIBRAIRIE=11, )
+
+
+padhard = DEFI_MATERIAU(ELAS=_F(E=E_mx1, NU=nu_mx1, RHO=rho_mx1),
+                        MFRONT=_F( LISTE_COEF = (K0_mx1,G0_mx1,
+                                                 K1_mx1,K2_mx1,K3_mx1,K4_mx1,
+                                                 G1_mx1,G2_mx1,G3_mx1,G4_mx1,
+                                                 tau1_mx1,tau2_mx1,tau3_mx1,tau4_mx1,)),
+                        )
+
+
+padsoft = DEFI_MATERIAU(ELAS=_F(E=E_mx2, NU=nu_mx2, RHO=rho_mx2),
+                        MFRONT=_F( LISTE_COEF = (K0_mx2,G0_mx2,
+                                                 K1_mx2,K2_mx2,K3_mx2,K4_mx2,
+                                                 G1_mx2,G2_mx2,G3_mx2,G4_mx2,
+                                                 tau1_mx2,tau2_mx2,tau3_mx2,tau4_mx2,)),
+                        )
+
+
+concrRe = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=0.016,
+                                E=46300.0,
+                                NU=0.2,
+                                RHO=2.4356e-09))
+
+
+wood = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=0.04,
+                             E=46.33,
+                             NU=0.3,
+                             RHO=5.2e-10))
+
+
+steel = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=0.001,
+                              E=210000.0,
+                              NU=0.3,
+                              RHO=7.85e-09))
+
+
+# ---------  Loads  --------------
+
+
+
+BCload = AFFE_CHAR_MECA(FORCE_NODALE=_F(FY=-107900.0,
+                                        GROUP_NO=('noeuForc', )),
+                        MODELE=model)
+
+
+
+fixedBC = (BCfix, tie1, tie2, tie3, tie4, tie5, tie6, tie7, tie8, tie9, tie10, tie11, tie12, tie13, tie14, tie15, )
+
+
+# ---------  Solution  --------------
+
+
+fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('ballast', ),
+                                  MATER=(wood, )),
+                               _F(GROUP_MA=('tr3', 'tr2', 'tr1'),
+                                  MATER=(concrRe, )),
+                               _F(GROUP_MA=groupsPadHard,
+                                  MATER=(padhard, )),
+                               _F(GROUP_MA=groupsPadSoft,
+                                  MATER=(padsoft, )),
+                               _F(GROUP_MA=('raild', 'railg'),
+                                  MATER=(steel, ))),
+                         MAILLAGE=mesh,
+                         MODELE=model)
+
+
+
+# M-shape load profile -> 71 time steps -> 101 steps to reach 0.1 s
+
+tsteps = 101
+
+Mimp=DEFI_FONCTION(NOM_PARA='INST',
+                   VALE=(0,0,
+                         0.001,0.00615583,
+                         0.002,0.024471742,
+                         0.003,0.054496738,
+                         0.004,0.095491503,
+                         0.005,0.146446609,
+                         0.006,0.206107374,
+                         0.007,0.27300475,
+                         0.008,0.345491503,
+                         0.009,0.421782767,
+                         0.01,0.5,
+                         0.011,0.578217233,
+                         0.012,0.654508497,
+                         0.013,0.72699525,
+                         0.014,0.793892626,
+                         0.015,0.853553391,
+                         0.016,0.904508497,
+                         0.017,0.945503262,
+                         0.018,0.975528258,
+                         0.019,0.99384417,
+                         0.02,1,
+                         0.021,0.99384417,
+                         0.022,0.975528258,
+                         0.023,0.945503262,
+                         0.024,0.904508497,
+                         0.025,0.853553391,
+                         0.026,0.793892626,
+                         0.027,0.72699525,
+                         0.028,0.654508497,
+                         0.029,0.578217233,
+                         0.03,0.5,
+                         0.031,0.427938597,
+                         0.032,0.369963245,
+                         0.033,0.327501488,
+                         0.034,0.301598877,
+                         0.035,0.292893219,
+                         0.036,0.301598877,
+                         0.037,0.327501488,
+                         0.038,0.369963245,
+                         0.039,0.427938597,
+                         0.04,0.5,
+                         0.041,0.578217233,
+                         0.042,0.654508497,
+                         0.043,0.72699525,
+                         0.044,0.793892626,
+                         0.045,0.853553391,
+                         0.046,0.904508497,
+                         0.047,0.945503262,
+                         0.048,0.975528258,
+                         0.049,0.99384417,
+                         0.05,1,
+                         0.051,0.99384417,
+                         0.052,0.975528258,
+                         0.053,0.945503262,
+                         0.054,0.904508497,
+                         0.055,0.853553391,
+                         0.056,0.793892626,
+                         0.057,0.72699525,
+                         0.058,0.654508497,
+                         0.059,0.578217233,
+                         0.06,0.5,
+                         0.061,0.421782767,
+                         0.062,0.345491503,
+                         0.063,0.27300475,
+                         0.064,0.206107374,
+                         0.065,0.146446609,
+                         0.066,0.095491503,
+                         0.067,0.054496738,
+                         0.068,0.024471742,
+                         0.069,0.00615583,
+                         0.07,0,
+                          ),
+                   INFO=2,TITRE='Mimp',
+                   PROL_DROITE='CONSTANT',);
+
+time = DEFI_LIST_REEL(DEBUT=0.0,
+                      INFO=2,
+                      INTERVALLE=_F(JUSQU_A=0.1,
+                                    NOMBRE=tsteps),
+                      TITRE='time')
+
+deflist = DEFI_LIST_INST(DEFI_LIST=_F(LIST_INST=time,
+                                      PAS_MINI=1e-07,
+                                      PAS_MAXI=1e-03),
+                         INFO=1,
+                         METHODE='AUTO')
+
+resImp=STAT_NON_LINE(MODELE=model,
+                     CHAM_MATER=fieldmat,
+                     EXCIT=(_F(CHARGE=BCfix,),
+                            _F(CHARGE=tie1,),
+                            _F(CHARGE=tie2,),
+                            _F(CHARGE=tie3,),
+                            _F(CHARGE=tie4,),
+                            _F(CHARGE=tie5,),
+                            _F(CHARGE=tie6,),
+                            _F(CHARGE=tie7,),
+                            _F(CHARGE=tie8,),
+                            _F(CHARGE=tie9,),
+                            _F(CHARGE=tie10,),
+                            _F(CHARGE=tie11,),
+                            _F(CHARGE=tie12,),
+                            _F(CHARGE=tie13,),
+                            _F(CHARGE=tie14,),
+                            _F(CHARGE=tie15,),
+                            _F(CHARGE=BCload,FONC_MULT=Mimp,),),
+                     COMPORTEMENT=_F(RELATION='MFRONT',
+                                     GROUP_MA=groupsAllPad,
+                                     UNITE_LIBRAIRIE=11,
+                                     NOM_ROUTINE='astergeneralizedmaxwell',),
+                     INCREMENT=_F(LIST_INST= deflist,), #time,
+                     NEWTON=_F(REAC_INCR=1,
+                               MATRICE='TANGENTE',
+                               REAC_ITER=1,),
+                     CONVERGENCE=_F(ITER_GLOB_MAXI=200,),
+                     ARCHIVAGE=_F(PAS_ARCH=1,),);
+
+
+resImp=CALC_CHAMP(reuse =resImp,
+                  MODELE=model,
+                  TOUT ='OUI',
+                  CHAM_MATER=fieldmat,
+                  CONTRAINTE =('SIGM_ELGA','SIGM_ELNO','SIGM_NOEU',),
+                  RESULTAT=resImp,);
+
+
+t2 = POST_RELEVE_T( ACTION = _F (RESULTAT=resImp,
+				                 NOM_CHAM='SIGM_NOEU',
+                                 INTITULE= 'StressInBal',
+                                 GROUP_NO='Bal',
+                                 INVARIANT = 'OUI',
+                                 OPERATION= 'EXTRACTION'    )  )
+
+IMPR_TABLE(TABLE=t2,
+           UNITE=8)
+
+t3 = POST_RELEVE_T( ACTION = _F (RESULTAT=resImp,
+				                 NOM_CHAM='SIGM_NOEU',
+                                 INTITULE= 'StressInBal',
+                                 GROUP_NO='Bal',
+                                 NOM_CMP= ('SIXX','SIYY','SIZZ','SIXY'),
+                                 OPERATION= 'EXTRACTION'    )  )
+
+IMPR_TABLE(TABLE=t3,
+           UNITE=9)
+
+dispR = RECU_FONCTION(GROUP_NO=('clampR', ),
+                      NOM_CHAM='DEPL',
+                      NOM_CMP='DY',
+                      RESULTAT=resImp)
+
+dispS = RECU_FONCTION(GROUP_NO=('clampS', ),
+                      NOM_CHAM='DEPL',
+                      NOM_CMP='DY',
+                      RESULTAT=resImp)
+
+dispBotS = RECU_FONCTION(GROUP_NO=('botSleeper', ),
+                         NOM_CHAM='DEPL',
+                         NOM_CMP='DY',
+                         RESULTAT=resImp)
+
+
+Resdatalines = []
+time = [x * 0.001 for x in range(0, 101)]
+for step in time:
+    val1 = dispR(step)
+    val2 = dispS(step)
+    val3 = dispBotS(step)
+    line = str(step) + "\t" + str(val1) + "\t" + str(val2) + "\t" + str(val3) + "\t" + "\n"
+    Resdatalines.append(line)
+
+
+#  end extraction loop: write data line to file
+
+fileRES=open('fort.40','a+')
+fileContent='\t'.join(Resdatalines) + '\n'
+fileRES.write(fileContent)
+fileRES.close()
+
+    
+
+
+
+# ------ END OF SOLUTION LOOP --------
+
+
+
+IMPR_RESU(INFO=2, FORMAT='MED',
+          RESU=_F(PARTIE='REEL',
+                  NOM_CHAM=('DEPL','VITE'),
+                  NOM_CHAM_MED = ('displacement', 'velocity'),
+                  RESULTAT=resImp,),
+                  # FREQ=frequency),
+          UNITE=81)
+
+
+
+FIN()
+
+
+
+# ------------------------------------------------------------------------------------------
+
+  Ouverture en écriture du fichier ./vola.1
+
+ <INFO> Démarrage de l'exécution.
+                                                                                
+                                                                                
+              -- CODE_ASTER -- VERSION : EXPLOITATION (stable) --               
+                                                                                
+                     Version 14.6.0 modifiée le 11/06/2020                      
+                     révision b3490fa3b76c - branche 'v14'                      
+                         Copyright EDF R&D 1991 - 2022                          
+                                                                                
+                    Exécution du : Thu Aug 25 17:54:27 2022                     
+                         Nom de la machine : caelinuxVM                         
+                              Architecture : 64bit                              
+                          Type de processeur : x86_64                           
+Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-Ubuntu-18.04-bionic
+                        Langue des messages : en (UTF-8)                        
+                                                                                
+                           Version de Python : 3.6.9                            
+                           Version de NumPy : 1.13.3                            
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS2_2>                                                                  !
+   !                                                                                    !
+   !     Vous utilisez une vieille version de Code_Aster.                               !
+   !                                                                                    !
+   !     En mettant à jour votre version, vous bénéficierez des dernières améliorations !
+   !     apportées au code depuis 15 mois.                                              !
+   !     Si vous avez des développements privés, vous risquez d'avoir un travail        !
+   !     important de portage si vous ne suivez pas les mises à jour.                   !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+                           Parallélisme MPI : inactif                           
+                          Parallélisme OpenMP : actif                           
+                        Nombre de processus utilisés : 4                        
+                     Version de la librairie HDF5 : 1.10.3                      
+                      Version de la librairie MED : 4.0.0                       
+                       Librairie MFront : non disponible                        
+                     Version de la librairie MUMPS : 5.1.2                      
+                        Librairie PETSc : non disponible                        
+                     Version de la librairie SCOTCH : 6.0.4                     
+
+                 Mémoire limite pour l'exécution : 10062.00 Mo                  
+                   consommée par l'initialisation : 322.29 Mo                   
+                  par les objets du jeu de commandes : 0.00 Mo                  
+                 reste pour l'allocation dynamique : 9738.54 Mo                 
+                Taille limite des fichiers d'échange : 48.00 Go                 
+                                                                                
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS_1>                                                                   !
+   !                                                                                    !
+   !  L'utilisation du mot-clé PAR_LOT='NON' permet d'accéder en lecture et en écriture !
+   !  au contenu des concepts Aster. De ce fait, votre étude est exclue du périmètre    !
+   !  qualifié de Code_Aster puisque toutes ses étapes ne peuvent être certifiées.      !
+   !                                                                                    !
+   !  Conseils :                                                                        !
+   !    - Il n'y a pas particulièrement de risque de résultat faux... sauf si votre     !
+   !      programmation l'introduit.                                                    !
+   !    - Distinguez le calcul lui-même (qui doit sans doute passer en PAR_LOT='OUI')   !
+   !      des post-traitements (qui nécessiteraient le mode PAR_LOT='NON') qui peuvent  !
+   !      être réalisés en POURSUITE.                                                   !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+
+  Valeur initiale du temps CPU maximum =   3600900 secondes
+  Valeur du temps CPU maximum passé aux commandes =   3600000 secondes
+  Réserve CPU prévue = 900 secondes
+
+  Ouverture en lecture du fichier ./glob.1
+
+     Nom de la base                          :  GLOBALE
+     Créée avec la version                   :  14.06.00
+     Nombre d'enregistrements utilisés       :  1423
+     Nombre d'enregistrements maximum        :  62914
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre d'identificateurs utilisés       :  882
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  44 %
+
+  Ouverture en lecture du fichier ./glob.1
+
+  Ouverture en écriture du fichier ./vola.1
+
+  Fin de lecture (durée  0.000001  s.) 
+
+ Lecture du fichier pick.1...
+
+  La signature de la base relue est conforme à celle attendue (à l'adresse 0) :
+    208525e960783a67d0cc79d4ca9369c89b263c2a
+
+  Liste des concepts issus de la base :
+    Nom         Type du concept
+    mesh        maillage_sdaster        
+    model       modele_sdaster          
+    BCfix       char_meca               
+    tie1        char_meca               
+    tie2        char_meca               
+    tie3        char_meca               
+    tie4        char_meca               
+    tie5        char_meca               
+    tie6        char_meca               
+    tie7        char_meca               
+    tie8        char_meca               
+    tie9        char_meca               
+    tie10       char_meca               
+    tie11       char_meca               
+    tie12       char_meca               
+    tie13       char_meca               
+    tie14       char_meca               
+    tie15       char_meca               
+
+  L'exécution précédente s'est terminée correctement.
+
+.. __stg1_txt82
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0001            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  POURSUITE(PAR_LOT='NON',
+            FORMAT_HDF='NON',
+            IMPR_MACRO='NON',
+            DEBUG=_F(JXVERI='NON',
+                     SDVERI='NON',
+                     JEVEUX='NON',
+                     HIST_ETAPE='NON',),
+            MESURE_TEMPS=_F(NIVE_DETAIL=1,
+                            MOYENNE='NON',),
+            MEMOIRE=_F(TAILLE_BLOC=800.0,
+                       TAILLE_GROUP_ELEM=1000,),
+            RESERVE_CPU=_F(BORNE=900,),
+            CODE='NON',
+            INFO=1,)
+
+  # Mémoire (Mo) :   365.67 /   358.04 /     7.58 /     7.58 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0001   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt116
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0002            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  CREA_LIB_MFRONT(UNITE_MFRONT=10,
+                  UNITE_LIBRAIRIE=11,
+                  DEBUG='NON',)
+
+Treating target : all
+The following library has been built :
+- libAsterBehaviour.so :  astergeneralizedmaxwell
+  # Mémoire (Mo) :   365.67 /   358.75 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0002   user+syst:        1.72s (syst:        0.11s, elaps:        1.73s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt123
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0007            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padhard = DEFI_MATERIAU(ELAS=_F(E=47.0,
+                                  NU=0.484,
+                                  RHO=1.E-09,
+                                  COEF_AMOR=1.0,),
+                          MFRONT=_F(LISTE_COEF=(489.5833333, 15.83557951, 141.6666667, 116.6666667, 156.25, 323.958333, 4.582210243, 3.773584906, 5.053908356, 10.47843666, 5.42000E5, 777.0, 5.92, 0.0636),),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+Propriétés définies dans le matériau: MFRONT.
+  # Mémoire (Mo) :   365.67 /   358.75 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0007   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt131
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0008            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  padsoft = DEFI_MATERIAU(ELAS=_F(E=47.0,
+                                  NU=0.484,
+                                  RHO=1.E-09,
+                                  COEF_AMOR=1.0,),
+                          MFRONT=_F(LISTE_COEF=(489.5833333, 15.83557951, 141.6666667, 116.6666667, 156.25, 323.958333, 4.582210243, 3.773584906, 5.053908356, 10.47843666, 5.42000E5, 777.0, 5.92, 0.0636),),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+Propriétés définies dans le matériau: MFRONT.
+  # Mémoire (Mo) :   365.67 /   358.75 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0008   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt138
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0009            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  concrRe = DEFI_MATERIAU(ELAS=_F(E=4.6300E4,
+                                  NU=0.2,
+                                  RHO=2.4356E-09,
+                                  AMOR_HYST=0.016,
+                                  COEF_AMOR=1.0,),
+                          INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :   365.67 /   358.75 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0009   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt144
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0010            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  wood = DEFI_MATERIAU(ELAS=_F(E=46.33,
+                               NU=0.3,
+                               RHO=5.2E-10,
+                               AMOR_HYST=0.04,
+                               COEF_AMOR=1.0,),
+                       INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :   365.67 /   358.75 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0010   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt150
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0011            Concept de type : mater_sdaster
+  # ------------------------------------------------------------------------------------------
+  steel = DEFI_MATERIAU(ELAS=_F(E=2.10000E5,
+                                NU=0.3,
+                                RHO=7.85E-09,
+                                AMOR_HYST=1.E-3,
+                                COEF_AMOR=1.0,),
+                        INFO=1,)
+
+Propriétés définies dans le matériau: ELAS.
+  # Mémoire (Mo) :   365.67 /   358.75 /     7.59 /     7.59 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0011   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt159
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0012            Concept de type : char_meca
+  # ------------------------------------------------------------------------------------------
+  BCload = AFFE_CHAR_MECA(MODELE=model,
+                          FORCE_NODALE=_F(GROUP_NO=('noeuForc', ),
+                                          FY=-1.07900E5,),
+                          VERI_NORM='OUI',
+                          DOUBLE_LAGRANGE='OUI',
+                          INFO=1,)
+
+  # Mémoire (Mo) :   423.81 /   420.49 /    71.95 /    42.73 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0012   user+syst:        0.05s (syst:        0.03s, elaps:        0.05s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt180
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0013            Concept de type : cham_mater
+  # ------------------------------------------------------------------------------------------
+  fieldmat = AFFE_MATERIAU(MAILLAGE=mesh,
+                           MODELE=model,
+                           AFFE=(_F(GROUP_MA=('ballast', ),
+                                    MATER=(wood, ),),
+                                 _F(GROUP_MA=('tr3', 'tr2', 'tr1'),
+                                    MATER=(concrRe, ),),
+                                 _F(GROUP_MA=('hard___0', 'hard___1', 'hard___2', 'hard___3', 'hard___4', 'hard'),
+                                    MATER=(padhard, ),),
+                                 _F(GROUP_MA=('soft___0', 'soft___1', 'soft___2', 'soft___3', 'soft___4', 'soft'),
+                                    MATER=(padsoft, ),),
+                                 _F(GROUP_MA=('raild', 'railg'),
+                                    MATER=(steel, ),),
+                                 ),
+                           INFO=1,)
+
+  # Mémoire (Mo) :   424.25 /   422.73 /    73.29 /    42.73 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0013   user+syst:        0.01s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt262
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0014            Concept de type : fonction_sdaster
+  # ------------------------------------------------------------------------------------------
+  Mimp = DEFI_FONCTION(NOM_PARA='INST',
+                       VALE=(0, 0, 1.E-3, 6.15583E-3, 2.E-3, 0.024471742, 3.E-3, 0.054496738, 4.E-3, 0.095491503, 5.E-3, 0.146446609, 6.E-3, 0.206107374, 7.E-3, 0.27300475, 8.E-3, 0.345491503, 9.E-3, 0.421782767, 1.E-2, 0.5, 0.011, 0.578217233, 0.012, 0.654508497, 0.013, 0.72699525, 0.014, 0.793892626, 0.015, 0.853553391, 0.016, 0.904508497, 0.017, 0.945503262, 0.018, 0.975528258, 0.019, 0.99384417, 0.02, 1, 0.021, 0.99384417, 0.022, 0.975528258, 0.023, 0.945503262, 0.024, 0.904508497, 0.025, 0.853553391, 0.026, 0.793892626, 0.027, 0.72699525, 0.028, 0.654508497, 0.029, 0.578217233, 0.03, 0.5, 0.031, 0.427938597, 0.032, 0.369963245, 0.033, 0.327501488, 0.034, 0.301598877, 0.035, 0.292893219, 0.036, 0.301598877, 0.037, 0.327501488, 0.038, 0.369963245, 0.039, 0.427938597, 0.04, 0.5, 0.041, 0.578217233, 0.042, 0.654508497, 0.043, 0.72699525, 0.044, 0.793892626, 0.045, 0.853553391, 0.046, 0.904508497, 0.047, 0.945503262, 0.048, 0.975528258, 0.049, 0.99384417, 0.05, 1, 0.051, 0.99384417, 0.052, 0.975528258, 0.053, 0.945503262, 0.054, 0.904508497, 0.055, 0.853553391, 0.056, 0.793892626, 0.057, 0.72699525, 0.058, 0.654508497, 0.059, 0.578217233, 0.06, 0.5, 0.061, 0.421782767, 0.062, 0.345491503, 0.063, 0.27300475, 0.064, 0.206107374, 0.065, 0.146446609, 0.066, 0.095491503, 0.067, 0.054496738, 0.068, 0.024471742, 0.069, 6.15583E-3, 0.07, 0),
+                       PROL_DROITE='CONSTANT',
+                       INFO=2,
+                       TITRE='Mimp',
+                       NOM_RESU='TOUTRESU',
+                       INTERPOL=('LIN', ),
+                       PROL_GAUCHE='EXCLU',
+                       VERIF='CROISSANT',)
+
+
+--------------------------------------------------------------------------------
+ Mimp                                                                            
+  
+  FONCTION Mimp                : TOUTRESU = F(INST    )
+     DONNEE EN                    71  POINTS
+     INTERPOLATION LIN LIN 
+     PROLONGEMENT A DROITE : CONSTANT
+     PROLONGEMENT A GAUCHE : EXCLU   
+
+ <-PARAMETRE-><-RESULTAT->  <-PARAMETRE-><-RESULTAT->  <-PARAMETRE-><-RESULTAT->  
+   INST         TOUTRESU      INST         TOUTRESU      INST         TOUTRESU    
+  0.00000D+00  0.00000D+00   1.00000D-03  6.15583D-03   2.00000D-03  2.44717D-02
+  3.00000D-03  5.44967D-02   4.00000D-03  9.54915D-02   5.00000D-03  1.46447D-01
+  6.00000D-03  2.06107D-01   7.00000D-03  2.73005D-01   8.00000D-03  3.45492D-01
+  9.00000D-03  4.21783D-01
+  # Mémoire (Mo) :   424.25 /   422.73 /    73.29 /    42.73 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0014   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt268
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0015            Concept de type : listr8_sdaster
+  # ------------------------------------------------------------------------------------------
+  time = DEFI_LIST_REEL(DEBUT=0.0,
+                        INFO=2,
+                        TITRE='time',
+                        INTERVALLE=_F(JUSQU_A=0.1,
+                                      NOMBRE=101,),
+                        )
+
+
+ -------------------------------------------------------------------------------
+ time                                                                            
+   INTERVALLE            DEBUT          JUSQU_A          PAR_PAS     NOMBRE
+            1      0.00000E+00      1.00000E-01      9.90099E-04        101
+   IMPRESSION DE LA LISTE DE REELS
+      1 -  0.000000000E+00  9.900990099E-04  1.980198020E-03  2.970297030E-03  3.960396040E-03
+      6 -  4.950495050E-03  5.940594059E-03  6.930693069E-03  7.920792079E-03  8.910891089E-03
+     11 -  9.900990099E-03  1.089108911E-02  1.188118812E-02  1.287128713E-02  1.386138614E-02
+     16 -  1.485148515E-02  1.584158416E-02  1.683168317E-02  1.782178218E-02  1.881188119E-02
+     21 -  1.980198020E-02  2.079207921E-02  2.178217822E-02  2.277227723E-02  2.376237624E-02
+     26 -  2.475247525E-02  2.574257426E-02  2.673267327E-02  2.772277228E-02  2.871287129E-02
+     31 -  2.970297030E-02  3.069306931E-02  3.168316832E-02  3.267326733E-02  3.366336634E-02
+     36 -  3.465346535E-02  3.564356436E-02  3.663366337E-02  3.762376238E-02  3.861386139E-02
+     41 -  3.960396040E-02  4.059405941E-02  4.158415842E-02  4.257425743E-02  4.356435644E-02
+     46 -  4.455445545E-02  4.554455446E-02  4.653465347E-02  4.752475248E-02  4.851485149E-02
+     51 -  4.950495050E-02  5.049504950E-02  5.148514851E-02  5.247524752E-02  5.346534653E-02
+     56 -  5.445544554E-02  5.544554455E-02  5.643564356E-02  5.742574257E-02  5.841584158E-02
+     61 -  5.940594059E-02  6.039603960E-02  6.138613861E-02  6.237623762E-02  6.336633663E-02
+     66 -  6.435643564E-02  6.534653465E-02  6.633663366E-02  6.732673267E-02  6.831683168E-02
+     71 -  6.930693069E-02  7.029702970E-02  7.128712871E-02  7.227722772E-02  7.326732673E-02
+     76 -  7.425742574E-02  7.524752475E-02  7.623762376E-02  7.722772277E-02  7.821782178E-02
+     81 -  7.920792079E-02  8.019801980E-02  8.118811881E-02  8.217821782E-02  8.316831683E-02
+     86 -  8.415841584E-02  8.514851485E-02  8.613861386E-02  8.712871287E-02  8.811881188E-02
+     91 -  8.910891089E-02  9.009900990E-02  9.108910891E-02  9.207920792E-02  9.306930693E-02
+     96 -  9.405940594E-02  9.504950495E-02  9.603960396E-02  9.702970297E-02  9.801980198E-02
+    101 -  9.900990099E-02  1.000000000E-01
+  # Mémoire (Mo) :   424.25 /   422.73 /    73.29 /    42.73 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0015   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt274
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0016            Concept de type : list_inst
+  # ------------------------------------------------------------------------------------------
+  deflist = DEFI_LIST_INST(METHODE='AUTO',
+                           INFO=1,
+                           DEFI_LIST=_F(LIST_INST=time,
+                                        PAS_MINI=1.E-07,
+                                        PAS_MAXI=1.E-3,
+                                        NB_PAS_MAXI=1000000,),
+                           ADAPTATION=_F(
+                                         NB_INCR_SEUIL=2,
+                                         NOM_PARA='NB_ITER_NEWTON',
+                                         CRIT_COMP='LE',
+                                         PCENT_AUGM=100.0,
+                                         EVENEMENT='SEUIL',
+                                         MODE_CALCUL_TPLUS='FIXE',),
+                           ECHEC=_F(SUBD_PAS=4,
+                                    SUBD_NIVEAU=3,
+                                    SUBD_PAS_MINI=0.0,
+                                    SUBD_METHODE='MANUEL',
+                                    ACTION='DECOUPE',
+                                    EVENEMENT='ERREUR',),
+                           )
+
+Gestion automatique de la liste d'instants.
+Paramètres de la gestion automatique de la liste d'instants.
+Pas minimum:         1E-12
+Pas maximum:         0.001
+Nombre de pas maximum: 1000000
+La liste d'instants contient 102 pas de temps et le pas de temps minimum vaut   0.000990099.
+Il y a 1 événements.
+L'événement 1 est pour capturer les erreurs.
+Si cet événement se déclenche, on découpe le pas de temps.
+La découpe du pas de temps est manuel.
+On découpe le pas de temps en 4 incréments jusqu'à ce que le niveau atteigne 3.
+Il y a 1 schémas d'adaptations du pas de temps.
+Le schéma d'adaptation 1 du pas de temps se déclenche pour un seuil donné.
+Le seuil est franchi quand, 2 fois de suite, on fait exactement ou moins de 0 itérations de Newton.
+Le mode de calcul de l'instant suivant est fixe.
+Le pas de temps suivant sera modifié de 100.00 %.
+  # Mémoire (Mo) :   424.25 /   422.73 /    73.29 /    42.73 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0016   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt304
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0017            Concept de type : evol_noli
+  # ------------------------------------------------------------------------------------------
+  resImp = STAT_NON_LINE(MODELE=model,
+                         CHAM_MATER=fieldmat,
+                         EXCIT=(_F(CHARGE=BCfix,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie1,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie2,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie3,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie4,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie5,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie6,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie7,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie8,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie9,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie10,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie11,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie12,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie13,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie14,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=tie15,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                _F(CHARGE=BCload,
+                                   FONC_MULT=Mimp,
+                                   TYPE_CHARGE='FIXE_CSTE',),
+                                ),
+                         COMPORTEMENT=_F(GROUP_MA=('hard___0', 'hard___1', 'hard___2', 'hard___3', 'hard___4', 'hard', 'soft___0', 'soft___1', 'soft___2', 'soft___3', 'soft___4', 'soft'),
+                                         RELATION='MFRONT',
+                                         UNITE_LIBRAIRIE=11,
+                                         NOM_ROUTINE='astergeneralizedmaxwell',
+                                         VERI_BORNE='ARRET',
+                                         ALGO_CPLAN='DEBORST',
+                                         RESI_CPLAN_RELA=1.E-06,
+                                         RESI_INTE_MAXI=1.E-08,
+                                         ITER_INTE_MAXI=100,
+                                         ITER_INTE_PAS=0,
+                                         DEFORMATION='PETIT',
+                                         ITER_CPLAN_MAXI=1,
+                                         SYME_MATR_TANG='OUI',
+                                         PARM_THETA=1.0,),
+                         INCREMENT=_F(LIST_INST=deflist,
+                                      PRECISION=1.E-06,),
+                         CONVERGENCE=_F(ITER_GLOB_MAXI=200,
+                                        ITER_GLOB_ELAS=25,
+                                        ARRET='OUI',),
+                         ARCHIVAGE=_F(PAS_ARCH=1,
+                                      PRECISION=1.E-06,
+                                      CRITERE='RELATIF',),
+                         NEWTON=_F(REAC_INCR=1,
+                                   MATRICE='TANGENTE',
+                                   REAC_ITER=1,
+                                   REAC_ITER_ELAS=0,
+                                   MATR_RIGI_SYME='NON',),
+                         METHODE='NEWTON',
+                         SOLVEUR=_F(RENUM='AUTO',
+                                    NPREC=8,
+                                    ELIM_LAGR='LAGR2',
+                                    STOP_SINGULIER='OUI',
+                                    TYPE_RESOL='AUTO',
+                                    ACCELERATION='AUTO',
+                                    LOW_RANK_SEUIL=0.0,
+                                    PRETRAITEMENTS='AUTO',
+                                    POSTTRAITEMENTS='AUTO',
+                                    PCENT_PIVOT=20,
+                                    RESI_RELA=-1.0,
+                                    GESTION_MEMOIRE='AUTO',
+                                    FILTRAGE_MATRICE=-1.0,
+                                    MIXER_PRECISION='NON',
+                                    MATR_DISTRIBUEE='NON',
+                                    METHODE='MUMPS',),
+                         MESURE=_F(TABLE='NON',),
+                         )
+
+   Liste des comportements
+   Affecté sur 78114 éléments
+     Relation                             : ELAS
+     Déformation                          : PETIT
+     Nombre total de variables internes   : 1
+            V1 : VIDE
+   Affecté sur 30618 éléments
+     Relation                             : prototype (MFRONT ou UMAT)
+     Déformation                          : PETIT
+     Nombre total de variables internes   : 24
+
+  Pour les comportements externes prototypes (MFRONT ou UMAT), on n'a pas d'informations sur le nom des variables internes.
+  Le système linéaire à résoudre a 1384791 degrés de liberté:
+   - 765015 sont des degrés de liberté physiques
+     (ils sont portés par 255005 noeuds du maillage)
+   - 619776 sont les couples de paramètres de Lagrange associés
+     aux 309888 relations linéaires dualisées.
+  La matrice est de taille 1384791 équations.
+  Elle contient 60015585 termes non nuls si elle est symétrique et 118646379 termes non nuls si elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.006 %.
+      Il n'y a pas d'état initial défini. On prend un état initial nul.
+      Le champ <DEPL> est initialisé a zéro
+      Le champ <SIEF_ELGA> est initialisé a zéro
+      Le champ <VARI_ELGA> est initialisé a zéro
+
+ Archivage de l'état initial
+
+  Archivage des champs
+    Champ stocké <DEPL> à l'instant  0.000000000000e+00 pour le numéro d'ordre 0
+    Champ stocké <SIEF_ELGA> à l'instant  0.000000000000e+00 pour le numéro d'ordre 0
+    Champ stocké <VARI_ELGA> à l'instant  0.000000000000e+00 pour le numéro d'ordre 0
+    Champ stocké <COMPORTEMENT> à l'instant  0.000000000000e+00 pour le numéro d'ordre 0
+---------------------------------------------------------------------
+
+ Instant de calcul:  9.900990099010e-04
+---------------------------------------------------------------------
+|     NEWTON     |     RESIDU     |     RESIDU     |     OPTION     |
+|    ITERATION   |     RELATIF    |     ABSOLU     |   ASSEMBLAGE   |
+|                | RESI_GLOB_RELA | RESI_GLOB_MAXI |                |
+---------------------------------------------------------------------
+
+  La mémoire consommée actuellement hors JEVEUX est de 1420.52 Mo.
+  La limite de l'allocation dynamique JEVEUX est fixée à 8641.48 Mo.
+  Cette valeur limite a été réactualisée lors de la mise en oeuvre d'un processus de libération
+|     0          | 1.17803E-12    | 7.74714E-10    |TANGENTE        |
+---------------------------------------------------------------------
+
+  Critère(s) de convergence atteint(s)
+    Le résidu de type <RESI_GLOB_RELA> vaut  1.178025461773e-12 au noeud et degré de liberté <N130444 DY>
+
+  Temps CPU consommé dans ce pas de temps    : 15 min  2 s
+    * Nombre d'itérations de Newton                     : 1
+    * Temps total intégration comportement              : 14.801 s (2 intégrations)
+    * Temps total factorisation matrice                 : 14 min 35 s (1 factorisations)
+    * Temps construction second membre                  : 6.485 s
+    * Temps total résolution K.U=F                      : 2.608 s (1 résolutions)
+    * Temps assemblage matrice                          : 0.000 s
+    * Temps autres opérations                           : 3.181 s
+
+  Mémoire (Mo) :  5511.94 /  3089.53 /  4480.29 /  2028.97 (VmPeak / VmSize / Optimum / Minimum)
+
+  Archivage des champs
+    Champ stocké <DEPL> à l'instant  9.900990099010e-04 pour le numéro d'ordre 1
+    Champ stocké <SIEF_ELGA> à l'instant  9.900990099010e-04 pour le numéro d'ordre 1
+    Champ stocké <VARI_ELGA> à l'instant  9.900990099010e-04 pour le numéro d'ordre 1
+    Champ stocké <COMPORTEMENT> à l'instant  9.900990099010e-04 pour le numéro d'ordre 1
+
+  Adaptation du pas de temps.
+
+    Pour la méthode d'adaptation de type <FIXE>, le critère n'est pas vérifié. Le pas de temps n'est pas adapté.
+
+    Aucun critère d'adaptation n'est vérifié. On garde le pas de temps < 9.900990099010e-04>.
+
+    Après ajustement sur les points de passage obligatoires, le plus petit pas de temps vaut < 9.900990099010e-04>.
+[  0%] Instant calculé : 9.90099e-04, dernier instant archivé : 1.00000e-01, au numéro d'ordre :     1
+---------------------------------------------------------------------
+
+ Instant de calcul:  1.980198019802e-03
+---------------------------------------------------------------------
+|     NEWTON     |     RESIDU     |     RESIDU     |     OPTION     |
+|    ITERATION   |     RELATIF    |     ABSOLU     |   ASSEMBLAGE   |
+|                | RESI_GLOB_RELA | RESI_GLOB_MAXI |                |
+---------------------------------------------------------------------
+|     0          | 5.53323E-07    | 1.43940E-03    |TANGENTE        |
+---------------------------------------------------------------------
+
+  Critère(s) de convergence atteint(s)
+    Le résidu de type <RESI_GLOB_RELA> vaut  5.533228027088e-07 au noeud et degré de liberté <N152851 DY>
+
+  Temps CPU consommé dans ce pas de temps    : 15 min 39 s
+    * Nombre d'itérations de Newton                     : 1
+    * Temps total intégration comportement              : 15.090 s (2 intégrations)
+    * Temps total factorisation matrice                 : 15 min 11 s (1 factorisations)
+    * Temps construction second membre                  : 6.404 s
+    * Temps total résolution K.U=F                      : 2.474 s (1 résolutions)
+    * Temps assemblage matrice                          : 0.000 s
+    * Temps autres opérations                           : 3.945 s
+
+  Mémoire (Mo) :  5511.94 /  3078.83 /  4480.29 /  2028.97 (VmPeak / VmSize / Optimum / Minimum)
+
+  Archivage des champs
+    Champ stocké <DEPL> à l'instant  1.980198019802e-03 pour le numéro d'ordre 2
+    Champ stocké <SIEF_ELGA> à l'instant  1.980198019802e-03 pour le numéro d'ordre 2
+    Champ stocké <VARI_ELGA> à l'instant  1.980198019802e-03 pour le numéro d'ordre 2
+    Champ stocké <COMPORTEMENT> à l'instant  1.980198019802e-03 pour le numéro d'ordre 2
+
+  Adaptation du pas de temps.
+
+    Pour la méthode d'adaptation de type <FIXE>, le pas de temps calculé vaut < 1.980198019802e-03>.
+
+    Sur tous les critères d'adaptation, le plus petit pas de temps vaut < 1.980198019802e-03>.
+
+    La valeur du pas de temps < 1.980198019802e-03> est supérieure à PAS_MAXI < 1.000000000000e-03>.
+    On limite le pas de temps à PAS_MAXI < 1.000000000000e-03>.
+
+    Après ajustement sur les points de passage obligatoires, le plus petit pas de temps vaut < 9.900990099010e-04>.
+[  1%] Instant calculé : 1.98020e-03, dernier instant archivé : 1.00000e-01, au numéro d'ordre :     2
+---------------------------------------------------------------------
+
+ Instant de calcul:  2.970297029703e-03
+---------------------------------------------------------------------
+|     NEWTON     |     RESIDU     |     RESIDU     |     OPTION     |
+|    ITERATION   |     RELATIF    |     ABSOLU     |   ASSEMBLAGE   |
+|                | RESI_GLOB_RELA | RESI_GLOB_MAXI |                |
+---------------------------------------------------------------------
+
+ <I>_EXIT_CODE = 2

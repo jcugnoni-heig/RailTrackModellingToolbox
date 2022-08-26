@@ -149,7 +149,7 @@ FIN()
                 the revision 2708712c2a40 - branch  v14.4_smeca                 
                         Copyright EDF R & D 1991 - 2022                         
                                                                                 
-                    Exécution of:  Thu Aug 25 15:02:11 2022                     
+                    Exécution of:  Thu Aug 25 17:53:43 2022                     
                         Name of the machine:  caelinuxVM                        
                                Structure:  64bit                                
                                CPU type:  x86_64                                
@@ -185,9 +185,9 @@ FIN()
                      Version of the SCOTCH library : 6.0.4                      
 
                   Mémoire limite pour l'exécution : 5000.00 Mo                  
-                   consommée par l'initialisation : 320.72 Mo                   
-                  par les objets du jeu de commandes : 3.12 Mo                  
-                 reste pour l'allocation dynamique : 4676.16 Mo                 
+                   consommée par l'initialisation : 320.60 Mo                   
+                  par les objets du jeu de commandes : 3.23 Mo                  
+                 reste pour l'allocation dynamique : 4676.17 Mo                 
                    Cut limiting files of exchange:  48.00 Go                    
                                                                                 
 
@@ -253,9 +253,9 @@ FIN()
 
  Second reading of the catalogues of the elements made. 
 
- End of reading (lasted 0.053289 S.)   
-  # Memory (Mo):    368.63 /    360.94 /     44.30 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0001 user+syst:          0.08S (syst:          0.05S, Elaps:          0.08S)
+ End of reading (lasted 0.021124 S.)   
+  # Memory (Mo):    368.64 /    360.81 /     44.30 /     22.92 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0001 user+syst:          0.03S (syst:          0.01S, Elaps:          0.04S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt11
@@ -273,7 +273,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mbase    - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:11                                                        
+JE-25-AOUT-2022 17:53:43                                                        
 
 NOMBRE DE NOEUDS                       62579
 
@@ -345,8 +345,8 @@ NOMBRE DE GROUPES DE MAILLES              50
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    380.96 /    373.83 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0002 user+syst:          0.25S (syst:          0.03S, Elaps:          0.24S)
+  # Memory (Mo):    380.97 /    373.84 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0002 user+syst:          0.14S (syst:          0.01S, Elaps:          0.14S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt13
@@ -364,7 +364,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mpad1g   - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:11                                                        
+JE-25-AOUT-2022 17:53:43                                                        
 
 NOMBRE DE NOEUDS                       32071
 
@@ -381,8 +381,8 @@ NOMBRE DE GROUPES DE MAILLES               2
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    380.96 /    376.32 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0004 user+syst:          0.05S (syst:          0.00S, Elaps:          0.05S)
+  # Memory (Mo):    380.97 /    376.33 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0004 user+syst:          0.03S (syst:          0.00S, Elaps:          0.02S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt20
@@ -396,8 +396,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                                      POIN_2=(1000.0, 0.0, 0.0),),
                          INFO=1,)
 
-  # Memory (Mo):    380.96 /    376.32 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0006 user+syst:          0.01S (syst:          0.00S, Elaps:          0.02S)
+  # Memory (Mo):    380.97 /    376.33 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0006 user+syst:          0.00S (syst:          0.00S, Elaps:          0.01S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt26
@@ -409,8 +409,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                          TRANSLATION=(0.0, 214.0, -757.54),
                          INFO=1,)
 
-  # Memory (Mo):    380.96 /    376.32 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0007 user+syst:          0.00S (syst:          0.00S, Elaps:          0.01S)
+  # Memory (Mo):    380.97 /    376.33 /     54.94 /     24.28 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0007 user+syst:          0.01S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt31
@@ -421,8 +421,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                           MAILLAGE_2=mpad1g,
                           OPERATION='SUPERPOSE',)
 
-  # Memory (Mo):    389.95 /    389.95 /     63.86 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0008 user+syst:          0.33S (syst:          0.01S, Elaps:          0.33S)
+  # Memory (Mo):    389.96 /    389.96 /     63.86 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0008 user+syst:          0.19S (syst:          0.00S, Elaps:          0.20S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt33
@@ -440,7 +440,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mpad1d   - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:12                                                        
+JE-25-AOUT-2022 17:53:44                                                        
 
 NOMBRE DE NOEUDS                       32071
 
@@ -457,8 +457,8 @@ NOMBRE DE GROUPES DE MAILLES               2
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    394.75 /    392.49 /     68.66 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0009 user+syst:          0.10S (syst:          0.02S, Elaps:          0.10S)
+  # Memory (Mo):    394.76 /    392.50 /     68.66 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0009 user+syst:          0.03S (syst:          0.00S, Elaps:          0.03S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt40
@@ -472,8 +472,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                                      POIN_2=(1000.0, 0.0, 0.0),),
                          INFO=1,)
 
-  # Memory (Mo):    394.75 /    392.49 /     68.66 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0011 user+syst:          0.00S (syst:          0.00S, Elaps:          0.01S)
+  # Memory (Mo):    394.76 /    392.50 /     68.66 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0011 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt45
@@ -485,8 +485,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                          TRANSLATION=(0.0, 214.0, 757.54),
                          INFO=1,)
 
-  # Memory (Mo):    394.75 /    392.49 /     68.66 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0012 user+syst:          0.01S (syst:          0.00S, Elaps:          0.00S)
+  # Memory (Mo):    394.76 /    392.50 /     68.66 /     33.17 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0012 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt50
@@ -557,8 +557,8 @@ NOMBRE DE GROUPES DE MAILLES               2
    !-------------------------------------------------------------------------!
    
   LE GROUP_NO botn                     DU MAILLAGE mpad1d   EST RENOMME botn___0                 DANS mcomb1d 
-  # Memory (Mo):    408.50 /    408.50 /     82.42 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0013 user+syst:          0.42S (syst:          0.02S, Elaps:          0.43S)
+  # Memory (Mo):    408.51 /    408.51 /     82.42 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0013 user+syst:          0.22S (syst:          0.00S, Elaps:          0.22S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt52
@@ -576,7 +576,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mpad2g   - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:12                                                        
+JE-25-AOUT-2022 17:53:44                                                        
 
 NOMBRE DE NOEUDS                       32071
 
@@ -593,8 +593,8 @@ NOMBRE DE GROUPES DE MAILLES               2
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    413.34 /    411.08 /     87.22 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0014 user+syst:          0.06S (syst:          0.00S, Elaps:          0.05S)
+  # Memory (Mo):    413.38 /    411.12 /     87.22 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0014 user+syst:          0.04S (syst:          0.01S, Elaps:          0.04S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt59
@@ -608,8 +608,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                                      POIN_2=(1000.0, 0.0, 0.0),),
                          INFO=1,)
 
-  # Memory (Mo):    413.34 /    411.08 /     87.22 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0016 user+syst:          0.00S (syst:          0.00S, Elaps:          0.01S)
+  # Memory (Mo):    413.38 /    411.12 /     87.22 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0016 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt64
@@ -621,7 +621,7 @@ NOMBRE DE GROUPES DE MAILLES               2
                          TRANSLATION=(600.0, 214.0, -757.54),
                          INFO=1,)
 
-  # Memory (Mo):    413.34 /    411.08 /     87.22 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
+  # Memory (Mo):    413.38 /    411.12 /     87.22 /     37.42 (VmPeak / VmSize / Optimum / Minimum)
   # Fin orders No:  0017 user+syst:          0.01S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
@@ -693,8 +693,8 @@ NOMBRE DE GROUPES DE MAILLES               2
    !-------------------------------------------------------------------------!
    
   LE GROUP_NO botn                     DU MAILLAGE mpad2g   EST RENOMME botn___1                 DANS mcomb2g 
-  # Memory (Mo):    429.60 /    429.60 /    103.47 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0018 user+syst:          0.41S (syst:          0.01S, Elaps:          0.42S)
+  # Memory (Mo):    429.61 /    429.61 /    103.47 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0018 user+syst:          0.24S (syst:          0.01S, Elaps:          0.25S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt72
@@ -712,7 +712,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mpad2d   - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:13                                                        
+JE-25-AOUT-2022 17:53:44                                                        
 
 NOMBRE DE NOEUDS                       32071
 
@@ -729,8 +729,8 @@ NOMBRE DE GROUPES DE MAILLES               2
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    434.58 /    432.32 /    108.27 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0019 user+syst:          0.05S (syst:          0.01S, Elaps:          0.05S)
+  # Memory (Mo):    434.54 /    432.28 /    108.27 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0019 user+syst:          0.03S (syst:          0.00S, Elaps:          0.03S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt79
@@ -744,8 +744,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                                      POIN_2=(1000.0, 0.0, 0.0),),
                          INFO=1,)
 
-  # Memory (Mo):    434.58 /    432.32 /    108.27 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0021 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
+  # Memory (Mo):    434.54 /    432.28 /    108.27 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0021 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt84
@@ -757,8 +757,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                          TRANSLATION=(600.0, 214.0, 757.54),
                          INFO=1,)
 
-  # Memory (Mo):    434.58 /    432.32 /    108.27 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0022 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
+  # Memory (Mo):    434.54 /    432.28 /    108.27 /     41.75 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0022 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt89
@@ -830,7 +830,7 @@ NOMBRE DE GROUPES DE MAILLES               2
    
   LE GROUP_NO botn                     DU MAILLAGE mpad2d   EST RENOMME botn___2                 DANS mcomb2d 
   # Memory (Mo):    453.61 /    453.61 /    127.42 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0023 user+syst:          0.45S (syst:          0.00S, Elaps:          0.45S)
+  # Fin orders No:  0023 user+syst:          0.27S (syst:          0.00S, Elaps:          0.27S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt91
@@ -848,7 +848,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mpad3g   - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:13                                                        
+JE-25-AOUT-2022 17:53:44                                                        
 
 NOMBRE DE NOEUDS                       32071
 
@@ -865,8 +865,8 @@ NOMBRE DE GROUPES DE MAILLES               2
 
 --------------------------------------------------------------------------------
 
-  # Memory (Mo):    458.57 /    456.31 /    132.22 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0024 user+syst:          0.05S (syst:          0.00S, Elaps:          0.05S)
+  # Memory (Mo):    458.51 /    456.25 /    132.22 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0024 user+syst:          0.02S (syst:          0.00S, Elaps:          0.02S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt98
@@ -880,8 +880,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                                      POIN_2=(1000.0, 0.0, 0.0),),
                          INFO=1,)
 
-  # Memory (Mo):    458.57 /    456.31 /    132.22 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0026 user+syst:          0.01S (syst:          0.01S, Elaps:          0.01S)
+  # Memory (Mo):    458.51 /    456.25 /    132.22 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0026 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt103
@@ -893,8 +893,8 @@ NOMBRE DE GROUPES DE MAILLES               2
                          TRANSLATION=(1200.0, 214.0, -757.54),
                          INFO=1,)
 
-  # Memory (Mo):    458.57 /    456.31 /    132.22 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0027 user+syst:          0.01S (syst:          0.00S, Elaps:          0.00S)
+  # Memory (Mo):    458.51 /    456.25 /    132.22 /     46.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin orders No:  0027 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt108
@@ -966,7 +966,7 @@ NOMBRE DE GROUPES DE MAILLES               2
    
   LE GROUP_NO botn                     DU MAILLAGE mpad3g   EST RENOMME botn___3                 DANS mcomb3g 
   # Memory (Mo):    480.40 /    480.40 /    154.13 /     51.09 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0028 user+syst:          0.49S (syst:          0.00S, Elaps:          0.50S)
+  # Fin orders No:  0028 user+syst:          0.29S (syst:          0.00S, Elaps:          0.29S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt110
@@ -984,7 +984,7 @@ Vérification du maillage.
 
 ------------ MAILLAGE mpad3d   - IMPRESSIONS NIVEAU  1 ------------
 
-JE-25-AOUT-2022 15:02:14                                                        
+JE-25-AOUT-2022 17:53:45                                                        
 
 NOMBRE DE NOEUDS                       32071
 
@@ -1002,7 +1002,7 @@ NOMBRE DE GROUPES DE MAILLES               2
 --------------------------------------------------------------------------------
 
   # Memory (Mo):    485.36 /    483.10 /    158.92 /     51.09 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0029 user+syst:          0.06S (syst:          0.00S, Elaps:          0.06S)
+  # Fin orders No:  0029 user+syst:          0.04S (syst:          0.01S, Elaps:          0.04S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt117
@@ -1030,7 +1030,7 @@ NOMBRE DE GROUPES DE MAILLES               2
                          INFO=1,)
 
   # Memory (Mo):    485.36 /    483.10 /    158.92 /     51.09 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0032 user+syst:          0.01S (syst:          0.00S, Elaps:          0.01S)
+  # Fin orders No:  0032 user+syst:          0.00S (syst:          0.00S, Elaps:          0.00S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt127
@@ -1102,7 +1102,7 @@ NOMBRE DE GROUPES DE MAILLES               2
    
   LE GROUP_NO botn                     DU MAILLAGE mpad3d   EST RENOMME botn___4                 DANS mcomb3d 
   # Memory (Mo):    509.32 /    509.32 /    182.95 /     55.05 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0033 user+syst:          0.57S (syst:          0.01S, Elaps:          0.57S)
+  # Fin orders No:  0033 user+syst:          0.34S (syst:          0.01S, Elaps:          0.33S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt132
@@ -1122,7 +1122,7 @@ NOMBRE DE GROUPES DE MAILLES               2
 
 Création du fichier au format MED 3.3.1.
   # Memory (Mo):    540.85 /    510.10 /    212.68 /     56.54 (VmPeak / VmSize / Optimum / Minimum)
-  # Fin orders No:  0034 user+syst:          0.14S (syst:          0.02S, Elaps:          0.15S)
+  # Fin orders No:  0034 user+syst:          0.08S (syst:          0.00S, Elaps:          0.09S)
   # ------------------------------------------------------------------------------------------
 
 .. __stg1_txt134
@@ -1253,59 +1253,59 @@ Création du fichier au format MED 3.3.1.
      - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX, 
        LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
   
- <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 15:02:15
+ <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 17:53:45
 
 
   <I> Informations sur les temps d'exécution
-      Temps cpu user total                    3.84 s
-      Temps cpu systeme total                 0.36 s
-      Temps elapsed total                     4.22 s
-      Temps restant                         805.78 s
+      Temps cpu user total                    2.21 s
+      Temps cpu systeme total                 0.16 s
+      Temps elapsed total                     2.37 s
+      Temps restant                         807.63 s
 
 
  The signup of the saved base is (with the address 0): 
-  e88590ae2fcae6fc1554ad8bba6e134482781038 
+  ae89b9ac59b4e31058bf402792d7acef3fec8bb5 
 
  ********************************************************************************
  * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
  ********************************************************************************
- * init (jdc)               :       0.41 :       0.04 :       0.45 :       0.46 *
- *  . compile               :       0.01 :       0.00 :       0.01 :       0.00 *
- *  . exec_compile          :       0.11 :       0.00 :       0.11 :       0.12 *
- *  . report                :       0.00 :       0.00 :       0.00 :       0.02 *
+ * init (jdc)               :       0.22 :       0.02 :       0.24 :       0.23 *
+ *  . compile               :       0.00 :       0.00 :       0.00 :       0.00 *
+ *  . exec_compile          :       0.05 :       0.01 :       0.06 :       0.06 *
+ *  . report                :       0.01 :       0.00 :       0.01 :       0.00 *
  *  . build                 :       0.00 :       0.00 :       0.00 :       0.00 *
- * DEBUT                    :       0.03 :       0.05 :       0.08 :       0.08 *
- * LIRE_MAILLAGE            :       0.22 :       0.03 :       0.25 :       0.24 *
- * LIRE_MAILLAGE            :       0.05 :       0.00 :       0.05 :       0.05 *
- * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.02 *
- * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.01 *
- * ASSE_MAILLAGE            :       0.32 :       0.01 :       0.33 :       0.33 *
- * LIRE_MAILLAGE            :       0.08 :       0.02 :       0.10 :       0.10 *
+ * DEBUT                    :       0.02 :       0.01 :       0.03 :       0.04 *
+ * LIRE_MAILLAGE            :       0.13 :       0.01 :       0.14 :       0.14 *
+ * LIRE_MAILLAGE            :       0.03 :       0.00 :       0.03 :       0.02 *
  * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.01 *
  * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.00 *
- * ASSE_MAILLAGE            :       0.40 :       0.02 :       0.42 :       0.43 *
- * LIRE_MAILLAGE            :       0.06 :       0.00 :       0.06 :       0.05 *
- * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.01 *
- * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.00 *
- * ASSE_MAILLAGE            :       0.40 :       0.01 :       0.41 :       0.42 *
- * LIRE_MAILLAGE            :       0.04 :       0.01 :       0.05 :       0.05 *
- * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
+ * ASSE_MAILLAGE            :       0.19 :       0.00 :       0.19 :       0.20 *
+ * LIRE_MAILLAGE            :       0.03 :       0.00 :       0.03 :       0.03 *
  * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
- * ASSE_MAILLAGE            :       0.45 :       0.00 :       0.45 :       0.45 *
- * LIRE_MAILLAGE            :       0.05 :       0.00 :       0.05 :       0.05 *
- * MODI_MAILLAGE            :       0.00 :       0.01 :       0.01 :       0.01 *
+ * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * ASSE_MAILLAGE            :       0.22 :       0.00 :       0.22 :       0.22 *
+ * LIRE_MAILLAGE            :       0.03 :       0.01 :       0.04 :       0.04 *
+ * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
  * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.00 *
- * ASSE_MAILLAGE            :       0.49 :       0.00 :       0.49 :       0.50 *
- * LIRE_MAILLAGE            :       0.06 :       0.00 :       0.06 :       0.06 *
+ * ASSE_MAILLAGE            :       0.23 :       0.01 :       0.24 :       0.25 *
+ * LIRE_MAILLAGE            :       0.03 :       0.00 :       0.03 :       0.03 *
  * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
  * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
- * ASSE_MAILLAGE            :       0.56 :       0.01 :       0.57 :       0.57 *
- * IMPR_RESU                :       0.12 :       0.02 :       0.14 :       0.15 *
- * FIN                      :       0.03 :       0.13 :       0.16 :       0.15 *
- *  . part Superviseur      :       0.47 :       0.10 :       0.57 :       0.58 *
- *  . part Fortran          :       3.38 :       0.26 :       3.64 :       3.65 *
+ * ASSE_MAILLAGE            :       0.27 :       0.00 :       0.27 :       0.27 *
+ * LIRE_MAILLAGE            :       0.02 :       0.00 :       0.02 :       0.02 *
+ * MODI_MAILLAGE            :       0.01 :       0.00 :       0.01 :       0.01 *
+ * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * ASSE_MAILLAGE            :       0.29 :       0.00 :       0.29 :       0.29 *
+ * LIRE_MAILLAGE            :       0.03 :       0.01 :       0.04 :       0.04 *
+ * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * MODI_MAILLAGE            :       0.00 :       0.00 :       0.00 :       0.00 *
+ * ASSE_MAILLAGE            :       0.33 :       0.01 :       0.34 :       0.33 *
+ * IMPR_RESU                :       0.08 :       0.00 :       0.08 :       0.09 *
+ * FIN                      :       0.03 :       0.08 :       0.11 :       0.10 *
+ *  . part Superviseur      :       0.24 :       0.03 :       0.27 :       0.29 *
+ *  . part Fortran          :       1.98 :       0.13 :       2.11 :       2.08 *
  ********************************************************************************
- * TOTAL_JOB                :       3.84 :       0.36 :       4.20 :       4.22 *
+ * TOTAL_JOB                :       2.21 :       0.16 :       2.37 :       2.37 *
  ********************************************************************************
 
-EXECUTION_CODE_ASTER_EXIT_92105=0
+EXECUTION_CODE_ASTER_EXIT_87705=0

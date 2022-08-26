@@ -3,21 +3,41 @@
 
 # Platform requirement: 
 # -----------------------
-Option 1) Download the pre-made ISO image of the Railtrack Modeling Toolbox based on CAELinux 2020 distribution (highly recommended)
+Option 1) Download the pre-made ISO image of the Railtrack Modeling Toolbox based on CAELinux 2020 distribution 
 Option 2) Install CAELinux 2020 Lite and customize it 
 Option 3) Custom installation using another distribution, see below and read "INSTALL" document to guide you in the customization
 
 
-# Python 2.7 modules
-# ------------------
-List:  python-pyperclip , python-pyqt5 , python-numpy
+#  Dependencies to run the toolbox itself
+# ---------------------------------------
+List:  python (vers 2.7) , python3, python-pyperclip , python-pyqt5 , python-numpy, python3-scipy, python3-matplotlib, python3-pyqt5
 
-Installation: sudo apt install python-pyperclip python-pyqt5 python-numpy
+# Dependencies to install & run Salome-Meca 2019 & Code-Aster 14.6 
+# ----------------------------------------------------------------
+Commands for Ubuntu 18.04:
 
+see script installDependencies.sh
 
 # Code-Aster 14.6 and Salome-Meca 2019
 ---------------------------------------
 If using a custom install, you will need to 
-1) Download Salome-Meca 2019 from www.code-aster.org and install it to /opt/SalomeMeca  
-2) Download Code-Aster 14.6 and compile/install it in /opt/aster (be sure to enable MFront support)
+
+1) Download Salome-Meca 2019 from www.code-aster.org and install it to /opt/SalomeMeca:
+  wget https://www.code-aster.org/FICHIERS/salome_meca-2019.0.3-1-universal.tgz
+  tar zxvf salome_meca-2019.0.3-1-universal.tgz
+  sudo mkdir /opt/SalomeMeca
+  sudo ./salome_meca-2019.0.3-1-universal.run
+
+You might need to adapt some paths in the shell scripts (.sh) of the Toolbox.   
+
+2) Download Code-Aster 14.6 from https://www.code-aster.org/FICHIERS/aster-full-src-14.6.0-1.noarch.tar.gz  
+
+extract the archive to a temporary directory with :
+  wget https://www.code-aster.org/FICHIERS/aster-full-src-14.6.0-1.noarch.tar.gz 
+  tar zxvf aster-full-src-14.6.0-1.noarch.tar.gz 
+
+then compile/install it in /opt/aster (be sure to have MFront support):
+  cd aster-full-src-14.6.0
+  python3 setup.py install --prefix=/opt/aster
+ 
 

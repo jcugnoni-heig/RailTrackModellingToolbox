@@ -5,11 +5,14 @@ It can however be adapted to run in other environments as long as the following 
 
 --- Prerequisites---
 To run the different models of the toolbox, you will need the following:
-1) Python 2.7 with Numpy, PyQt5 and Pyperclip libraries
+1) Python 2.7 with Numpy, PyQt5 and Pyperclip libraries, Python3-numpy & Python3-scipy, Python3-matplotlib
 1) an installation of Salome-Meca 2019 for Linux (see www.code-aster.org). The default installation path (recommended) is /opt/SalomeMeca/. 
 2) an installation of Code-Aster with MFront support. By default an installation of Code-Aster 14.6 is expected in /opt/aster. 
 3) if you intend to convert mesh files from Abaqus format to Aster, you will also need CalculiX PrePost "cgx".
 Its default path is set to "/opt/CLCX-caelinux64/bin/cgx2.12"
+
+PLEASE READ dependencies.txt and installDependencies.sh for more details.
+
 
 --- Setting the Model paths for your own installation ---
 The Code-Aster models included in the toolbox use absolute paths to locate the different files, and thus you will need to adapt some files to match your installation.

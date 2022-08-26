@@ -1,0 +1,761 @@
+# ------------------------------------------------------------------------------------------
+# Impression du contenu du fichier de commandes à exécuter :
+# ------------------------------------------------------------------------------------------
+import os
+import json
+
+DEBUT(PAR_LOT='NON')
+
+with open('fort.5', 'r') as f:
+	txt = f.read()
+f.close()
+
+parameters = json.loads(txt)
+computeAcoustic = parameters['computeAcoustic']
+FRFtype = parameters['outputType']
+nJobs = parameters['nJobs']
+
+squel = LIRE_MAILLAGE(FORMAT="MED",UNITE=2);
+
+if computeAcoustic:
+	grid = LIRE_MAILLAGE(FORMAT="MED",UNITE=7);
+
+for i in range(nJobs):
+    # Get frequencies of job i
+    with open('fort.' + str(70+i)) as freqFile:
+        freqlines = freqFile.read().splitlines()
+    freqFile.close()
+
+    allFreqs = []
+    for freqline in freqlines:
+        try:
+            frequency=float(freqline.split(' ')[0])
+        except:
+            continue
+        allFreqs.append(frequency)
+
+    # Get harmonic result of job i
+    resHarm = LIRE_RESU(FORMAT='MED',
+                      UNITE=10+i,
+                      FORMAT_MED=(_F(NOM_CHAM=FRFtype,
+                                     NOM_CHAM_MED='resOut',),),
+                      TYPE_RESU='DYNA_HARMO',
+                      TOUT_ORDRE='OUI',
+                      MAILLAGE=squel);
+    
+    # Get fields for each frequency and append them to the final result
+    for freq in allFreqs:                              
+        field = CREA_CHAMP(FREQ=freq,
+                              NOM_CHAM=FRFtype,
+                              OPERATION='EXTR',
+                              RESULTAT=resHarm,
+                              TYPE_CHAM='NOEU_DEPL_R')
+        
+        if i == 0 and freq == allFreqs[0]:
+            harmo = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=field, FREQ=freq),);
+        else:
+            harmo = CREA_RESU(reuse=harmo, RESULTAT=harmo, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=field, FREQ=freq),);
+
+        DETRUIRE(CONCEPT=_F(NOM=(field, )))
+        
+    DETRUIRE(CONCEPT=_F(NOM=(resHarm, )))
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=harmo,
+                  PARTIE='REEL',
+                  TOUT_CHAM='OUI'),
+          UNITE=3)
+
+
+
+
+if computeAcoustic == False:
+    FIN()
+
+for i in range(nJobs):
+    # Get frequencies of job i
+    with open('fort.' + str(70+i)) as freqFile:
+        freqlines = freqFile.read().splitlines()
+    freqFile.close()
+
+    allFreqs = []
+    for freqline in freqlines:
+        try:
+            frequency=float(freqline.split(' ')[0])
+        except:
+            continue
+        allFreqs.append(frequency)
+
+    resAcou = LIRE_RESU(FORMAT='MED',
+                      UNITE=40+i,
+                      FORMAT_MED=(_F(NOM_CHAM='SIEF_NOEU', #UT01_NOEU
+                                     NOM_CHAM_MED='acPressure',),),
+                      TYPE_RESU='DYNA_HARMO',
+                      TOUT_ORDRE='OUI',
+                      MAILLAGE=grid);
+    
+    # Get fields for each frequency and append them to the final result
+    for freq in allFreqs:                                                 
+        press = CREA_CHAMP(FREQ=freq,
+                              NOM_CHAM='SIEF_NOEU',
+                              OPERATION='EXTR',
+                              RESULTAT=resAcou,
+                              TYPE_CHAM='NOEU_SIEF_R')
+        
+        if i == 0 and freq == allFreqs[0]:
+            pressAc = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=press, FREQ=freq),);
+        else:
+            pressAc = CREA_RESU(reuse=pressAc, RESULTAT=pressAc, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=press, FREQ=freq),);
+
+        DETRUIRE(CONCEPT=_F(NOM=(press)))
+        
+    DETRUIRE(CONCEPT=_F(NOM=(resAcou)))
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(RESULTAT=pressAc,
+                  PARTIE='REEL',
+                  TOUT_CHAM='OUI'),
+          UNITE=4)
+
+
+FIN()
+# ------------------------------------------------------------------------------------------
+
+  Ouverture en écriture du fichier ./vola.1
+
+ <INFO> Démarrage de l'exécution.
+                                                                                
+                                                                                
+              -- CODE_ASTER -- VERSION : EXPLOITATION (stable) --               
+                                                                                
+                     Version 14.4.0 modifiée le 21/08/2019                      
+                 révision 2708712c2a40 - branche 'v14.4_smeca'                  
+                         Copyright EDF R&D 1991 - 2022                          
+                                                                                
+                    Exécution du : Thu Aug 25 19:03:02 2022                     
+                         Nom de la machine : caelinuxVM                         
+                              Architecture : 64bit                              
+                          Type de processeur : x86_64                           
+Système d'exploitation : Linux-4.15.0-112-generic-x86_64-with-debian-buster-sid 
+                        Langue des messages : en (UTF-8)                        
+                                                                                
+                           Version de Python : 3.6.5                            
+                           Version de NumPy : 1.15.1                            
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS2_2>                                                                  !
+   !                                                                                    !
+   !     Vous utilisez une vieille version de Code_Aster.                               !
+   !                                                                                    !
+   !     En mettant à jour votre version, vous bénéficierez des dernières améliorations !
+   !     apportées au code depuis 15 mois.                                              !
+   !     Si vous avez des développements privés, vous risquez d'avoir un travail        !
+   !     important de portage si vous ne suivez pas les mises à jour.                   !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+                           Parallélisme MPI : inactif                           
+                          Parallélisme OpenMP : actif                           
+                        Nombre de processus utilisés : 1                        
+                     Version de la librairie HDF5 : 1.10.3                      
+                      Version de la librairie MED : 4.0.0                       
+                     Version de la librairie MFront : 3.2.1                     
+                     Version de la librairie MUMPS : 5.1.2                      
+                        Librairie PETSc : non disponible                        
+                     Version de la librairie SCOTCH : 6.0.4                     
+
+                  Mémoire limite pour l'exécution : 8000.00 Mo                  
+                   consommée par l'initialisation : 280.71 Mo                   
+                  par les objets du jeu de commandes : 0.00 Mo                  
+                 reste pour l'allocation dynamique : 7718.25 Mo                 
+                Taille limite des fichiers d'échange : 48.00 Go                 
+                                                                                
+
+.. __stg1_txt4
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0001            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DEBUT(PAR_LOT='NON',
+        IMPR_MACRO='NON',
+        DEBUG=_F(JXVERI='NON',
+                 SDVERI='NON',
+                 JEVEUX='NON',
+                 HIST_ETAPE='NON',),
+        MESURE_TEMPS=_F(NIVE_DETAIL=1,
+                        MOYENNE='NON',),
+        MEMOIRE=_F(TAILLE_BLOC=800.0,
+                   TAILLE_GROUP_ELEM=1000,),
+        RESERVE_CPU=_F(BORNE=900,),
+        INFO=1,)
+
+   
+   !---------------------------------------------------!
+   ! <I> <SUPERVIS_41>                                 !
+   !                                                   !
+   ! La version 14.4.0 a été modifiée par 1 révisions. !
+   !---------------------------------------------------!
+   
+   
+   !------------------------------------------------------------------------------------!
+   ! <A> <SUPERVIS_1>                                                                   !
+   !                                                                                    !
+   !  L'utilisation du mot-clé PAR_LOT='NON' permet d'accéder en lecture et en écriture !
+   !  au contenu des concepts Aster. De ce fait, votre étude est exclue du périmètre    !
+   !  qualifié de Code_Aster puisque toutes ses étapes ne peuvent être certifiées.      !
+   !                                                                                    !
+   !  Conseils :                                                                        !
+   !    - Il n'y a pas particulièrement de risque de résultat faux... sauf si votre     !
+   !      programmation l'introduit.                                                    !
+   !    - Distinguez le calcul lui-même (qui doit sans doute passer en PAR_LOT='OUI')   !
+   !      des post-traitements (qui nécessiteraient le mode PAR_LOT='NON') qui peuvent  !
+   !      être réalisés en POURSUITE.                                                   !
+   !                                                                                    !
+   !                                                                                    !
+   ! Ceci est une alarme. Si vous ne comprenez pas le sens de cette                     !
+   ! alarme, vous pouvez obtenir des résultats inattendus !                             !
+   !------------------------------------------------------------------------------------!
+   
+
+  Valeur initiale du temps CPU maximum =   3600900 secondes
+  Valeur du temps CPU maximum passé aux commandes =   3600000 secondes
+  Réserve CPU prévue = 900 secondes
+
+  Ouverture en écriture du fichier ./glob.1
+
+  Ouverture en écriture du fichier ./vola.1
+
+  Ouverture en lecture du fichier /opt/SalomeMeca/V2019_univ/tools/Code_aster_stable-v144_smeca/lib/aster/elem.1
+
+     Nom de la base                          :  ELEMBASE
+     Créée avec la version                   :  14.04.00
+     Nombre d'enregistrements utilisés       :  43
+     Nombre d'enregistrements maximum        :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+
+  Ouverture en lecture du fichier /opt/SalomeMeca/V2019_univ/tools/Code_aster_stable-v144_smeca/lib/aster/elem.1
+
+
+     Nom de la base                          :  ELEMBASE
+     Nombre d'enregistrements utilisés       :  43
+     Nombre d'enregistrements maximum        :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  60
+     Volume des accès en lecture             :         46.88 Mo.
+     Nombre total d'accès en écriture        :  0
+     Volume des accès en écriture            :          0.00 Mo.
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+
+  Relecture des catalogues des éléments faite.
+
+  Fin de lecture (durée  0.022819  s.) 
+  # Mémoire (Mo) :   326.40 /   318.58 /    44.30 /    22.92 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0001   user+syst:        0.04s (syst:        0.02s, elaps:        0.04s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt15
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0002            Concept de type : maillage_sdaster
+  # ------------------------------------------------------------------------------------------
+  squel = LIRE_MAILLAGE(FORMAT='MED',
+                        UNITE=2,
+                        INFO_MED=1,
+                        VERI_MAIL=_F(VERIF='OUI',
+                                     APLAT=1.E-3,),
+                        INFO=1,)
+
+Vérification du maillage.
+
+------------ MAILLAGE squel    - IMPRESSIONS NIVEAU  1 ------------
+
+CODE_ASTER - 14.04.00 - EXPLOITATION (stable)               caelinuxVM       - L
+
+NOMBRE DE NOEUDS                      239672
+
+NOMBRE DE MAILLES                     193048
+                              SEG2                 2688
+                              QUAD4               50024
+                              QUAD8               21344
+                              HEXA8               98576
+                              HEXA20              20416
+
+NOMBRE DE GROUPES DE MAILLES               8
+                              elem1L                           24131
+                              elem2R                           24131
+                              elem0L                           24131
+                              elem2L                           24131
+                              elem1R                           24131
+                              elem3R                           24131
+                              elem0R                           24131
+                              elem3L                           24131
+
+--------------------------------------------------------------------------------
+
+  # Mémoire (Mo) :   377.75 /   353.25 /    94.01 /    53.73 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0002   user+syst:        0.41s (syst:        0.01s, elaps:        0.42s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt41
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0004            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resHarm = LIRE_RESU(TYPE_RESU='DYNA_HARMO',
+                      FORMAT='MED',
+                      MAILLAGE=squel,
+                      UNITE=10,
+                      FORMAT_MED=_F(NOM_CHAM='VITE',
+                                    NOM_CHAM_MED='resOut',),
+                      PROL_ZERO='OUI',
+                      TOUT_ORDRE='OUI',)
+
+  # Mémoire (Mo) :   433.73 /   393.87 /   150.03 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0004   user+syst:        0.13s (syst:        0.06s, elaps:        0.12s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt49
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0005            Concept de type : cham_no_sdaster
+  # ------------------------------------------------------------------------------------------
+  field = CREA_CHAMP(TYPE_CHAM='NOEU_DEPL_R',
+                     OPERATION='EXTR',
+                     RESULTAT=resHarm,
+                     NOM_CHAM='VITE',
+                     FREQ=300.0,
+                     INTERPOL='NON',
+                     PRECISION=1.E-06,
+                     CRITERE='RELATIF',
+                     INFO=1,)
+
+  # Mémoire (Mo) :   433.73 /   428.62 /   150.03 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0005   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt52
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0006            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  harmo = CREA_RESU(OPERATION='AFFE',
+                    TYPE_RESU='DYNA_HARMO',
+                    NOM_CHAM='VITE',
+                    AFFE=_F(CHAM_GD=field,
+                            FREQ=(300.0, ),
+                            CRITERE='RELATIF',
+                            PRECISION=0.0,),
+                    )
+
+  # Mémoire (Mo) :   463.37 /   463.37 /   179.71 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0006   user+syst:        0.02s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt56
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0007            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(field, ),),
+           INFO=1,)
+
+  # Mémoire (Mo) :   463.37 /   428.62 /   179.71 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0007   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt49
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0008            Concept de type : cham_no_sdaster
+  # ------------------------------------------------------------------------------------------
+  field = CREA_CHAMP(TYPE_CHAM='NOEU_DEPL_R',
+                     OPERATION='EXTR',
+                     RESULTAT=resHarm,
+                     NOM_CHAM='VITE',
+                     FREQ=500.0,
+                     INTERPOL='NON',
+                     PRECISION=1.E-06,
+                     CRITERE='RELATIF',
+                     INFO=1,)
+
+  # Mémoire (Mo) :   463.37 /   463.37 /   179.72 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0008   user+syst:        0.01s (syst:        0.01s, elaps:        0.02s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt54
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0009            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  harmo = CREA_RESU(reuse=harmo,
+                    OPERATION='AFFE',
+                    TYPE_RESU='DYNA_HARMO',
+                    NOM_CHAM='VITE',
+                    RESULTAT=harmo,
+                    AFFE=_F(CHAM_GD=field,
+                            FREQ=(500.0, ),
+                            CRITERE='RELATIF',
+                            PRECISION=0.0,),
+                    )
+
+  # Mémoire (Mo) :   468.86 /   468.86 /   185.20 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0009   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt56
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0010            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(field, ),),
+           INFO=1,)
+
+  # Mémoire (Mo) :   468.86 /   434.11 /   185.20 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0010   user+syst:        0.01s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt58
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0011            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(resHarm, ),),
+           INFO=1,)
+
+  # Mémoire (Mo) :   468.86 /   393.49 /   185.20 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0011   user+syst:        0.01s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt41
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0012            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  resHarm = LIRE_RESU(TYPE_RESU='DYNA_HARMO',
+                      FORMAT='MED',
+                      MAILLAGE=squel,
+                      UNITE=11,
+                      FORMAT_MED=_F(NOM_CHAM='VITE',
+                                    NOM_CHAM_MED='resOut',),
+                      PROL_ZERO='OUI',
+                      TOUT_ORDRE='OUI',)
+
+  # Mémoire (Mo) :   473.97 /   434.11 /   190.31 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0012   user+syst:        0.12s (syst:        0.03s, elaps:        0.12s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt49
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0013            Concept de type : cham_no_sdaster
+  # ------------------------------------------------------------------------------------------
+  field = CREA_CHAMP(TYPE_CHAM='NOEU_DEPL_R',
+                     OPERATION='EXTR',
+                     RESULTAT=resHarm,
+                     NOM_CHAM='VITE',
+                     FREQ=800.0,
+                     INTERPOL='NON',
+                     PRECISION=1.E-06,
+                     CRITERE='RELATIF',
+                     INFO=1,)
+
+  # Mémoire (Mo) :   473.97 /   468.86 /   190.31 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0013   user+syst:        0.02s (syst:        0.01s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt54
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0014            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  harmo = CREA_RESU(reuse=harmo,
+                    OPERATION='AFFE',
+                    TYPE_RESU='DYNA_HARMO',
+                    NOM_CHAM='VITE',
+                    RESULTAT=harmo,
+                    AFFE=_F(CHAM_GD=field,
+                            FREQ=(800.0, ),
+                            CRITERE='RELATIF',
+                            PRECISION=0.0,),
+                    )
+
+  # Mémoire (Mo) :   474.34 /   474.34 /   190.69 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0014   user+syst:        0.01s (syst:        0.01s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt56
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0015            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(field, ),),
+           INFO=1,)
+
+  # Mémoire (Mo) :   474.34 /   439.59 /   190.69 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0015   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt49
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0016            Concept de type : cham_no_sdaster
+  # ------------------------------------------------------------------------------------------
+  field = CREA_CHAMP(TYPE_CHAM='NOEU_DEPL_R',
+                     OPERATION='EXTR',
+                     RESULTAT=resHarm,
+                     NOM_CHAM='VITE',
+                     FREQ=1000.0,
+                     INTERPOL='NON',
+                     PRECISION=1.E-06,
+                     CRITERE='RELATIF',
+                     INFO=1,)
+
+  # Mémoire (Mo) :   474.34 /   474.34 /   190.69 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0016   user+syst:        0.02s (syst:        0.01s, elaps:        0.02s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt54
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0017            Concept de type : dyna_harmo
+  # ------------------------------------------------------------------------------------------
+  harmo = CREA_RESU(reuse=harmo,
+                    OPERATION='AFFE',
+                    TYPE_RESU='DYNA_HARMO',
+                    NOM_CHAM='VITE',
+                    RESULTAT=harmo,
+                    AFFE=_F(CHAM_GD=field,
+                            FREQ=(1000.0, ),
+                            CRITERE='RELATIF',
+                            PRECISION=0.0,),
+                    )
+
+  # Mémoire (Mo) :   479.83 /   479.83 /   196.17 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0017   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt56
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0018            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(field, ),),
+           INFO=1,)
+
+  # Mémoire (Mo) :   479.83 /   445.08 /   196.17 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0018   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt58
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0019            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  DETRUIRE(CONCEPT=_F(NOM=(resHarm, ),),
+           INFO=1,)
+
+  # Mémoire (Mo) :   479.83 /   404.46 /   196.17 /    54.67 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0019   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt64
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0020            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  IMPR_RESU(FORMAT='MED',
+            UNITE=3,
+            VERSION_MED='3.3.1',
+            RESU=_F(RESULTAT=harmo,
+                    PARTIE='REEL',
+                    TOUT_CHAM='OUI',
+                    INFO_MAILLAGE='NON',
+                    IMPR_NOM_VARI='OUI',),
+            PROC0='OUI',
+            INFO=1,)
+
+
+Création du fichier au format MED 3.3.1.
+  # Mémoire (Mo) :   479.83 /   404.60 /   196.17 /    58.49 (VmPeak / VmSize / Optimum / Minimum)
+  # Fin commande No : 0020   user+syst:        0.19s (syst:        0.06s, elaps:        0.19s)
+  # ------------------------------------------------------------------------------------------
+
+.. __stg1_txt70
+  # ------------------------------------------------------------------------------------------
+  # Commande No :  0021            Concept de type : -
+  # ------------------------------------------------------------------------------------------
+  FIN(FORMAT_HDF='NON',
+      RETASSAGE='NON',
+      INFO_RESU='OUI',
+      PROC0='OUI',
+      )
+
+   
+   !-------------------------------------------------------------------------!
+   ! <I> <CATAMESS_89>                                                       !
+   !                                                                         !
+   !     Liste des alarmes émises lors de l'exécution du calcul.             !
+   !                                                                         !
+   !     Les alarmes que vous avez choisies d'ignorer sont précédées de (*). !
+   !     Nombre d'occurrences pour chacune des alarmes :                     !
+   !            SUPERVIS2_2          émise    1 fois                         !
+   !            SUPERVIS_1           émise    1 fois                         !
+   !-------------------------------------------------------------------------!
+   
+
+ ======>
+
+ STRUCTURE DU CONCEPT harmo    CALCULE POUR          4 NUMEROS D'ORDRE
+
+ LISTE DES NOMS SYMBOLIQUES:
+ ! ---------- !----------------!
+ ! NUME_ORDRE !      VITE      !
+ ! ---------- !----------------!
+ !          1 !     DEPL_R     !
+ !        ... !      ...       !
+ !          4 !     DEPL_R     !
+ ! ---------- !----------------!
+
+ LISTE DES NOMS DE VARIABLES D'ACCES:
+                                      FREQ             DE TYPE  R
+
+ LISTE DES NOMS DE PARAMETRES:
+ ! ---------- !----------------!----------------!----------------!----------------!
+ ! NUME_ORDRE !    CARAELEM    !    CHAMPMAT    !     EXCIT      !     MODELE     !
+ ! ---------- !----------------!----------------!----------------!----------------!
+ !          1 !       K8       !       K8       !      K24       !       K8       !
+ !        ... !      ...       !      ...       !      ...       !      ...       !
+ !          4 !       K8       !       K8       !      K24       !       K8       !
+ ! ---------- !----------------!----------------!----------------!----------------!
+ ---------------------------------------------------------------------------
+ Concepts de la base: G
+    Nom       Type                 Taille (Mo)         Nombre      Nombre de
+                                                     d'objets       segments
+    TOTAL                               111.59            106            196
+  
+    squel      MAILLAGE_SDASTER          33.05             34             55
+    harmo      DYNA_HARMO                51.24             27             35
+    &FOZERO                               0.00              2              2
+    &&_NUM_C                              0.00              1              1
+    &CATA.AC                              0.00              2              4
+    &CATA.CL                              0.60              1              3
+    &CATA.GD                              0.14              4             11
+    &CATA.ME                              0.20              2              4
+    &CATA.OP                              0.30              4             19
+    &CATA.PH                              0.00              1              1
+    &CATA.PR                              0.00              2              4
+    &CATA.TE                             26.03             17             42
+    &CATA.TH                              0.01              2              4
+    &CATA.TM                              0.01              7             11
+ ---------------------------------------------------------------------------
+
+
+     Nom de la base                          :  GLOBALE
+     Nombre d'enregistrements utilisés       :  163
+     Nombre d'enregistrements maximum        :  62914
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  7
+     Volume des accès en lecture             :          5.47 Mo.
+     Nombre total d'accès en écriture        :  179
+     Volume des accès en écriture            :        139.84 Mo.
+     Nombre d'identificateurs utilisés       :  257
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  12 %
+
+
+     Nom de la base                          :  VOLATILE
+     Nombre d'enregistrements utilisés       :  3
+     Nombre d'enregistrements maximum        :  62914
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  0
+     Volume des accès en lecture             :          0.00 Mo.
+     Nombre total d'accès en écriture        :  6
+     Volume des accès en écriture            :          4.69 Mo.
+     Nombre d'identificateurs utilisés       :  191
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  9 %
+
+ <FIN> Arrêt normal dans "FIN".
+ <I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
+
+ La mémoire demandée au lancement est surestimée, elle est de 8000.00 Mo.
+ Le pic mémoire utilisée est de 479.83 Mo.
+
+
+
+     Nom de la base                          :  ELEMBASE
+     Nombre d'enregistrements utilisés       :  43
+     Nombre d'enregistrements maximum        :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  60
+     Volume des accès en lecture             :         46.88 Mo.
+     Nombre total d'accès en écriture        :  0
+     Volume des accès en écriture            :          0.00 Mo.
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+  
+ <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                      58.49 Mo
+ <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                     196.17 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :     479.83 Mo
+  
+ <I>       FERMETURE DES BASES EFFECTUEE
+  
+   STATISTIQUES CONCERNANT L'ALLOCATION DYNAMIQUE :
+     TAILLE CUMULEE MAXIMUM            :                  196  Mo.
+     TAILLE CUMULEE LIBEREE            :                   92  Mo.
+     NOMBRE TOTAL D'ALLOCATIONS        :                 3307
+     NOMBRE TOTAL DE LIBERATIONS       :                 3287
+     APPELS AU MECANISME DE LIBERATION :                    0
+     TAILLE MEMOIRE CUMULEE RECUPEREE  :                    0  Mo.
+     VOLUME DES LECTURES               :                    0  Mo.
+     VOLUME DES ECRITURES              :                    0  Mo.
+  
+   MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :      58.49 Mo
+     - IMPOSE DE NOMBREUX ACCES DISQUE
+     - RALENTIT LA VITESSE D'EXECUTION
+   MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :     196.17 Mo
+     - LIMITE LES ACCES DISQUE
+     - AMELIORE LA VITESSE D'EXECUTION
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :     479.83 Mo
+     - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX, 
+       LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
+  
+ <I>       FIN D'EXECUTION LE : JE-25-AOUT-2022 19:03:03
+
+
+  <I> Informations sur les temps d'exécution
+      Temps cpu user total                    1.03 s
+      Temps cpu systeme total                 0.31 s
+      Temps elapsed total                     1.34 s
+      Temps restant                     3599998.66 s
+
+
+  La signature de la base sauvegardée est (à l'adresse 0) :
+    116f53ccddc786c28a949cfc251c90763d537dc4
+
+ ********************************************************************************
+ * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
+ ********************************************************************************
+ * init (jdc)               :       1.04 :       0.31 :       1.35 :       1.35 *
+ *  . compile               :       0.00 :       0.00 :       0.00 :       0.00 *
+ *  . exec_compile          :       0.87 :       0.30 :       1.17 :       1.18 *
+ * DEBUT                    :       0.02 :       0.02 :       0.04 :       0.04 *
+ * LIRE_MAILLAGE            :       0.40 :       0.01 :       0.41 :       0.42 *
+ * LIRE_RESU                :       0.07 :       0.06 :       0.13 :       0.12 *
+ * CREA_CHAMP               :       0.01 :       0.00 :       0.01 :       0.01 *
+ * CREA_RESU                :       0.01 :       0.01 :       0.02 :       0.01 *
+ * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.01 *
+ * CREA_CHAMP               :       0.00 :       0.01 :       0.01 :       0.02 *
+ * CREA_RESU                :       0.00 :       0.00 :       0.00 :       0.01 *
+ * DETRUIRE                 :       0.01 :       0.00 :       0.01 :       0.00 *
+ * DETRUIRE                 :       0.01 :       0.00 :       0.01 :       0.01 *
+ * LIRE_RESU                :       0.09 :       0.03 :       0.12 :       0.12 *
+ * CREA_CHAMP               :       0.01 :       0.01 :       0.02 :       0.01 *
+ * CREA_RESU                :       0.00 :       0.01 :       0.01 :       0.00 *
+ * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.01 *
+ * CREA_CHAMP               :       0.01 :       0.01 :       0.02 :       0.02 *
+ * CREA_RESU                :       0.00 :       0.00 :       0.00 :       0.01 *
+ * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.00 *
+ * DETRUIRE                 :       0.00 :       0.00 :       0.00 :       0.01 *
+ * IMPR_RESU                :       0.13 :       0.06 :       0.19 :       0.19 *
+ * FIN                      :       0.02 :       0.06 :       0.08 :       0.07 *
+ *  . part Superviseur      :       0.29 :       0.05 :       0.34 :       0.35 *
+ *  . part Fortran          :       0.75 :       0.26 :       1.01 :       1.00 *
+ ********************************************************************************
+ * TOTAL_JOB                :       1.03 :       0.31 :       1.34 :       1.34 *
+ ********************************************************************************
+
+WARNING: can not pickle object: f <class '_io.TextIOWrapper'>
+WARNING: can not pickle object: freqFile <class '_io.TextIOWrapper'>
+--- Fin de l'exécution
+EXECUTION_CODE_ASTER_EXIT_92983=0

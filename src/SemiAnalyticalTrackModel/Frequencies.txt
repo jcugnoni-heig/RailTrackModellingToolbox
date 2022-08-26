@@ -1,0 +1,4 @@
+Frequencies [Hz]
+Start = 10
+End = 2000
+Step = 10
