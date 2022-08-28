@@ -16,15 +16,14 @@ To simplify the use of the toolbox without having to install all prerequisites a
 
 ***Custom ISO image based on CAELinux 2020 (7.6Gb):***
 
-[caelinuxRailtrack2022.iso](https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso "download")
+[caelinuxRailtrack2022.iso](https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso "download ISO")
 
-md5sum: [caelinuxRailtrack2022.iso.md5](https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso.md5 "download")
+md5sum: [caelinuxRailtrack2022.iso.md5](https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso.md5 "download ISO.md5")
 
 
 ***Singularity container image (1.9Gb):***
 
-[RailTrackModellingToolbox.sif](https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif "download")
-
+<a href="https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif" download>RailTrackModellingToolbox.sif</a>
 md5sum: [RailTrackModellingToolbox.sif.md5](https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif.md5 "download")
 
 
