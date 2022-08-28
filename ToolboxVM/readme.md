@@ -3,7 +3,7 @@
 
 ## Container and Linux distribution / virtual machine images 
 
-To simplify the use of the toolbox without having to install all prerequisites and setup, we provide here several options:
+To simplify the use of the toolbox without having to install all prerequisites and do a extended setup, we provide here several options:
 
 1. A Linux distribution image (ISO) based on CAELinux 2020 with the toolbox preinstalled. This ISO image can be used to either
     - create a USB boot disk using the Ventoy utility and install the distribution on a physical machine (best performance)
@@ -14,7 +14,19 @@ To simplify the use of the toolbox without having to install all prerequisites a
 
 ## Download links
 
-Coming soon...
+Custom ISO image based on CAELinux 2020 (7.6Gb): 
+
+https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso
+
+(md5sum: https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso.md5 )
+
+Singularity container image (1.9Gb): 
+
+https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif 
+
+(md5sum: https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif.md5 )
+
+
 
 ## Installation instruction: Physical Machine
 
