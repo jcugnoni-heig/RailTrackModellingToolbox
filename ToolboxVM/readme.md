@@ -10,7 +10,7 @@ To simplify the use of the toolbox without having to install all prerequisites a
     - install a virtual machine in your currently running operating system (VMWare Player or Workstation is recommended).
 
 2. A Singularity container that can be used to run the toolbox in any Linux environment (provided that Singularity is installed, also works on Windows via WSL).
-
+ 
 
 ## Download links
 
@@ -28,6 +28,10 @@ md5sum: [caelinuxRailtrack2022.iso.md5](https://www.caelinux.com/downloads/stabl
 md5sum: [RailTrackModellingToolbox.sif.md5](https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif.md5 "download")
 
 
+## OS Upgrade to Ubuntu 20.04 ##
+
+If prompted to upgrade your installation to Ubuntu 20.04, please select "No" and to never ask again.
+Indeed, a system upgrade would prevent some of the software to run properly. However, regular security updates can be installed.
 
 ## Installation instruction: Physical Machine
 
