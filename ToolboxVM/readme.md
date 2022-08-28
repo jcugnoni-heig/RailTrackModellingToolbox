@@ -14,17 +14,18 @@ To simplify the use of the toolbox without having to install all prerequisites a
 
 ## Download links
 
-Custom ISO image based on CAELinux 2020 (7.6Gb): 
+*Custom ISO image based on CAELinux 2020 (7.6Gb):*
 
-https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso
+[caelinuxRailtrack2022.iso](https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso)
 
-(md5sum: https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso.md5 )
+md5sum: [caelinuxRailtrack2022.iso.md5](https://www.caelinux.com/downloads/stable/railtracktoolbox/ISO/caelinuxRailtrack2022.iso.md5)
 
-Singularity container image (1.9Gb): 
 
-https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif 
+*Singularity container image (1.9Gb):*
 
-(md5sum: https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif.md5 )
+[RailTrackModellingToolbox.sif ](https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif)
+
+md5sum: [RailTrackModellingToolbox.sif.md5](https://www.caelinux.com/downloads/stable/railtracktoolbox/singularity/RailTrackModellingToolbox.sif.md5)
 
 
 
@@ -47,7 +48,7 @@ Note that you can use the toolbox in Live mode without installation for simple c
 ## Installation instruction: Virtual Machine
 
 1. Download the ISO image
-2. Install VMware player from https://www.vmware.com/products/workstation-player.html (other VM options work for computations, but have some issues with 3D rendering in Salomé)
+2. Install VMware player from [VMWare](https://www.vmware.com/products/workstation-player.html) (other VM options work for computations, but have some issues with 3D rendering in Salomé)
 3. Create a new Virtual Machine
 4. Set the OS type as Ubuntu 64bit, Memory >8Gb (16Gb or more recommended), and create a virtual disk of at least 100Gb (dynamic size).
 5. In the VM settings, enable 3D acceleration and set the virtual DVD drive to point to the ISO image of the Toolbox (downloaded in point 1)
