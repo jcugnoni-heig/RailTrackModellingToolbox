@@ -18,6 +18,11 @@ For the last phase of the project, a company has joined the consortium to develo
 
 The project aims to reduce the noise emission of rail tracks and increase track maintenance intervals by the development of a new rail pad. The selected approach was the development of an experimental set-up combine with a digital tween (i.e. The Three Sleepers Model presented later). Other models have been developed and experimentally validated to achieve our goals.
 
+A second project, that is currently on going, called "Track System Evaluation" is aiming to add more functionalities to the tool box. The Rail Pad Project was focus on the pads and this new project aim to expand the models to test and assist the design off all components composing the track (i.e. rails, sleepers, clamps, ballast and pads).
+Thus the tool box will become more modular and with some added features, like pad and sleeper properties identification tools.
+
+The main branch of this repository contain the tool box as developed during the Rail Pad Project and the "track_evaluation" branch contain the development, on going, regarding the added functionalities.
+
 ## What is this toolbox for ?
 
 As said previously, the toolbox have been develops to design new rail pads, and thus can be used in the same way.  

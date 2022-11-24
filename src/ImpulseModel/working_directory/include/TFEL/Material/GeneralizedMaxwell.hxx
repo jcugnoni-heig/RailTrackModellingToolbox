@@ -167,11 +167,11 @@ using StressFreeExpansionType = StrainStensor;
 private :
 
 #line 10 "GeneralizedMaxwell.mfront"
-static constexpr int Nv = 4;
+static constexpr int Nv = 3;
 
 
 #line 24 "GeneralizedMaxwell.mfront"
-tfel::math::tvector<4, StressStensor > dsej;
+tfel::math::tvector<3, StressStensor > dsej;
 
 #line 27 "GeneralizedMaxwell.mfront"
 stress l0;
@@ -485,8 +485,8 @@ static constexpr bool hasStressFreeExpansion = false;
 static constexpr bool handlesThermalExpansion = false;
 static constexpr unsigned short dimension = N;
 typedef Type NumType;
-static constexpr unsigned short material_properties_nb = 14;
-static constexpr unsigned short internal_variables_nb  = 4*StensorSize;
+static constexpr unsigned short material_properties_nb = 11;
+static constexpr unsigned short internal_variables_nb  = 3*StensorSize;
 static constexpr unsigned short external_variables_nb  = 1;
 static constexpr unsigned short external_variables_nb2 = 0;
 static constexpr bool hasConsistentTangentOperator = true;

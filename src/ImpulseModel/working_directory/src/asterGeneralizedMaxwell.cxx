@@ -66,27 +66,24 @@ MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_ElasticSymmetryType = 0u
 MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_savesTangentOperator = 0;
 MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_UsableInPurelyImplicitResolution = 1;
 
-MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_nMaterialProperties = 14u;
+MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_nMaterialProperties = 11u;
 
-MFRONT_SHAREDOBJ const char *astergeneralizedmaxwell_MaterialProperties[14u] = {"BulkModulus",
+MFRONT_SHAREDOBJ const char *astergeneralizedmaxwell_MaterialProperties[11u] = {"BulkModulus",
 "ShearModulus",
 "ViscoelasticBulkModulus[0]",
 "ViscoelasticBulkModulus[1]",
 "ViscoelasticBulkModulus[2]",
-"ViscoelasticBulkModulus[3]",
 "ViscoelasticShearModulus[0]",
 "ViscoelasticShearModulus[1]",
 "ViscoelasticShearModulus[2]",
-"ViscoelasticShearModulus[3]",
 "TimeScale[0]",
 "TimeScale[1]",
-"TimeScale[2]",
-"TimeScale[3]"};
+"TimeScale[2]"};
 
-MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_nInternalStateVariables = 4;
-MFRONT_SHAREDOBJ const char * astergeneralizedmaxwell_InternalStateVariables[4] = {"ViscoelasticStress[0]",
-"ViscoelasticStress[1]","ViscoelasticStress[2]","ViscoelasticStress[3]"};
-MFRONT_SHAREDOBJ int astergeneralizedmaxwell_InternalStateVariablesTypes [] = {1,1,1,1};
+MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_nInternalStateVariables = 3;
+MFRONT_SHAREDOBJ const char * astergeneralizedmaxwell_InternalStateVariables[3] = {"ViscoelasticStress[0]",
+"ViscoelasticStress[1]","ViscoelasticStress[2]"};
+MFRONT_SHAREDOBJ int astergeneralizedmaxwell_InternalStateVariablesTypes [] = {1,1,1};
 
 MFRONT_SHAREDOBJ unsigned short astergeneralizedmaxwell_nExternalStateVariables = 0;
 MFRONT_SHAREDOBJ const char * const * astergeneralizedmaxwell_ExternalStateVariables = nullptr;

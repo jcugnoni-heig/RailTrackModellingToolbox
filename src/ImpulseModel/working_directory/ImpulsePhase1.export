@@ -4,39 +4,40 @@ P consbtc oui
 P corefilesize unlimited
 P cpresok RESNOOK
 P debug nodebug
-P display caelinux:0
+P display lmafpc22:0
 P facmtps 1
 P follow_output yes
 P lang en
-P mclient caelinux
-P memjob 12288000
-P memory_limit 12000.0
+P mclient lmafpc22
+P memjob 65536000
+P memory_limit 64000.0
 P mode interactif
 P mpi_nbcpu 1
 P mpi_nbnoeud 1
 P nbmaxnook 5
 P ncpus 1
-P noeud caelinux
+P noeud lmafpc22
 P nomjob ImpulsePhase1
 P origine ASTK 2020.0.final
 P platform LINUX64
-P profastk caelinux@caelinux:/opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/ImpulsePhase1.astk
+P profastk cae@lmafpc22:/home/cae/Documents/TrackSystemEvaluation/working_directory/ImpulsePhase1.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
 P proxy_dir /tmp
-P rep_trav /tmp/caelinux-caelinux-impulse-phase1/global
-P serveur caelinux
+P rep_trav /scratch/cae-lmafpc22-interactif_22701/global/global/global/global/global/global/global/global/global
+P serveur lmafpc22
 P soumbtc oui
 P time_limit 18900.0
 P tpsjob 316
-P uclient caelinux
-P username caelinux
-P version stable
+P uclient cae
+P username cae
+P version 14.6MUPT
 A args 
-A memjeveux 1500.0
+A memjeveux 8000.0
 A tpmax 18900.0
-F mmed /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/gen3Sleeper.mesh.med D  20
-F comm /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/ImpulsePhase1.comm D  1
-F mess /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/messages/messageImpulsePhase1.mess R  6
-R base /opt/RailTrackModellingToolbox/src/ImpulseModel/working_directory/base1 RC 0
+F mmed /home/cae/Documents/TrackSystemEvaluation/working_directory/unitCellWithClamps.med D  20
+F libr /home/cae/Documents/TrackSystemEvaluation/working_directory/clamps_properties.txt D  21
+F comm /home/cae/Documents/TrackSystemEvaluation/working_directory/ImpulsePhase1.comm D  1
+F mess /home/cae/Documents/TrackSystemEvaluation/working_directory/messages/messageImpulsePhase1.mess R  6
+R base /home/cae/Documents/TrackSystemEvaluation/working_directory/base1 RC 0

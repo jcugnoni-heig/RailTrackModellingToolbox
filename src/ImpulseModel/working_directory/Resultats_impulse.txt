@@ -1,2 +1,0 @@
-TIME	Clamp rail side	Clamp sleeper side	Bottom sleeper	
-[s]	[mm]	[mm]	[mm]	

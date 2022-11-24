@@ -1,0 +1,143 @@
+#########################################################
+######     Properties for the sensitivity study    ######
+#########################################################
+
+# frequency range for the analysis
+freq_lower_limit = -1.0
+freq_upper_limit = 1500.0
+
+# pourcentage of increase applied alternatively at each value
+increase_of = 0.05   # increase_of = 0.05 -> 5% increase
+
+# initial guess
+E_L = 47370.0
+E_N = 46300.0
+E_T = 46300.0
+G_LN = 19700.0
+G_LT = 19700.0
+G_TN = 19300.0
+NU_LN = 0.2
+NU_LT = 0.2
+NU_TN = 0.2
+RHO = 2.4356e-09   # No sensitivity analysis on this parameter, supposed to be known.
+
+# list of parameters sets, no need to change anything, filled dynamically with the above informations
+prop = [{"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "Nominal values"},
+
+        {"E_L" : (E_L*(1+increase_of)), "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "E_L + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : (E_N*(1+increase_of)), "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "E_N + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : (E_T*(1+increase_of)),
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "E_T + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : (G_LN*(1+increase_of)), "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "G_LN + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : (G_LT*(1+increase_of)), "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "G_LT + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : (G_TN*(1+increase_of)),
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "G_TN + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : (NU_LN*(1+increase_of)), "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "NU_LN + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : (NU_LT*(1+increase_of)), "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "NU_LT + " + str(increase_of*100) + "%"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : (NU_TN*(1+increase_of)),
+         "RHO" : RHO, "message" : "NU_TN + " + str(increase_of*100) + "%"}]
+
+#########################################################
+######  Beginning of the actual sensitivity study  ######
+#########################################################
+
+DEBUT(LANG='EN')
+
+mesh = LIRE_MAILLAGE(FORMAT='MED',
+                     UNITE=2)
+
+model = AFFE_MODELE(AFFE=_F(MODELISATION=('3D', ),
+                            PHENOMENE='MECANIQUE',
+                            TOUT='OUI'),
+                    MAILLAGE=mesh)
+
+# creation of a local axis system (rotation of 90° around global Y-axis) to implement the orthotrope materials (L, N, T) -> local(x, y, z)
+elemprop = AFFE_CARA_ELEM(MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0),
+                                    GROUP_MA=('sleepere', )),
+                          MODELE=model)
+
+
+for key, mx in enumerate(prop):
+        print("#########################################################")
+        print("  Step " + str(key + 1) + "/" + str(len(prop)) + ": " + mx["message"])
+        print("#########################################################\n")
+
+        mater = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=mx["E_L"],
+                                           E_N=mx["E_N"],
+                                           E_T=mx["E_T"],
+                                           G_LN=mx["G_LN"],
+                                           G_LT=mx["G_LT"],
+                                           G_TN=mx["G_TN"],
+                                           NU_LN=mx["NU_LN"],
+                                           NU_LT=mx["NU_LT"],
+                                           NU_TN=mx["NU_TN"],
+                                           RHO=mx["RHO"]))
+
+        fieldmat = AFFE_MATERIAU(AFFE=_F(MATER=(mater, ),
+                                        TOUT='OUI'),
+                                MODELE=model)
+
+        ASSEMBLAGE(CARA_ELEM=elemprop,
+                CHAM_MATER=fieldmat,
+                MATR_ASSE=(_F(MATRICE=CO('K'),
+                                OPTION='RIGI_MECA'),
+                        _F(MATRICE=CO('M'),
+                                OPTION='MASS_MECA')),
+                MODELE=model,
+                NUME_DDL=CO('nddl'))
+
+        modes = CALC_MODES(CALC_FREQ=_F(FREQ=(freq_lower_limit, freq_upper_limit)),
+                        MATR_MASS=M,
+                        MATR_RIGI=K,
+                        OPTION='BANDE',
+                        SOLVEUR_MODAL=_F(METHODE='TRI_DIAG'))
+
+        IMPR_RESU(RESU=_F(RESULTAT=modes),
+                UNITE=80+key)
+
+        table = RECU_TABLE(CO=modes,
+                        NOM_PARA=('FREQ', ))
+
+        IMPR_TABLE(TABLE=table,
+                UNITE=20+key)
+
+        DETRUIRE(CONCEPT=_F(NOM=(mater, fieldmat)))
+        DETRUIRE(OBJET=_F(CHAINE=('K','M','nddl')))
+        DETRUIRE(OBJET=_F(CHAINE=('modes')))
+
+FIN()

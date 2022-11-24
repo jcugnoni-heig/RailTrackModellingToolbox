@@ -117,14 +117,14 @@ real k0;
 #line 14 "GeneralizedMaxwell.mfront"
 real mu0;
 #line 17 "GeneralizedMaxwell.mfront"
-tfel::math::tvector<4, real > ki;
+tfel::math::tvector<3, real > ki;
 #line 19 "GeneralizedMaxwell.mfront"
-tfel::math::tvector<4, real > mui;
+tfel::math::tvector<3, real > mui;
 #line 21 "GeneralizedMaxwell.mfront"
-tfel::math::tvector<4, real > taui;
+tfel::math::tvector<3, real > taui;
 
 #line 24 "GeneralizedMaxwell.mfront"
-tfel::math::tvector<4, StressStensor > sej;
+tfel::math::tvector<3, StressStensor > sej;
 temperature T;
 
 public:
@@ -168,19 +168,15 @@ T(*ASTERT_)
 ki[0] = ASTERmat[2];
 ki[1] = ASTERmat[3];
 ki[2] = ASTERmat[4];
-ki[3] = ASTERmat[5];
-mui[0] = ASTERmat[6];
-mui[1] = ASTERmat[7];
-mui[2] = ASTERmat[8];
-mui[3] = ASTERmat[9];
-taui[0] = ASTERmat[10];
-taui[1] = ASTERmat[11];
-taui[2] = ASTERmat[12];
-taui[3] = ASTERmat[13];
+mui[0] = ASTERmat[5];
+mui[1] = ASTERmat[6];
+mui[2] = ASTERmat[7];
+taui[0] = ASTERmat[8];
+taui[1] = ASTERmat[9];
+taui[2] = ASTERmat[10];
 sej[0].import(&ASTERint_vars[0]);
 sej[1].import(&ASTERint_vars[StensorSize]);
 sej[2].import(&ASTERint_vars[2*StensorSize]);
-sej[3].import(&ASTERint_vars[3*StensorSize]);
 }
 
 void setASTERBehaviourDataGradients(const Type* const ASTERstran)
@@ -219,7 +215,6 @@ this->sig.exportTab(ASTERstress_);
 exportToBaseTypeArray(this->sej[0],&ASTERstatev[0]);
 exportToBaseTypeArray(this->sej[1],&ASTERstatev[StensorSize]);
 exportToBaseTypeArray(this->sej[2],&ASTERstatev[2*StensorSize]);
-exportToBaseTypeArray(this->sej[3],&ASTERstatev[3*StensorSize]);
 } // end of ASTERexportStateData
 
 }; // end of GeneralizedMaxwellBehaviourDataclass

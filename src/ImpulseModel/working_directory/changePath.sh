@@ -1,31 +1,9 @@
 #!/bin/bash
-SCRIPT=$(realpath "$0")
-destPath=${SCRIPT%/*}
 
-# change paths to match current installation
+sourcePath=/home/cae/Documents/Railpad2/ImpulseAster_GUI/working_directory
+destPath=/home/cae/Documents/TrackSystemEvaluation/working_directory
 
-#detect previous path from .export files 
-src=$(grep "F comm" $destPath/*.export | head -1 | cut -d " " -f 3)
-sourcePath=${src%/*}
+sed -i "s#$sourcePath#$destPath#g" *.astk
+sed -i "s#$sourcePath#$destPath#g" *.export
 
 
-echo "************"
-echo "Changing all paths in .export & .astk files from :"
-echo $sourcePath
-echo "to"
-echo $destPath
-echo "************"
-
-
-read -p "Do you want to proceed? (y/n) " yn
-
-case $yn in 
-	[yY] ) echo ok, we will proceed;
-             sed -i "s#$sourcePath#$destPath#g" $destPath/*.astk
-             sed -i "s#$sourcePath#$destPath#g" $destPath/*.export
-             exit;;
-	[nN] ) echo exiting...;
-		exit;;
-	* ) echo invalid response;
-		exit 1;;
-esac
