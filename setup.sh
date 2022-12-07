@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# setup script for Railtrack modelling toolbox
+# setup script for Railtrack modelling toolbox 
 
 ##
 echo ""
