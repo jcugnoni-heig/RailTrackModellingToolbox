@@ -1,0 +1,12 @@
+mode1;113
+mode2;125
+mode3;344
+mode4;366
+mode5;394
+mode6;663
+mode7;718
+mode8;766
+mode9;1040
+mode10;1065
+mode11;1125
+mode12;1472

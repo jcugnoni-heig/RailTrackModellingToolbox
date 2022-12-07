@@ -1,0 +1,423 @@
+#########################################################
+######             initial Properties              ######
+#########################################################
+
+from time import time
+
+t_start = time()
+
+# pourcentage of increase applied alternatively at each value
+increase_of = 0.05   # increase_of = 0.05 -> 5% increase
+
+max_diff_with_eigenfreq = 0.01   # max 1% of difference with experimental
+max_iter = 50 # maximum of iteration (To prevent ifinit loop)
+
+
+with open('fort.36') as fp:
+    lines = fp.readlines()
+    properties = []
+    for line in lines:
+        properties.append(float(line.split(';')[1].replace('\n','')))
+
+E_L = properties[0]
+E_N = properties[1]
+E_T = properties[2]
+G_LN = properties[3]
+G_LT = properties[4]
+G_TN = properties[5]
+NU_LN = properties[6]
+NU_LT = properties[7]
+NU_TN = properties[8]
+RHO = properties[9]   # No sensitivity analysis on this parameter, supposed to be known.
+
+els = [E_L]
+
+
+with open('fort.37') as fp:
+    lines = fp.readlines()
+    eigen_freq = []
+    for line in lines:
+        eigen_freq.append(float(line.split(';')[1].replace('\n','')))
+
+mode_exp = {"mode 1" : eigen_freq[0],
+            "mode 2" : eigen_freq[1],
+            "mode 3" : eigen_freq[2],
+            "mode 4" : eigen_freq[3],
+            "mode 5" : eigen_freq[4],
+            "mode 6" : eigen_freq[5],
+            "mode 7" : eigen_freq[6],
+            "mode 8" : eigen_freq[7],
+            "mode 9" : eigen_freq[8],
+            "mode 10" : eigen_freq[9],
+            "mode 11" : eigen_freq[10],
+            "mode 12" : eigen_freq[11]}
+
+# list of parameters sets, no need to change anything, filled dynamically with the above informations
+prop = [{"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "Nominal"},
+
+        {"E_L" : (E_L*(1+increase_of)), "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "EL"},
+
+        {"E_L" : E_L, "E_N" : (E_N*(1+increase_of)), "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "EN"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : (E_T*(1+increase_of)),
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "ET"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : (G_LN*(1+increase_of)), "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "GLN"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : (G_LT*(1+increase_of)), "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "GLT"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : (G_TN*(1+increase_of)),
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "GTN"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : (NU_LN*(1+increase_of)), "NU_LT" : NU_LT, "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "NULN"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : (NU_LT*(1+increase_of)), "NU_TN" : NU_TN,
+         "RHO" : RHO, "message" : "NULT"},
+
+        {"E_L" : E_L, "E_N" : E_N, "E_T" : E_T,
+         "G_LN" : G_LN, "G_LT" : G_LT, "G_TN" : G_TN,
+         "NU_LN" : NU_LN, "NU_LT" : NU_LT, "NU_TN" : (NU_TN*(1+increase_of)),
+         "RHO" : RHO, "message" : "NUTN"}]
+
+#########################################################
+######              Sensitivity study              ######
+#########################################################
+
+DEBUT(LANG='EN', PAR_LOT='NON')
+
+mesh = LIRE_MAILLAGE(FORMAT='MED',
+                     UNITE=2)
+
+model = AFFE_MODELE(AFFE=_F(MODELISATION=('3D', ),
+                            PHENOMENE='MECANIQUE',
+                            TOUT='OUI'),
+                    MAILLAGE=mesh)
+
+# creation of a local axis system (rotation of 90° around global Y-axis) to implement the orthotrope materials (L, N, T) -> local(x, y, z)
+elemprop = AFFE_CARA_ELEM(MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0),
+                                    GROUP_MA=('sleepere', )),
+                          MODELE=model)
+
+data = {}
+
+for key, mx in enumerate(prop):
+    print("#########################################################")
+    print("  Step " + str(key + 1) + "/" + str(len(prop)) + ": " + mx["message"])
+    print("#########################################################\n")
+
+    mater = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=mx["E_L"],
+                                        E_N=mx["E_N"],
+                                        E_T=mx["E_T"],
+                                        G_LN=mx["G_LN"],
+                                        G_LT=mx["G_LT"],
+                                        G_TN=mx["G_TN"],
+                                        NU_LN=mx["NU_LN"],
+                                        NU_LT=mx["NU_LT"],
+                                        NU_TN=mx["NU_TN"],
+                                        RHO=mx["RHO"]))
+
+    fieldmat = AFFE_MATERIAU(AFFE=_F(MATER=(mater, ),
+                                    TOUT='OUI'),
+                            MODELE=model)
+
+    ASSEMBLAGE(CARA_ELEM=elemprop,
+            CHAM_MATER=fieldmat,
+            MATR_ASSE=(_F(MATRICE=CO('K'),
+                            OPTION='RIGI_MECA'),
+                    _F(MATRICE=CO('M'),
+                            OPTION='MASS_MECA')),
+            MODELE=model,
+            NUME_DDL=CO('nddl'))
+
+    modes = CALC_MODES(CALC_FREQ=_F(NMAX_FREQ=18, SEUIL_FREQ=20.0),
+                    MATR_MASS=M,
+                    MATR_RIGI=K,
+                    OPTION='PLUS_PETITE',
+                    SOLVEUR_MODAL=_F(METHODE='TRI_DIAG'), 
+                    VERI_MODE=_F(STOP_ERREUR='NON'))
+
+    IMPR_RESU(RESU=_F(RESULTAT=modes),
+            UNITE=(80+key))
+
+    table = RECU_TABLE(CO=modes,
+                    NOM_PARA=('FREQ', ))
+    for a in range(12):
+        data["mode_" + str(a+1) + "_" + mx["message"]] = table['FREQ', (7+a)]
+
+    IMPR_TABLE(TABLE=table,
+            UNITE=(20+key))
+
+
+    if (key != len(prop)-1):
+        DETRUIRE(CONCEPT=_F(NOM=(mater, fieldmat, table)))
+        DETRUIRE(OBJET=_F(CHAINE=('K','M','nddl')))
+        DETRUIRE(OBJET=_F(CHAINE=('modes')))
+
+
+#########################################################
+######   Post-processing of the Sensitivity study  ######
+#########################################################
+
+list_of_files = ["Nominal",
+                 "EL",
+                 "EN",
+                 "ET",
+                 "GLN",
+                 "GLT",
+                 "GTN",
+                 "NULN",
+                 "NULT",
+                 "NUTN"]
+
+sensitivity_matrix = {}
+
+with open('fort.38', "w") as myF:
+    myF.write("modes ; Nominal ; EL ; EN ; ET ; GLN ; GLT ; GTN ; NULN ; NULT ; NUTN\n")
+    for i in range(12):
+        myF.write("mode " + str(i+1) + " ; ")
+        nominal_value = float(data["mode_" + str(i+1) + "_Nominal"])
+        sensitivity_matrix["mode " + str(i+1)] = {}
+        for file in list_of_files:
+            if(file == "Nominal"):
+                myF.write(str(round(nominal_value)) + " Hz ; ")
+            elif(file == "NUTN"):
+                to_write = round(100*(float(data["mode_" + str(i+1) + "_" + file])-(nominal_value)) /(nominal_value), 2)
+                sensitivity_matrix["mode " + str(i+1)][file] = to_write
+                if(to_write == 0.0):
+                    myF.write("-")
+                else:
+                    myF.write(str(to_write) + " %")
+            else:
+                to_write = round(100*(float(data["mode_" + str(i+1) + "_" + file])-(nominal_value)) /(nominal_value), 2)
+                sensitivity_matrix["mode " + str(i+1)][file] = to_write
+                if(to_write == 0.0):
+                    myF.write("- ; ")
+                else:
+                    myF.write(str(to_write) + " % ; ")
+        myF.write("\n")
+
+t_end_sensivity = time()
+#########################################################
+######    Comparison with the experimental data    ######
+#########################################################
+
+
+
+
+mode_num = {"mode 1" : data['mode_1_Nominal'],
+            "mode 2" : data['mode_2_Nominal'],
+            "mode 3" : data['mode_3_Nominal'],
+            "mode 4" : data['mode_4_Nominal'],
+            "mode 5" : data['mode_5_Nominal'],
+            "mode 6" : data['mode_6_Nominal'],
+            "mode 7" : data['mode_7_Nominal'],
+            "mode 8" : data['mode_8_Nominal'],
+            "mode 9" : data['mode_9_Nominal'],
+            "mode 10" : data['mode_10_Nominal'],
+            "mode 11" : data['mode_11_Nominal'],
+            "mode 12" : data['mode_12_Nominal']}
+
+
+def compute_deltas(mode_num, mode_exp):
+    delta_modes = {"mode 1" : float((mode_num["mode 1"]-mode_exp["mode 1"])/mode_exp["mode 1"]),
+                "mode 2" : float((mode_num["mode 2"]-mode_exp["mode 2"])/mode_exp["mode 2"]),
+                "mode 3" : float((mode_num["mode 3"]-mode_exp["mode 3"])/mode_exp["mode 3"]),
+                "mode 4" : float((mode_num["mode 4"]-mode_exp["mode 4"])/mode_exp["mode 4"]),
+                "mode 5" : float((mode_num["mode 5"]-mode_exp["mode 5"])/mode_exp["mode 5"]),
+                "mode 6" : float((mode_num["mode 6"]-mode_exp["mode 6"])/mode_exp["mode 6"]),
+                "mode 7" : float((mode_num["mode 7"]-mode_exp["mode 7"])/mode_exp["mode 7"]),
+                "mode 8" : float((mode_num["mode 8"]-mode_exp["mode 8"])/mode_exp["mode 8"]),
+                "mode 9" : float((mode_num["mode 9"]-mode_exp["mode 9"])/mode_exp["mode 9"]),
+                "mode 10" : float((mode_num["mode 10"]-mode_exp["mode 10"])/mode_exp["mode 10"]),
+                "mode 11" : float((mode_num["mode 11"]-mode_exp["mode 11"])/mode_exp["mode 11"]),
+                "mode 12" : float((mode_num["mode 12"]-mode_exp["mode 12"])/mode_exp["mode 12"])}
+    return delta_modes
+
+delta_modes = compute_deltas(mode_num, mode_exp)
+
+# the first value of the current params are the nominal param of the initial guess
+current_params = {"EL" : E_L,
+                  "EN" : E_N,
+                  "ET" : E_T,
+                  "GLN" : G_LN,
+                  "GLT" : G_LT,
+                  "GTN" : G_TN,
+                  "NULN" : NU_LN,
+                  "NULT" : NU_LT,
+                  "NUTN" : NU_TN,}
+
+
+need_optimization = False
+for mode,delta in delta_modes.items():
+    if(abs(delta) >= max_diff_with_eigenfreq):
+        need_optimization = True
+
+
+#########################################################
+###  Loop of properties identification (if required)  ###
+#########################################################
+
+
+i= 0
+while(need_optimization):
+    i+=1
+    DETRUIRE(CONCEPT=_F(NOM=(mater, fieldmat, table)))
+    DETRUIRE(OBJET=_F(CHAINE=('K','M','nddl')))
+    DETRUIRE(OBJET=_F(CHAINE=('modes')))
+
+
+    ################################################################
+    ###  Computation of the new params with sensitivity results  ###
+    ################################################################
+
+    ratio_of_sensitivity_per_mode = {}
+    for mode,params in sensitivity_matrix.items():
+        ratio_of_sensitivity_per_mode[mode] = 0.0
+        for key,value in params.items():
+            ratio_of_sensitivity_per_mode[mode] = ratio_of_sensitivity_per_mode[mode] + value
+
+    new_params = {}
+    for param in ["EL", "EN", "ET", "GLN", "GLT", "GTN", "NULN", "NULT", "NUTN"]:
+        new_params[param] = 0.0
+        for j in range(12):
+            if(sensitivity_matrix["mode " + str(j+1)][param] != 0):
+                new_params[param] += current_params[param]*(1-delta_modes["mode " + str(j+1)]*(increase_of*100 / (sensitivity_matrix["mode " + str(j+1)][param]))*( (sensitivity_matrix["mode " + str(j+1)][param]) / ratio_of_sensitivity_per_mode["mode " + str(j+1)]))
+            if(sensitivity_matrix["mode " + str(j+1)][param] == 0):
+                new_params[param] += current_params[param]
+        new_params[param] = round(new_params[param]/12,3)
+
+    ###################################################################
+    ###  Computation of the new eigen mode with the new properties  ###
+    ###################################################################
+
+    mater = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=new_params["EL"],
+                                        E_N=new_params["EN"],
+                                        E_T=new_params["ET"],
+                                        G_LN=new_params["GLN"],
+                                        G_LT=new_params["GLT"],
+                                        G_TN=new_params["GTN"],
+                                        NU_LN=new_params["NULN"],
+                                        NU_LT=new_params["NULT"],
+                                        NU_TN=new_params["NUTN"],
+                                        RHO=RHO))
+
+    fieldmat = AFFE_MATERIAU(AFFE=_F(MATER=(mater, ),
+                                    TOUT='OUI'),
+                            MODELE=model)
+
+    ASSEMBLAGE(CARA_ELEM=elemprop,
+            CHAM_MATER=fieldmat,
+            MATR_ASSE=(_F(MATRICE=CO('K'),
+                            OPTION='RIGI_MECA'),
+                    _F(MATRICE=CO('M'),
+                            OPTION='MASS_MECA')),
+            MODELE=model,
+            NUME_DDL=CO('nddl'))
+
+    modes = CALC_MODES(CALC_FREQ=_F(NMAX_FREQ=18, SEUIL_FREQ=20.0),
+                        MATR_MASS=M,
+                        MATR_RIGI=K,
+                        OPTION='PLUS_PETITE',
+                        SOLVEUR_MODAL=_F(METHODE='TRI_DIAG'), 
+                        VERI_MODE=_F(STOP_ERREUR='NON'))
+
+    table = RECU_TABLE(CO=modes,
+                    NOM_PARA=('FREQ', ))
+
+    mode_num = {"mode 1" : table['FREQ', 7],
+                "mode 2" : table['FREQ', 8],
+                "mode 3" : table['FREQ', 9],
+                "mode 4" : table['FREQ', 10],
+                "mode 5" : table['FREQ', 11],
+                "mode 6" : table['FREQ', 12],
+                "mode 7" : table['FREQ', 13],
+                "mode 8" : table['FREQ', 14],
+                "mode 9" : table['FREQ', 15],
+                "mode 10" : table['FREQ', 16],
+                "mode 11" : table['FREQ', 17],
+                "mode 12" : table['FREQ', 18]}
+
+    ############################################
+    ###  Check if a new iteration is needed  ###
+    ############################################
+
+    delta_modes = compute_deltas(mode_num, mode_exp)
+
+    current_params = new_params
+    els.append(current_params['EL'])
+
+    need_optimization = False
+    for mode,delta in delta_modes.items():
+        if(abs(delta) >= max_diff_with_eigenfreq):
+            need_optimization = True
+            
+    #############################################
+    ###  Print of the results for comparison  ###
+    #############################################
+
+    if(i == max_iter or (not need_optimization)): # Escape if no iteration left
+        if(i == max_iter):
+            print('Maximum number of iterations (' + str(max_iter) + ') reached. Calculation stopped.')
+        if(not need_optimization):
+            print('Conditions reached after ' + str(i) + ' iterations.')
+        print('\n')
+        print('mode 1: ' + str(mode_exp['mode 1']) + ' (ref) vs ' + str(round(mode_num['mode 1'], 0)))
+        print('mode 2: ' + str(mode_exp['mode 2']) + ' (ref) vs ' + str(round(mode_num['mode 2'], 0)))
+        print('mode 3: ' + str(mode_exp['mode 3']) + ' (ref) vs ' + str(round(mode_num['mode 3'], 0)))
+        print('mode 4: ' + str(mode_exp['mode 4']) + ' (ref) vs ' + str(round(mode_num['mode 4'], 0)))
+        print('mode 5: ' + str(mode_exp['mode 5']) + ' (ref) vs ' + str(round(mode_num['mode 5'], 0)))
+        print('mode 6: ' + str(mode_exp['mode 6']) + ' (ref) vs ' + str(round(mode_num['mode 6'], 0)))
+        print('mode 7: ' + str(mode_exp['mode 7']) + ' (ref) vs ' + str(round(mode_num['mode 7'], 0)))
+        print('mode 8: ' + str(mode_exp['mode 8']) + ' (ref) vs ' + str(round(mode_num['mode 8'], 0)))
+        print('mode 9: ' + str(mode_exp['mode 9']) + ' (ref) vs ' + str(round(mode_num['mode 9'], 0)))
+        print('mode 10: ' + str(mode_exp['mode 10']) + ' (ref) vs ' + str(round(mode_num['mode 10'], 0)))
+        print('mode 11: ' + str(mode_exp['mode 11']) + ' (ref) vs ' + str(round(mode_num['mode 11'], 0)))
+        print('mode 12: ' + str(mode_exp['mode 12']) + ' (ref) vs ' + str(round(mode_num['mode 12'], 0)))
+        print('\n')
+        print("EL : " + str(E_L) + ' -> ' + str(current_params['EL']) + ' vs 47370 (ref for B91/60E2 manually fitted)')
+        print("EN : " + str(E_N) + ' -> ' + str(current_params['EN']) + ' vs 46300 (ref for B91/60E2 manually fitted)')
+        print("ET : " + str(E_T) + ' -> ' + str(current_params['ET']) + ' vs 46300 (ref for B91/60E2 manually fitted)')
+        print("GLN : " + str(G_LN) + ' -> ' + str(current_params['GLN']) + ' vs 19700 (ref for B91/60E2 manually fitted)')
+        print("GLT : " + str(G_LT) + ' -> ' + str(current_params['GLT']) + ' vs 19700 (ref for B91/60E2 manually fitted)')
+        print("GTN : " + str(G_TN) + ' -> ' + str(current_params['GTN']) + ' vs 19300 (ref for B91/60E2 manually fitted)')
+        print("NULN : " + str(NU_LN) + ' -> ' + str(current_params['NULN']) + ' vs 0.2 (ref for B91/60E2 manually fitted)')
+        print("NULT : " + str(NU_LT) + ' -> ' + str(current_params['NULT']) + ' vs 0.2 (ref for B91/60E2 manually fitted)')
+        print("NUTN : " + str(NU_TN) + ' -> ' + str(current_params['NUTN']) + ' vs 0.2 (ref for B91/60E2 manually fitted)')
+        print('\n')
+        t_end = time()
+        print('Calculation time : ' + str(round(((t_end - t_start)/60),2)) + ' min')
+        print('Time for sensivity analysis : ' + str(round(((t_end_sensivity - t_start)/60),1)) + ' min and time for properties identification : ' + str(round(((t_end - t_end_sensivity)/60),1)) + ' min.')
+        print('\n')
+        print(els)
+        break
+
+IMPR_RESU(RESU=_F(RESULTAT=modes),
+            UNITE=(90))
+IMPR_TABLE(TABLE=table,
+                UNITE=(30))
+
+FIN()
