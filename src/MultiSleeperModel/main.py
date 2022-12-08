@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt, QTimer, QObject, QThread, pyqtSignal
 import pyperclip as clipboard
 #import clipboard
 import module_run as mod
-import json
+#import json
 from datetime import datetime
 import multiprocessing
 
@@ -78,6 +78,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		
 		self.txt_simuName.setText(dictSimu['name'])
 		self.simuDir = dictSimu['simuDir']
+		self.cb_debugPh2.setChecked(dictSimu['debugPh2'])
 		self.txt_nJobs.setText(str(dictSimu['nJobs']))
 		self.txt_nCPUs.setText(str(dictSimu['nCPUs']))
 		self.txt_host.setText(dictSimu['host'])
@@ -88,6 +89,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		if dictSimu['runPhase1'] == True:
 			self.txt_phase1Name.setText(dictSimu['phase1Name'])
 			self.txt_phase1FreqMax.setText(str(dictSimu['phase1FreqMax']))
+			self.cb_debugPh1.setChecked(dictSimu['debugPh1'])
 			self.txt_phase1RailModes.setText(str(dictSimu['phase1RailModes']))
 			self.txt_phase1SlpModes.setText(str(dictSimu['phase1SlpModes']))
 			self.txt_phase1CPUs.setText(str(dictSimu['phase1CPUs']))
@@ -158,6 +160,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_phase1SlpModes.setDisabled(not computePhase1)
 		self.txt_phase1CPUs.setDisabled(not computePhase1)
 		self.btn_phase1SelFreqs.setDisabled(not computePhase1)
+		self.cb_debugPh1.setDisabled(not computePhase1)
 		
 	def USPStateChanged(self):
 		USPON = self.cb_USP.isChecked()
@@ -213,6 +216,10 @@ class MultiSleeperModelGUI(QMainWindow):
 			
 		dictSimu['simuDir'] = self.simuDir
 		
+		#
+		debugPh2 = self.cb_debugPh2.isChecked()
+		dictSimu['debugPh2'] = debugPh2
+
 		# 
 		nJobsMax = multiprocessing.cpu_count()
 		
@@ -305,7 +312,13 @@ class MultiSleeperModelGUI(QMainWindow):
 			except:
 				QMessageBox.information(self, 'Error', dir + 'could not be created', QMessageBox.Ok,)
 				return
-				
+			
+
+			#
+			debugPh1 = self.cb_debugPh1.isChecked()
+			dictSimu['debugPh1'] = debugPh1
+
+			
 			#
 			try:
 				phase1FreqMax = float(self.txt_phase1FreqMax.text())

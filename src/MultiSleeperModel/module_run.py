@@ -1,13 +1,12 @@
-import imp
+# import imp
 import os
 import shutil
 import time
 import pickle
 import math
-import sys
+#import sys
 import json
-import numpy as np
-
+#import numpy as np
 
 def RunSimulation(p_dictSimu):
 
@@ -37,8 +36,9 @@ def RunPhase1(p_dictSimu):
 	nJobs = p_dictSimu['nJobsPh1']
 	saveBaseFile = os.path.join(p_dictSimu['savePhase1To'], p_dictSimu['phase1Name'])
 	messageFile = os.path.join(cwd, 'Messages', 'message_phase1_b1.mess')
+	debugMode = p_dictSimu['debugPh1']
 	
-	code = RunMultiJobs(cwd, simFolder, 'phase1_computeModesMag_b', nJobs, messageFile)
+	code = RunMultiJobs(cwd, simFolder, 'phase1_computeModesMag_b', nJobs, messageFile, debugMode)
 	if code != 0:
 		return code
 		
@@ -61,8 +61,9 @@ def RunPhase2(p_dictSimu):
 	simFolder = os.path.join(p_dictSimu.get('simuDir'), p_dictSimu.get('name'))
 	nJobs = p_dictSimu['nJobs']
 	messageFile = os.path.join(cwd, 'Messages', 'message_phase2_b1.mess')
+	debugMode = p_dictSimu['debugPh2']
 		
-	code = RunMultiJobs(cwd, simFolder, 'phase2_runSimulation_b', nJobs, messageFile)
+	code = RunMultiJobs(cwd, simFolder, 'phase2_runSimulation_b', nJobs, messageFile, debugMode)
 	if code != 0:
 		return code
 	
@@ -374,11 +375,11 @@ def PrepareFreqFiles(p_dictSimu, p_phase):
 
 	
 	
-def RunMultiJobs(p_workingDir, p_simFolder, p_job, p_nJobs, p_messageFile):
-	# p_job is the name of the export file (without ".export")
+def RunMultiJobs(p_workingDir, p_simFolder, p_job, p_nJobs, p_messageFile, p_debugMode):
+	# p_job is the name of the export file (without its number and ".export")
 	
-	runScript = os.path.join(p_workingDir, 'runMultiJobs.sh')
-	code = os.system('bash ' + runScript + ' ' + p_job + ' ' + p_simFolder + ' ' + str(p_nJobs) + ' ' + p_messageFile)
+	runScript = os.path.join(p_workingDir, 'runAsterJobs.sh')
+	code = os.system('bash ' + runScript + ' ' + p_job + ' ' + p_simFolder + ' ' + str(p_nJobs) + ' ' + p_messageFile + ' ' + str(p_debugMode))
 	time.sleep(1)
 	return code
 
@@ -573,7 +574,9 @@ def PostProcessResults(p_dictSimu):
 	f.close()
 
 	messageFile = os.path.join(cwd, 'Messages', 'message_concatMedFiles.mess')
-	code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile)
+	debugMode = p_dictSimu['debugPh2']
+
+	code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)
 	if code != 0:
 		return code
 	
