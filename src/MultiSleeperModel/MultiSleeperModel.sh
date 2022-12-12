@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT=$(realpath "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
+SCRIPTPATH=$(dirname "$SCRIPT")/DevFiles/App
 
 cd $SCRIPTPATH
 

@@ -10,6 +10,8 @@ import json
 import os
 import sys
 from datetime import datetime
+
+sys.path.insert(0, './DevFiles/App')
 import module_run as mod
 
 dir = os.path.dirname(os.path.realpath(__file__))
