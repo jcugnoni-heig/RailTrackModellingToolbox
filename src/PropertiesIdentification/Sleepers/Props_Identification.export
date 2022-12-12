@@ -53,6 +53,7 @@ F libr /home/cae/Documents/TrackSystemEvaluation/materialFit/results/eigenFreque
 F libr /home/cae/Documents/TrackSystemEvaluation/materialFit/results/eigenFrequencies_NUTN.txt R  29
 F libr /home/cae/Documents/TrackSystemEvaluation/materialFit/results/eigenFrequencies_VF.txt R  30
 F libr /home/cae/Documents/TrackSystemEvaluation/materialFit/results/matrix.txt R  38
+F libr /home/cae/Documents/TrackSystemEvaluation/materialFit/results/results_summary.txt R  39
 F rmed /home/cae/Documents/TrackSystemEvaluation/materialFit/results/resultSensitivityAnalysis_Nominal.res.med R  80
 F rmed /home/cae/Documents/TrackSystemEvaluation/materialFit/results/resultSensitivityAnalysis_EL.res.med R  81
 F rmed /home/cae/Documents/TrackSystemEvaluation/materialFit/results/resultSensitivityAnalysis_EN.res.med R  82

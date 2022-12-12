@@ -3,6 +3,7 @@
 #########################################################
 
 from time import time
+import math
 
 t_start = time()
 
@@ -30,8 +31,8 @@ NU_LT = properties[7]
 NU_TN = properties[8]
 RHO = properties[9]   # No sensitivity analysis on this parameter, supposed to be known.
 
-els = [E_L]
-
+props_evol = {'initial' : [E_L, E_N, E_T, G_LN, G_LT, G_TN, NU_LN, NU_LT, NU_TN]}
+error_evol = {}
 
 with open('fort.37') as fp:
     lines = fp.readlines()
@@ -122,6 +123,21 @@ elemprop = AFFE_CARA_ELEM(MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0),
                                     GROUP_MA=('sleepere', )),
                           MODELE=model)
 
+def error_computation(mode_exp, mode_num):
+    return [round((mode_exp['mode 1']-mode_num['mode 1']),2),
+            round((mode_exp['mode 2']-mode_num['mode 2']),2),
+            round((mode_exp['mode 3']-mode_num['mode 3']),2),
+            round((mode_exp['mode 4']-mode_num['mode 4']),2),
+            round((mode_exp['mode 5']-mode_num['mode 5']),2),
+            round((mode_exp['mode 6']-mode_num['mode 6']),2),
+            round((mode_exp['mode 7']-mode_num['mode 7']),2),
+            round((mode_exp['mode 8']-mode_num['mode 8']),2),
+            round((mode_exp['mode 9']-mode_num['mode 9']),2),
+            round((mode_exp['mode 10']-mode_num['mode 10']),2),
+            round((mode_exp['mode 11']-mode_num['mode 11']),2),
+            round((mode_exp['mode 12']-mode_num['mode 12']),2)]
+
+
 data = {}
 
 for key, mx in enumerate(prop):
@@ -171,7 +187,23 @@ for key, mx in enumerate(prop):
     IMPR_TABLE(TABLE=table,
             UNITE=(20+key))
 
+    if(mx["message"] == "Nominal"):
+        mode_num = {"mode 1" : data['mode_1_Nominal'],
+                    "mode 2" : data['mode_2_Nominal'],
+                    "mode 3" : data['mode_3_Nominal'],
+                    "mode 4" : data['mode_4_Nominal'],
+                    "mode 5" : data['mode_5_Nominal'],
+                    "mode 6" : data['mode_6_Nominal'],
+                    "mode 7" : data['mode_7_Nominal'],
+                    "mode 8" : data['mode_8_Nominal'],
+                    "mode 9" : data['mode_9_Nominal'],
+                    "mode 10" : data['mode_10_Nominal'],
+                    "mode 11" : data['mode_11_Nominal'],
+                    "mode 12" : data['mode_12_Nominal']}
+        error = error_computation(mode_exp, mode_num)
+        error_evol['initial'] = error
 
+    
     if (key != len(prop)-1):
         DETRUIRE(CONCEPT=_F(NOM=(mater, fieldmat, table)))
         DETRUIRE(OBJET=_F(CHAINE=('K','M','nddl')))
@@ -300,12 +332,23 @@ while(need_optimization):
         for key,value in params.items():
             ratio_of_sensitivity_per_mode[mode] = ratio_of_sensitivity_per_mode[mode] + value
 
+    if (i <= 4):
+        alpha = 1
+    if (i == 5):
+        alpha = 1.5
+    if (i == 6):
+        alpha = 2
+
     new_params = {}
     for param in ["EL", "EN", "ET", "GLN", "GLT", "GTN", "NULN", "NULT", "NUTN"]:
         new_params[param] = 0.0
         for j in range(12):
             if(sensitivity_matrix["mode " + str(j+1)][param] != 0):
-                new_params[param] += current_params[param]*(1-delta_modes["mode " + str(j+1)]*(increase_of*100 / (sensitivity_matrix["mode " + str(j+1)][param]))*( (sensitivity_matrix["mode " + str(j+1)][param]) / ratio_of_sensitivity_per_mode["mode " + str(j+1)]))
+                # Computation of new parameters for optimization
+                how_much_to_increase = delta_modes["mode " + str(j+1)]*(increase_of*100 / (sensitivity_matrix["mode " + str(j+1)][param]))
+                ratio_for_each_param = sensitivity_matrix["mode " + str(j+1)][param] / ratio_of_sensitivity_per_mode["mode " + str(j+1)]
+                properties_increases = how_much_to_increase *ratio_for_each_param
+                new_params[param] += current_params[param] * (1 - alpha * properties_increases)
             if(sensitivity_matrix["mode " + str(j+1)][param] == 0):
                 new_params[param] += current_params[param]
         new_params[param] = round(new_params[param]/12,3)
@@ -367,8 +410,42 @@ while(need_optimization):
 
     delta_modes = compute_deltas(mode_num, mode_exp)
 
-    current_params = new_params
-    els.append(current_params['EL'])
+    
+    if (i == 5):
+        alpha = 1.5
+        erreur_alpah2 = (math.sqrt((mode_exp['mode 1']-mode_num['mode 1'])**2)+
+                         math.sqrt((mode_exp['mode 2']-mode_num['mode 2'])**2)+
+                         math.sqrt((mode_exp['mode 5']-mode_num['mode 5'])**2))/3
+        params_alpha2 = new_params
+
+    if (i == 6):
+        alpha = 2
+        erreur_alpah25 = (math.sqrt((mode_exp['mode 1']-mode_num['mode 1'])**2)+
+                          math.sqrt((mode_exp['mode 2']-mode_num['mode 2'])**2)+
+                          math.sqrt((mode_exp['mode 5']-mode_num['mode 5'])**2))/3
+        params_alpha25 = new_params
+        if (erreur_alpah2 < erreur_alpah25):
+            alpha = 1.5
+            current_params = params_alpha2
+        if (erreur_alpah2 > erreur_alpah25):
+            alpha = 2
+            current_params = params_alpha25
+    
+    if (i != 6 and i != 5):
+        current_params = new_params
+    
+    error = error_computation(mode_exp, mode_num)
+    error_evol['iteration ' + str(i)] = error
+
+    props_evol['iteration ' + str(i)] = [current_params['EL'], 
+                                         current_params['EN'], 
+                                         current_params['ET'], 
+                                         current_params["GLN"], 
+                                         current_params["GLT"], 
+                                         current_params["GTN"], 
+                                         current_params["NULN"], 
+                                         current_params["NULT"], 
+                                         current_params["NUTN"]]
 
     need_optimization = False
     for mode,delta in delta_modes.items():
@@ -380,6 +457,7 @@ while(need_optimization):
     #############################################
 
     if(i == max_iter or (not need_optimization)): # Escape if no iteration left
+        t_end = time()
         if(i == max_iter):
             print('Maximum number of iterations (' + str(max_iter) + ') reached. Calculation stopped.')
         if(not need_optimization):
@@ -408,11 +486,61 @@ while(need_optimization):
         print("NULT : " + str(NU_LT) + ' -> ' + str(current_params['NULT']) + ' vs 0.2 (ref for B91/60E2 manually fitted)')
         print("NUTN : " + str(NU_TN) + ' -> ' + str(current_params['NUTN']) + ' vs 0.2 (ref for B91/60E2 manually fitted)')
         print('\n')
-        t_end = time()
         print('Calculation time : ' + str(round(((t_end - t_start)/60),2)) + ' min')
         print('Time for sensivity analysis : ' + str(round(((t_end_sensivity - t_start)/60),1)) + ' min and time for properties identification : ' + str(round(((t_end - t_end_sensivity)/60),1)) + ' min.')
         print('\n')
-        print(els)
+        print('Evolution of the properties :')
+        for key,value in props_evol.items():
+            print(key + " : " + str(props_evol[key]))
+        print('\n')
+        print('Evolution of the error for each mode at each iteration (and initial) error -> (mode_num - mode_exp):')
+        for key,value in error_evol.items():
+            print(key + " : " + str(error_evol[key]))
+        
+        with open('fort.39', "w") as myF:
+            if(i == max_iter and need_optimization):
+                myF.write('Maximum number of iterations (' + str(max_iter) + ') reached. \nCalculation stopped.\n')
+            if(not need_optimization):
+                myF.write('Conditions reached after ' + str(i) + ' iterations.\n')
+            myF.write('\n')
+            myF.write('Experimental eigen frequencies versus numerical ones :\n')
+            myF.write('mode 1: ' + str(mode_exp['mode 1']) + ' (ref) vs ' + str(round(mode_num['mode 1'], 0)) + '\n')
+            myF.write('mode 2: ' + str(mode_exp['mode 2']) + ' (ref) vs ' + str(round(mode_num['mode 2'], 0)) + '\n')
+            myF.write('mode 3: ' + str(mode_exp['mode 3']) + ' (ref) vs ' + str(round(mode_num['mode 3'], 0)) + '\n')
+            myF.write('mode 4: ' + str(mode_exp['mode 4']) + ' (ref) vs ' + str(round(mode_num['mode 4'], 0)) + '\n')
+            myF.write('mode 5: ' + str(mode_exp['mode 5']) + ' (ref) vs ' + str(round(mode_num['mode 5'], 0)) + '\n')
+            myF.write('mode 6: ' + str(mode_exp['mode 6']) + ' (ref) vs ' + str(round(mode_num['mode 6'], 0)) + '\n')
+            myF.write('mode 7: ' + str(mode_exp['mode 7']) + ' (ref) vs ' + str(round(mode_num['mode 7'], 0)) + '\n')
+            myF.write('mode 8: ' + str(mode_exp['mode 8']) + ' (ref) vs ' + str(round(mode_num['mode 8'], 0)) + '\n')
+            myF.write('mode 9: ' + str(mode_exp['mode 9']) + ' (ref) vs ' + str(round(mode_num['mode 9'], 0)) + '\n')
+            myF.write('mode 10: ' + str(mode_exp['mode 10']) + ' (ref) vs ' + str(round(mode_num['mode 10'], 0)) + '\n')
+            myF.write('mode 11: ' + str(mode_exp['mode 11']) + ' (ref) vs ' + str(round(mode_num['mode 11'], 0)) + '\n')
+            myF.write('mode 12: ' + str(mode_exp['mode 12']) + ' (ref) vs ' + str(round(mode_num['mode 12'], 0)) + '\n')
+            myF.write('\n')
+            myF.write('Initial sleeper properties -> optimized properties versus B91/60E2 manually fitted : \n')
+            myF.write("EL : " + str(E_L) + ' -> ' + str(current_params['EL']) + ' vs 47370 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("EN : " + str(E_N) + ' -> ' + str(current_params['EN']) + ' vs 46300 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("ET : " + str(E_T) + ' -> ' + str(current_params['ET']) + ' vs 46300 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("GLN : " + str(G_LN) + ' -> ' + str(current_params['GLN']) + ' vs 19700 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("GLT : " + str(G_LT) + ' -> ' + str(current_params['GLT']) + ' vs 19700 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("GTN : " + str(G_TN) + ' -> ' + str(current_params['GTN']) + ' vs 19300 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("NULN : " + str(NU_LN) + ' -> ' + str(current_params['NULN']) + ' vs 0.2 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("NULT : " + str(NU_LT) + ' -> ' + str(current_params['NULT']) + ' vs 0.2 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write("NUTN : " + str(NU_TN) + ' -> ' + str(current_params['NUTN']) + ' vs 0.2 (ref for B91/60E2 manually fitted)' + '\n')
+            myF.write('\n')
+            myF.write('Calculation time : ' + str(round(((t_end - t_start)/60),2)) + ' min' + '\n')
+            myF.write('Time for sensivity analysis : ' + str(round(((t_end_sensivity - t_start)/60),1)) + ' min and time for properties identification : ' + str(round(((t_end - t_end_sensivity)/60),1)) + ' min.' + '\n')
+            myF.write('\n')
+            myF.write('Evolution of the properties :' + '\n')
+            for key,value in props_evol.items():
+                myF.write(key + " : " + str(props_evol[key]) + '\n')
+            myF.write('\n')
+            myF.write('Evolution of the error for each mode at each iteration (and initial) error -> (mode_num - mode_exp):' + '\n')
+            for key,value in error_evol.items():
+                norm = 0
+                for item in value:
+                    norm += item*item
+                myF.write(key + " : " + str(error_evol[key]) + ' & error norm : ' + str(round(math.sqrt(norm),2)) + '\n')
         break
 
 IMPR_RESU(RESU=_F(RESULTAT=modes),
