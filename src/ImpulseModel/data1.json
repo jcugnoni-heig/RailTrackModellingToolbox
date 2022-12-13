@@ -1,0 +1,26 @@
+{
+    "name" : "test1",
+    "path" : "/home/cae/Documents/TrackSystemEvaluation",
+    "meshes" : {
+        "pad" : "EVA_soft",
+        "rail" : "60E2",
+        "sleeper" : "B91_60E2",
+        "ballast" : "Wooden_Beam"
+    },
+    "materials" : {
+        "pad1" : "EVA",
+        "pad2" : "EVA",
+        "rail" : "Steel",
+        "sleeper" : "Concrete",
+        "ballast" : "wooden_beam"
+    },
+    "sleeper distance": 600,
+    "clamps properties" : {
+        "stiffness X" : 0,
+        "stiffness Y" : 0,
+        "stiffness Z" : 0,
+        "damping X" : 0,
+        "damping Y" : 0,
+        "damping Z" : 0
+    } 
+}
