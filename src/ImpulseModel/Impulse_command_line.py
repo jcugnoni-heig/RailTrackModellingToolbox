@@ -182,10 +182,13 @@ os.system('cd working_directory \n ./gen3SleepersMesh.sh')
 # Run the script in salome to add the edges
 os.system('/opt/SalomeMeca/appli_V2019_univ/salome -t ' + working_directorypath + '/script_to_add_edges.py')
 
-# Open the mesh in salome
-os.system('/opt/SalomeMeca/runSalome2019.sh ' + working_directorypath + '/open_mesh.py')
+if (data["mesh verification"]):
+    # Open the mesh in salome
+    os.system('/opt/SalomeMeca/runSalome2019.sh ' + working_directorypath + '/open_mesh.py')
 
-isOK = raw_input("Is the mesh assembly ok ? [y/n]  ")
+    isOK = raw_input("Is the mesh assembly ok ? [y/n]  ")
+else:
+    isOK = 'y'
 
 if(isOK == 'y' or isOK == 'yes'):
     print('Ok, let\'s GO!!')

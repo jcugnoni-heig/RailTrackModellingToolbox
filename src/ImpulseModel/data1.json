@@ -1,5 +1,5 @@
 {
-    "name" : "test1",
+    "name" : "test2",
     "path" : "/home/cae/Documents/TrackSystemEvaluation",
     "meshes" : {
         "pad" : "EVA_soft",
@@ -22,5 +22,6 @@
         "damping X" : 0,
         "damping Y" : 0,
         "damping Z" : 0
-    } 
+    },
+    "mesh verification" : false
 }
