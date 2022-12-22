@@ -1,10 +1,9 @@
 import os
 import sys
-import module_run as run
 import shutil
 from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import Qt, QTimer, QObject, QThread, pyqtSignal
+from PyQt5.QtCore import Qt
 import pyperclip as clipboard
 #import clipboard
 import module_run as mod
@@ -24,15 +23,18 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.cb_phase1.stateChanged.connect(self.Phase1StateChanged)
 		self.btn_selPhase1Folder.clicked.connect(self.SelectPhase1Folder)
 		self.btn_phase1SelFreqs.clicked.connect(self.SelectPhase1Frequencies)
+		self.btn_railMesh.clicked.connect(self.SelectRailMesh)
 		self.btn_padMesh.clicked.connect(self.SelectPadMesh)
 		self.btn_Emat1.clicked.connect(self.SelectEmat1)
 		self.btn_Emat2.clicked.connect(self.SelectEmat2)
 		self.btn_tanDmat1.clicked.connect(self.SelectTanDmat1)
 		self.btn_tanDmat2.clicked.connect(self.SelectTanDmat2)
+		self.btn_sleeperMesh.clicked.connect(self.SelectSleeperMesh)
 		self.btn_Ebal.clicked.connect(self.SelectEbal)
 		self.btn_tanDbal.clicked.connect(self.SelectTanDbal)
 		self.btn_EUSP.clicked.connect(self.SelectEUSP)
 		self.btn_tanDUSP.clicked.connect(self.SelectTanDUSP)
+		self.btn_USPMesh.clicked.connect(self.SelectUSPMesh)
 		self.cb_USP.stateChanged.connect(self.USPStateChanged)
 		self.btn_freqs.clicked.connect(self.SelectPhase2Frequencies)
 		self.cb_defaultNode.stateChanged.connect(self.DefaultNodeStateChanged)
@@ -58,6 +60,9 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.savePhase1To = None
 		self.frequenciesPh1 = [300, 308.3916084, 316.7832168, 325.1748252, 333.5664336, 341.958042, 350.3496503, 358.7412587, 367.1328671, 375.5244755, 383.9160839, 392.3076923, 400.6993007, 409.0909091, 417.4825175, 425.8741259, 434.2657343, 442.6573427, 451.048951, 459.4405594, 467.8321678, 476.2237762, 484.6153846, 493.006993, 501.3986014, 509.7902098, 518.1818182, 526.5734266, 534.965035, 543.3566434, 551.7482517, 560.1398601, 568.5314685, 576.9230769, 585.3146853, 593.7062937, 602.0979021, 610.4895105, 618.8811189, 627.2727273, 635.6643357, 644.0559441, 652.4475524, 660.8391608, 669.2307692, 677.6223776, 686.013986, 694.4055944, 702.7972028, 711.1888112, 719.5804196, 727.972028, 736.3636364, 744.7552448, 753.1468531, 761.5384615, 769.9300699, 778.3216783, 786.7132867, 795.1048951, 803.4965035, 811.8881119, 820.2797203, 828.6713287, 837.0629371, 845.4545455, 853.8461538, 862.2377622, 870.6293706, 879.020979, 887.4125874, 895.8041958, 904.1958042, 912.5874126, 920.979021, 929.3706294, 937.7622378, 946.1538462, 954.5454545, 962.9370629, 971.3286713, 979.7202797, 988.1118881, 996.5034965, 1004.895105, 1013.286713, 1021.678322, 1030.06993, 1038.461538, 1046.853147, 1055.244755, 1063.636364, 1072.027972, 1080.41958, 1088.811189, 1097.202797, 1105.594406, 1113.986014, 1122.377622, 1130.769231, 1139.160839, 1147.552448, 1155.944056, 1164.335664, 1172.727273, 1181.118881, 1189.51049, 1197.902098, 1206.293706, 1214.685315, 1223.076923, 1231.468531, 1239.86014, 1248.251748, 1256.643357, 1265.034965, 1273.426573, 1281.818182, 1290.20979, 1298.601399, 1306.993007, 1315.384615, 1323.776224, 1332.167832, 1340.559441, 1348.951049, 1357.342657, 1365.734266, 1374.125874, 1382.517483, 1390.909091, 1399.300699, 1407.692308, 1416.083916, 1424.475524, 1432.867133, 1441.258741, 1449.65035, 1458.041958, 1466.433566, 1474.825175, 1483.216783, 1491.608392, 1500]
 		self.frequenciesPh2 = self.frequenciesPh1
+		self.railMesh = None
+		self.sleeperMesh = None
+		self.USPMesh = None
 		self.padMesh = None
 		self.Emat1 = None
 		self.Emat2 = None
@@ -103,6 +108,18 @@ class MultiSleeperModelGUI(QMainWindow):
 			# default values must be shown if runPhase1 is turned on, instead of previous simu values
 			self.frequenciesPh1 = [300, 308.3916084, 316.7832168, 325.1748252, 333.5664336, 341.958042, 350.3496503, 358.7412587, 367.1328671, 375.5244755, 383.9160839, 392.3076923, 400.6993007, 409.0909091, 417.4825175, 425.8741259, 434.2657343, 442.6573427, 451.048951, 459.4405594, 467.8321678, 476.2237762, 484.6153846, 493.006993, 501.3986014, 509.7902098, 518.1818182, 526.5734266, 534.965035, 543.3566434, 551.7482517, 560.1398601, 568.5314685, 576.9230769, 585.3146853, 593.7062937, 602.0979021, 610.4895105, 618.8811189, 627.2727273, 635.6643357, 644.0559441, 652.4475524, 660.8391608, 669.2307692, 677.6223776, 686.013986, 694.4055944, 702.7972028, 711.1888112, 719.5804196, 727.972028, 736.3636364, 744.7552448, 753.1468531, 761.5384615, 769.9300699, 778.3216783, 786.7132867, 795.1048951, 803.4965035, 811.8881119, 820.2797203, 828.6713287, 837.0629371, 845.4545455, 853.8461538, 862.2377622, 870.6293706, 879.020979, 887.4125874, 895.8041958, 904.1958042, 912.5874126, 920.979021, 929.3706294, 937.7622378, 946.1538462, 954.5454545, 962.9370629, 971.3286713, 979.7202797, 988.1118881, 996.5034965, 1004.895105, 1013.286713, 1021.678322, 1030.06993, 1038.461538, 1046.853147, 1055.244755, 1063.636364, 1072.027972, 1080.41958, 1088.811189, 1097.202797, 1105.594406, 1113.986014, 1122.377622, 1130.769231, 1139.160839, 1147.552448, 1155.944056, 1164.335664, 1172.727273, 1181.118881, 1189.51049, 1197.902098, 1206.293706, 1214.685315, 1223.076923, 1231.468531, 1239.86014, 1248.251748, 1256.643357, 1265.034965, 1273.426573, 1281.818182, 1290.20979, 1298.601399, 1306.993007, 1315.384615, 1323.776224, 1332.167832, 1340.559441, 1348.951049, 1357.342657, 1365.734266, 1374.125874, 1382.517483, 1390.909091, 1399.300699, 1407.692308, 1416.083916, 1424.475524, 1432.867133, 1441.258741, 1449.65035, 1458.041958, 1466.433566, 1474.825175, 1483.216783, 1491.608392, 1500]
 		
+		self.railMesh = dictSimu['railMesh']
+		self.txt_ERail.setText(str(dictSimu['ERail']))
+		self.txt_nuRail.setText(str(dictSimu['nuRail']))
+		self.txt_tanDRail.setText(str(dictSimu['tanDRail']))
+		self.txt_rhoRail.setText(str(dictSimu['rhoRail']))
+
+		self.sleeperMesh = dictSimu['sleeperMesh']
+		self.txt_ESleeper.setText(str(dictSimu['ESleeper']))
+		self.txt_nuSleeper.setText(str(dictSimu['nuSleeper']))
+		self.txt_tanDSleeper.setText(str(dictSimu['tanDSleeper']))
+		self.txt_rhoSleeper.setText(str(dictSimu['rhoSleeper']))
+
 		self.padMesh = dictSimu['padMesh']
 		self.Emat1 = dictSimu['Emat1']
 		self.Emat2 = dictSimu['Emat2']
@@ -118,6 +135,8 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.cb_USP.setChecked(dictSimu['USPON'])
 		if dictSimu['USPON']:
 			self.txt_nuUSP.setText(str(dictSimu['nuUSP']))
+			self.txt_thkUSP.setText(str(dictSimu['thkUSP']))
+			self.USPMesh = dictSimu['USPMesh']
 			self.EUSP = dictSimu['EUSP']
 			self.tanDUSP = dictSimu['tanDUSP']
 		else: # idem
@@ -125,6 +144,7 @@ class MultiSleeperModelGUI(QMainWindow):
 			self.tanDUSP = None
 
 		self.txt_nModes.setText(str(dictSimu['nModes']))
+		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
 		self.txt_nSlp.setText(str(dictSimu['nSlp']))
 		self.rb_10pct.setChecked(dictSimu['force'] == (0, -100000.0, 10000.0))
 		self.rb_45deg.setChecked(dictSimu['force'] == (0, -100000, -100000))
@@ -170,24 +190,27 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_tanDUSP.setDisabled(not USPON)
 		self.txt_nuUSP.setDisabled(not USPON)
 		self.label_18.setDisabled(not USPON)
+		self.btn_USPMesh.setDisabled(not USPON)
+		self.label_35.setDisabled(not USPON)
+		self.txt_thkUSP.setDisabled(not USPON)
 		
 	def DefaultNodeStateChanged(self):
 		defNodeON = self.cb_defaultNode.isChecked()
 		self.txt_forceNode.setDisabled(defNodeON)
 		if defNodeON == True:
 			if self.rb_10pct.isChecked() == True:
-				self.txt_forceNode.setText('nForce10')
+				self.txt_forceNode.setText('nodeF10')
 			elif self.rb_45deg.isChecked() == True:
-				self.txt_forceNode.setText('nForce45')
+				self.txt_forceNode.setText('nodeF45')
 				
 	def LoadDirChanged(self):
 		if self.cb_defaultNode.isChecked() == False:
 			return
 			
 		if self.rb_10pct.isChecked() == True:
-			txt = 'nForce10'
+			txt = 'nodeF10'
 		elif self.rb_45deg.isChecked() == True:
-			txt = 'nForce45'
+			txt = 'nodeF45'
 			
 		self.txt_forceNode.setText(txt)
 		
@@ -391,6 +414,38 @@ class MultiSleeperModelGUI(QMainWindow):
 				
 		# Materials ==============================================================================================
 		#=========================================================================================================
+		try:
+			ERail = float(self.txt_ERail.text())
+			nuRail = float(self.txt_nuRail.text())
+			tanDRail = float(self.txt_tanDRail.text())
+			rhoRail = float(self.txt_rhoRail.text())
+			if ERail <= 0 or nuRail >= 0.5 or nuRail < 0 or tanDRail < 0 or rhoRail < 0:
+				QMessageBox.information(self, 'Error', 'Please enter correct rails materials properties.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter correct rails materials properties.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['ERail'] = ERail
+		dictSimu['nuRail'] = nuRail
+		dictSimu['tanDRail'] = tanDRail
+		dictSimu['rhoRail'] = rhoRail
+
+		#
+		if self.railMesh is None or os.path.exists(self.railMesh) == False:
+			QMessageBox.information(self, 'Error', 'Rail mesh not defined.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['railMesh'] = self.railMesh
+
+		#
+		if self.sleeperMesh is None or os.path.exists(self.sleeperMesh) == False:
+			QMessageBox.information(self, 'Error', 'Sleeper mesh not defined.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['sleeperMesh'] = self.sleeperMesh
+
+		#
 		if self.padMesh is None or os.path.exists(self.padMesh) == False:
 			QMessageBox.information(self, 'Error', 'Pad mesh not defined.', QMessageBox.Ok,)
 			return
@@ -425,6 +480,24 @@ class MultiSleeperModelGUI(QMainWindow):
 			
 		dictSimu['tanDmat2'] = self.tanDmat2
 		
+		#
+		try:
+			ESleeper = float(self.txt_ESleeper.text())
+			nuSleeper = float(self.txt_nuSleeper.text())
+			tanDSleeper = float(self.txt_tanDSleeper.text())
+			rhoSleeper = float(self.txt_rhoSleeper.text())
+			if ESleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0:
+				QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['ESleeper'] = ESleeper
+		dictSimu['nuSleeper'] = nuSleeper
+		dictSimu['tanDSleeper'] = tanDSleeper
+		dictSimu['rhoSleeper'] = rhoSleeper
+
 		#
 		if self.Ebal is None or os.path.exists(self.Ebal) == False:
 			QMessageBox.information(self, 'Error', 'Ballast Young''s modulus not defined.', QMessageBox.Ok,)
@@ -485,16 +558,25 @@ class MultiSleeperModelGUI(QMainWindow):
 		
 		if USPON:
 			#
+			if self.USPMesh is None or os.path.exists(self.USPMesh) == False:
+				QMessageBox.information(self, 'Error', 'USP mesh not defined.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['USPMesh'] = self.USPMesh
+
+			#
 			try:
 				nuUSP = float(self.txt_nuUSP.text())
-				if nuUSP < 0 or nuUSP >= 0.5:
-					QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
+				thkUSP = float(self.txt_thkUSP.text())
+				if nuUSP < 0 or nuUSP >= 0.5 or thkUSP < 0:
+					QMessageBox.information(self, 'Error', 'Please enter correct USPs properties.', QMessageBox.Ok,)
 					return
 			except:
-				QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', 'Please enter correct USPs properties.', QMessageBox.Ok,)
 				return
 				
 			dictSimu['nuUSP'] = nuUSP
+			dictSimu['thkUSP'] = thkUSP
 			
 			#
 			if self.EUSP is None or os.path.exists(self.EUSP) == False:
@@ -534,6 +616,18 @@ class MultiSleeperModelGUI(QMainWindow):
 			return
 			
 		dictSimu['nSlp'] = nSlp
+
+		#
+		try:
+			slpSpacing = float(self.txt_slpSpacing.text())
+			if slpSpacing < 0:
+				QMessageBox.information(self, 'Error', 'Please enter a correct sleeper spacing.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter a correct sleeper spacing.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['slpSpacing'] = slpSpacing
 		
 		#
 		if self.rb_10pct.isChecked() == True:
@@ -668,6 +762,18 @@ class MultiSleeperModelGUI(QMainWindow):
 		dlg_frequencies.exec_()
 		self.frequenciesPh2 = dlg_frequencies.frequencies
 		
+	def SelectRailMesh(self):
+		defPath = os.path.join(self.cwd, 'Meshes', 'Rails')
+		self.railMesh = self.SelectFile('Select rail mesh', self.railMesh, defPath, '*.med')
+
+	def SelectSleeperMesh(self):
+		defPath = os.path.join(self.cwd, 'Meshes', 'Sleepers')
+		self.sleeperMesh = self.SelectFile('Select sleeper mesh', self.sleeperMesh, defPath, '*.med')
+
+	def SelectUSPMesh(self):
+		defPath = os.path.join(self.cwd, 'Meshes', 'USPs')
+		self.USPMesh = self.SelectFile('Select USP mesh', self.USPMesh, defPath, '*.med')
+
 	def SelectPadMesh(self):
 		defPath = os.path.join(self.cwd, 'Meshes', 'RailPads')
 		self.padMesh = self.SelectFile('Select rail pad mesh', self.padMesh, defPath, '*.med')

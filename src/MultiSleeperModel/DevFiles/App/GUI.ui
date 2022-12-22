@@ -170,7 +170,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Phase 1 name</string>
+          <string>Base name</string>
          </property>
         </widget>
        </item>
@@ -419,7 +419,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tab_8">
          <attribute name="title">
@@ -433,16 +433,26 @@
            <rect>
             <x>10</x>
             <y>10</y>
-            <width>201</width>
-            <height>141</height>
+            <width>221</width>
+            <height>161</height>
            </rect>
           </property>
           <property name="title">
            <string/>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_27">
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="txt_nuRail">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>0.3</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_29">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -451,46 +461,73 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QPushButton" name="btn_EUSP_2">
+           <item row="7" column="1">
+            <widget class="QLineEdit" name="txt_rhoRail">
              <property name="enabled">
               <bool>true</bool>
              </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
              <property name="text">
-              <string>Young's modulus...</string>
+              <string>7850</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="txt_nuUSP_2">
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_27">
              <property name="enabled">
               <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QPushButton" name="btn_tanDUSP_2">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string>Damping (tanD)...</string>
+              <string>Density (kg/m3)</string>
              </property>
             </widget>
            </item>
            <item row="0" column="0" colspan="2">
-            <widget class="QPushButton" name="btn_padMesh_2">
+            <widget class="QPushButton" name="btn_railMesh">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Select rail mesh...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_28">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Young's modulus (MPa)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="txt_ERail">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>210000</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="txt_tanDRail">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>0.001</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_30">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Damping (tanD) (-)</string>
              </property>
             </widget>
            </item>
@@ -504,8 +541,8 @@
          <widget class="QPushButton" name="btn_padMesh">
           <property name="geometry">
            <rect>
-            <x>9</x>
-            <y>10</y>
+            <x>20</x>
+            <y>20</y>
             <width>141</width>
             <height>25</height>
            </rect>
@@ -612,6 +649,114 @@
          <attribute name="title">
           <string>Sleepers</string>
          </attribute>
+         <widget class="QGroupBox" name="groupBox_10">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>221</width>
+            <height>161</height>
+           </rect>
+          </property>
+          <property name="title">
+           <string/>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="txt_nuSleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>0.2</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_31">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Poisson's ratio (-)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QLineEdit" name="txt_rhoSleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>2436</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_32">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Density (kg/m3)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QPushButton" name="btn_sleeperMesh">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Select sleeper mesh...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_33">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Young's modulus (MPa)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="txt_ESleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>46300</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="txt_tanDSleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>0.016</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_34">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Damping (tanD) (-)</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
         <widget class="QWidget" name="tab_2">
          <attribute name="title">
@@ -626,14 +771,37 @@
             <x>10</x>
             <y>30</y>
             <width>211</width>
-            <height>141</height>
+            <height>151</height>
            </rect>
           </property>
           <property name="title">
            <string/>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="2" column="0">
+           <item row="6" column="1">
+            <widget class="QLineEdit" name="txt_thkUSP">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QPushButton" name="btn_tanDUSP">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Damping (tanD)...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
             <widget class="QLabel" name="label_18">
              <property name="enabled">
               <bool>false</bool>
@@ -643,7 +811,14 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="0" colspan="2">
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="txt_nuUSP">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
             <widget class="QPushButton" name="btn_EUSP">
              <property name="enabled">
               <bool>false</bool>
@@ -657,22 +832,25 @@
             </widget>
            </item>
            <item row="1" column="0" colspan="2">
-            <widget class="QPushButton" name="btn_tanDUSP">
+            <widget class="QPushButton" name="btn_USPMesh">
              <property name="enabled">
               <bool>false</bool>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string>Damping (tanD)...</string>
+              <string>Select USP mesh...</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="txt_nuUSP">
+           <item row="6" column="0">
+            <widget class="QLabel" name="label_35">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>USP thickness (mm)</string>
              </property>
             </widget>
            </item>
@@ -723,7 +901,11 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="txt_nuBal"/>
+            <widget class="QLineEdit" name="txt_nuBal">
+             <property name="text">
+              <string>0.3</string>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_15">
@@ -794,10 +976,24 @@
          <string>Parameters</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_8">
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_20">
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_36">
            <property name="text">
-            <string>Number of sleepers</string>
+            <string>Sleeper spacing (mm)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1" colspan="2">
+          <widget class="QLineEdit" name="txt_slpSpacing">
+           <property name="text">
+            <string>600</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_21">
+           <property name="text">
+            <string>Load direction</string>
            </property>
           </widget>
          </item>
@@ -818,21 +1014,21 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Number of sleepers</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
           <widget class="QLabel" name="label_23">
            <property name="text">
             <string>Applied on &quot;sleeper&quot; n°</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_21">
-           <property name="text">
-            <string>Load direction</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
+         <item row="5" column="0">
           <widget class="QCheckBox" name="cb_defaultNode">
            <property name="text">
             <string>Default node</string>
@@ -842,7 +1038,7 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="4" column="1">
           <widget class="QRadioButton" name="rb_10pct">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -855,7 +1051,7 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="2">
+         <item row="4" column="2">
           <widget class="QRadioButton" name="rb_45deg">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -865,20 +1061,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1" colspan="2">
-          <widget class="QLineEdit" name="txt_forceNode">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>nForce10</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1" colspan="2">
+         <item row="6" column="1" colspan="2">
           <widget class="QLineEdit" name="txt_slpForce">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force will be applied to the group of node indicated above, on the substructure corresponding to the sleeper number entered here. The excited side is always the right side.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -888,13 +1071,16 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0" colspan="3">
-          <widget class="QPushButton" name="btn_freqs">
+         <item row="5" column="1" colspan="2">
+          <widget class="QLineEdit" name="txt_forceNode">
            <property name="enabled">
-            <bool>true</bool>
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Select frequencies...</string>
+            <string>nodeF10</string>
            </property>
           </widget>
          </item>
@@ -908,6 +1094,16 @@
            </property>
            <property name="text">
             <string>1e12</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0" colspan="3">
+          <widget class="QPushButton" name="btn_freqs">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Select frequencies...</string>
            </property>
           </widget>
          </item>
@@ -1123,7 +1319,6 @@
   <tabstop>txt_host</tabstop>
   <tabstop>txt_repTrav</tabstop>
   <tabstop>txt_memLimit</tabstop>
-  <tabstop>tabWidget</tabstop>
   <tabstop>btn_padMesh</tabstop>
   <tabstop>btn_Emat1</tabstop>
   <tabstop>btn_tanDmat1</tabstop>

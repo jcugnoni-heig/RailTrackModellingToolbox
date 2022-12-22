@@ -118,13 +118,11 @@ def PrepareFilesPhase1(p_dictSimu):
 	
 	# Copy mesh files
 	try:
-		meshesDir = os.path.join(p_dictSimu['cwd'], 'Meshes')
-		shutil.copyfile(os.path.join(meshesDir, 'sleeper.med'), os.path.join(fullDir, 'sleeper.med'))
-		shutil.copyfile(os.path.join(meshesDir, 'rail.med'), os.path.join(fullDir, 'rail.med'))
-		if p_dictSimu.get('USPON') == True:
-			shutil.copyfile(os.path.join(meshesDir, 'USP.med'), os.path.join(fullDir, 'USP.med'))
-		
+		shutil.copyfile(p_dictSimu.get('railMesh'), os.path.join(fullDir, 'rail.med'))
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDir, 'padR.med'))
+		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDir, 'sleeper.med'))
+		if p_dictSimu.get('USPON') == True:
+			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDir, 'USP.med'))
 	except:
 		return "Phase 1: some mesh files could not be copied to " + fullDir + "."
 
@@ -240,17 +238,15 @@ def PrepareFilesPhase2(p_dictSimu):
 	
 	# Copy mesh files
 	try:
-		meshesDir = os.path.join(p_dictSimu['cwd'], 'Meshes')
-		shutil.copyfile(os.path.join(meshesDir, 'sleeper.med'), os.path.join(fullDirInput, 'sleeper.med'))
-		shutil.copyfile(os.path.join(meshesDir, 'rail.med'), os.path.join(fullDirInput, 'rail.med'))
+		shutil.copyfile(p_dictSimu.get('railMesh'), os.path.join(fullDirInput, 'rail.med'))
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDirInput, 'padR.med'))
+		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDirInput, 'sleeper.med'))
+
+		if p_dictSimu.get('USPON') == True:
+			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDirInput, 'USP.med'))
 		
 		if p_dictSimu.get('computeAcoustic') == True:
-			meshFileName = os.path.basename(p_dictSimu.get('acousticMesh'))
-			shutil.copyfile(p_dictSimu.get('acousticMesh'), os.path.join(fullDirInput, meshFileName))
-		
-		if p_dictSimu.get('USPON') == True:
-			shutil.copyfile(os.path.join(meshesDir, 'USP.med'), os.path.join(fullDirInput, 'USP.med'))
+			shutil.copyfile(p_dictSimu.get('acousticMesh'), os.path.join(fullDirInput, 'acousticMesh.med'))
 		
 	except:
 		return "Phase 2: some mesh files could not be copied to " + fullDirInput + "."
@@ -297,7 +293,7 @@ def PrepareFilesPhase2(p_dictSimu):
 			os.system('sed -i -E "s!__tanDUSP__!!" ' + exportFiles)
 	
 		if p_dictSimu.get('computeAcoustic') == True:
-			txt = 'F mmed Inputs' + os.sep + meshFileName + ' D  19'
+			txt = 'F mmed Inputs' + os.sep + 'acousticMesh.med D  19'
 		else:
 			txt = ''
 		os.system('sed -i -E "s!__acousticMesh__!' + txt + '!" ' + exportFiles)
@@ -547,8 +543,7 @@ def PostProcessResults(p_dictSimu):
 		os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
 		
 		if p_dictSimu.get('computeAcoustic') == True:
-			meshFileName = os.path.basename(p_dictSimu.get('acousticMesh'))
-			txt = 'F libr Inputs' + os.sep + meshFileName + ' D  7'
+			txt = 'F libr Inputs' + os.sep + 'acousticMesh.med D  7'
 		else:
 			txt = ''
 		os.system('sed -i -E "s!__acousticMesh__!' + txt + '!" ' + exportFile)
