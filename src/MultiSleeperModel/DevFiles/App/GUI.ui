@@ -419,7 +419,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_8">
          <attribute name="title">
@@ -756,6 +756,185 @@
             </widget>
            </item>
           </layout>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="tab_10">
+         <attribute name="title">
+          <string>Clamps</string>
+         </attribute>
+         <widget class="QLabel" name="label_9">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>10</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Stiffness X (N/mm)</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="txt_stiffX">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>10</y>
+            <width>111</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Longitudinal clamp stiffness</string>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_37">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>40</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Stiffness Y (N/mm)</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="txt_stiffY">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>40</y>
+            <width>113</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Vertical clamp stiffness</string>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_38">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>70</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Stiffness Z (N/mm)</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="txt_stiffZ">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>70</y>
+            <width>113</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Lateral clamp stiffness</string>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_39">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>160</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Damping Z (Ns/mm)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_40">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>100</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Damping X (Ns/mm)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_41">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>130</y>
+            <width>111</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Damping Y (Ns/mm)</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="txt_dampZ">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>160</y>
+            <width>113</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Lateral clamp damping</string>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="txt_dampX">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>100</y>
+            <width>111</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Longitudinal clamp damping</string>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="txt_dampY">
+          <property name="geometry">
+           <rect>
+            <x>140</x>
+            <y>130</y>
+            <width>113</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>Vertical clamp damping</string>
+          </property>
+          <property name="text">
+           <string>0.0</string>
+          </property>
          </widget>
         </widget>
         <widget class="QWidget" name="tab_2">
@@ -1307,6 +1486,7 @@
   <tabstop>btn_selPhase1Folder</tabstop>
   <tabstop>txt_phase1Name</tabstop>
   <tabstop>btn_savePhase1To</tabstop>
+  <tabstop>cb_debugPh1</tabstop>
   <tabstop>txt_phase1FreqMax</tabstop>
   <tabstop>txt_phase1RailModes</tabstop>
   <tabstop>txt_phase1SlpModes</tabstop>
@@ -1314,11 +1494,18 @@
   <tabstop>btn_phase1SelFreqs</tabstop>
   <tabstop>txt_simuName</tabstop>
   <tabstop>btn_simuDir</tabstop>
+  <tabstop>cb_debugPh2</tabstop>
   <tabstop>txt_nJobs</tabstop>
   <tabstop>txt_nCPUs</tabstop>
   <tabstop>txt_host</tabstop>
   <tabstop>txt_repTrav</tabstop>
   <tabstop>txt_memLimit</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>btn_railMesh</tabstop>
+  <tabstop>txt_ERail</tabstop>
+  <tabstop>txt_nuRail</tabstop>
+  <tabstop>txt_tanDRail</tabstop>
+  <tabstop>txt_rhoRail</tabstop>
   <tabstop>btn_padMesh</tabstop>
   <tabstop>btn_Emat1</tabstop>
   <tabstop>btn_tanDmat1</tabstop>
@@ -1326,17 +1513,32 @@
   <tabstop>btn_tanDmat2</tabstop>
   <tabstop>txt_nuMat1</tabstop>
   <tabstop>txt_nuMat2</tabstop>
+  <tabstop>btn_sleeperMesh</tabstop>
+  <tabstop>txt_ESleeper</tabstop>
+  <tabstop>txt_nuSleeper</tabstop>
+  <tabstop>txt_tanDSleeper</tabstop>
+  <tabstop>txt_rhoSleeper</tabstop>
+  <tabstop>txt_stiffX</tabstop>
+  <tabstop>txt_stiffY</tabstop>
+  <tabstop>txt_stiffZ</tabstop>
+  <tabstop>txt_dampX</tabstop>
+  <tabstop>txt_dampY</tabstop>
+  <tabstop>txt_dampZ</tabstop>
+  <tabstop>cb_USP</tabstop>
+  <tabstop>btn_USPMesh</tabstop>
+  <tabstop>btn_EUSP</tabstop>
+  <tabstop>btn_tanDUSP</tabstop>
+  <tabstop>txt_nuUSP</tabstop>
+  <tabstop>txt_thkUSP</tabstop>
   <tabstop>btn_Ebal</tabstop>
   <tabstop>btn_tanDbal</tabstop>
   <tabstop>txt_nuBal</tabstop>
   <tabstop>txt_hBal</tabstop>
   <tabstop>txt_balAreaCoef</tabstop>
-  <tabstop>cb_USP</tabstop>
-  <tabstop>btn_EUSP</tabstop>
-  <tabstop>btn_tanDUSP</tabstop>
-  <tabstop>txt_nuUSP</tabstop>
+  <tabstop>btn_moveUp</tabstop>
   <tabstop>txt_nModes</tabstop>
   <tabstop>txt_nSlp</tabstop>
+  <tabstop>txt_slpSpacing</tabstop>
   <tabstop>rb_10pct</tabstop>
   <tabstop>rb_45deg</tabstop>
   <tabstop>cb_defaultNode</tabstop>
@@ -1346,9 +1548,14 @@
   <tabstop>cbb_output</tabstop>
   <tabstop>btn_selectSubstructures</tabstop>
   <tabstop>cb_computeAcoustic</tabstop>
+  <tabstop>rb_1D</tabstop>
+  <tabstop>rb_2D</tabstop>
   <tabstop>btn_selectAcousticMesh</tabstop>
   <tabstop>btn_addSimu</tabstop>
   <tabstop>btn_simulate</tabstop>
+  <tabstop>list_simu</tabstop>
+  <tabstop>btn_deleteSimu</tabstop>
+  <tabstop>btn_moveDown</tabstop>
  </tabstops>
  <resources/>
  <connections/>

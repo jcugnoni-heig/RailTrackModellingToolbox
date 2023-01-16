@@ -26,6 +26,7 @@ F libr Inputs/modesMag45.txt D  4
 __acousticMesh__
 
 F libr Inputs/sleeper.med D  21
+F libr Inputs/Clamp.med D  22
 F libr Inputs/padR.med D  23
 F libr Inputs/rail.med D  25
 __meshUSP__

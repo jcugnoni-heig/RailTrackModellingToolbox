@@ -121,6 +121,7 @@ def PrepareFilesPhase1(p_dictSimu):
 		shutil.copyfile(p_dictSimu.get('railMesh'), os.path.join(fullDir, 'rail.med'))
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDir, 'padR.med'))
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDir, 'sleeper.med'))
+		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDir, 'Clamp.med'))
 		if p_dictSimu.get('USPON') == True:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDir, 'USP.med'))
 	except:
@@ -241,6 +242,7 @@ def PrepareFilesPhase2(p_dictSimu):
 		shutil.copyfile(p_dictSimu.get('railMesh'), os.path.join(fullDirInput, 'rail.med'))
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDirInput, 'padR.med'))
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDirInput, 'sleeper.med'))
+		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDirInput, 'Clamp.med'))
 
 		if p_dictSimu.get('USPON') == True:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDirInput, 'USP.med'))

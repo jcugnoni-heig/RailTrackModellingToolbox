@@ -143,6 +143,13 @@ class MultiSleeperModelGUI(QMainWindow):
 			self.EUSP = None
 			self.tanDUSP = None
 
+		self.txt_stiffX.setText(str(dictSimu['clampStiffX']))
+		self.txt_stiffY.setText(str(dictSimu['clampStiffY']))
+		self.txt_stiffZ.setText(str(dictSimu['clampStiffZ']))
+		self.txt_dampX.setText(str(dictSimu['clampDampX']))
+		self.txt_dampY.setText(str(dictSimu['clampDampY']))
+		self.txt_dampZ.setText(str(dictSimu['clampDampZ']))
+
 		self.txt_nModes.setText(str(dictSimu['nModes']))
 		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
 		self.txt_nSlp.setText(str(dictSimu['nSlp']))
@@ -497,6 +504,29 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['nuSleeper'] = nuSleeper
 		dictSimu['tanDSleeper'] = tanDSleeper
 		dictSimu['rhoSleeper'] = rhoSleeper
+
+		#
+		try:
+			stiffX = float(self.txt_stiffX.text())
+			stiffY = float(self.txt_stiffY.text())
+			stiffZ = float(self.txt_stiffZ.text())
+			dampX = float(self.txt_dampX.text())
+			dampY = float(self.txt_dampY.text())
+			dampZ = float(self.txt_dampZ.text())
+			if stiffX < 0 or stiffY < 0 or stiffZ < 0 or dampX < 0 or dampY < 0 or dampZ < 0:
+				QMessageBox.information(self, 'Error', 'Please enter correct clamps properties.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter correct clamps properties.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['clampStiffX'] = stiffX
+		dictSimu['clampStiffY'] = stiffY
+		dictSimu['clampStiffZ'] = stiffZ
+		dictSimu['clampDampX'] = dampX
+		dictSimu['clampDampY'] = dampY
+		dictSimu['clampDampZ'] = dampZ
+
 
 		#
 		if self.Ebal is None or os.path.exists(self.Ebal) == False:
