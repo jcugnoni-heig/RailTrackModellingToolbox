@@ -92,7 +92,7 @@ def GetAlphaBeta(freqList, dampingList):
 # Trim eigenmodes and define min number of interface modes to compute
 ######################################################
 t0=time.time()
-freqBands1 = list(range(0, int(maxFreq) + 1, min(1000, int(maxFreq))))
+freqBands1 = list(range(0, int(maxFreq) + 1, min(250, int(maxFreq))))
 if freqBands1[-1] != int(maxFreq):
     freqBands1.append(int(maxFreq))
 
@@ -127,7 +127,6 @@ railTiltX = railTiltXrad*180/math.pi
 railVerticalOffset = padVerticalOffset + padThickness*math.cos(railTiltXrad)
 
 meshSlp = LIRE_MAILLAGE(FORMAT="MED",UNITE=21);
-pySlp.FromAster('meshSlp')
 
 meshRaiR = LIRE_MAILLAGE(FORMAT="MED",UNITE=25);
 
@@ -179,8 +178,6 @@ meshRaiR = MODI_MAILLAGE(reuse=meshRaiR,
 meshRaiR = MODI_MAILLAGE(reuse=meshRaiR,
                        MAILLAGE=meshRaiR,
                        TRANSLATION=(0.0, railVerticalOffset, halfDistRails),)
-
-pyRai.FromAster('meshRaiR')
 
 meshPadR = LIRE_MAILLAGE(FORMAT="MED",UNITE=23);
 
@@ -238,6 +235,8 @@ else:
     slpSym = 'slpSym'
 
 clampDirIni = np.array([1,0,0])
+pyRai.FromAster('meshRaiR')
+pySlp.FromAster('meshSlp')
 
 # Clamp IA
 clampia = LIRE_MAILLAGE(FORMAT="MED",UNITE=22);
@@ -732,9 +731,16 @@ modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
                    NORM_MODE=_F(NORME='TRAN'),
                    MATR_MASS=matAs_M1,
                    VERI_MODE=_F(STOP_ERREUR='NON',),)
+# modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
+#                    CALC_FREQ=_F(FREQ=(0.0, 4726.851851851852, 4750, 4771.604938271605, 4796.2962962962965, 4820.9876543209875, 4845.679012345679, 4870.37037037037, 4895.061728395061, 4919.753086419753, 4944.444444444444, 4969.135802469135, 4993.827160493827, 5023.006134969325),),
+#                    STOP_BANDE_VIDE='NON',
+#                    OPTION='BANDE',
+#                    NORM_MODE=_F(NORME='TRAN'),
+#                    MATR_MASS=matAs_M1,
+#                    VERI_MODE=_F(STOP_ERREUR='NON',),)
                    
 
-print('TIME FOR INFO_MODE + CALC_MODES     ' + str(time.time() - t_modes0))
+# print('TIME FOR INFO_MODE + CALC_MODES     ' + str(time.time() - t_modes0))
 
 ######################################################
 # Compute static interface modes (once as well (iBand==0) cause damping indep)
@@ -1053,7 +1059,7 @@ fileModes.close()
 DETRUIRE(CONCEPT=_F(NOM=(matEl_A1, matAs_A1, masGene, rigGene, amoGene, vectGe10, vectGe45, elemprop)))
 DETRUIRE(CONCEPT=_F(NOM=(meshSlp, meshRaiR, meshPadR, tmp2, tmp4, tmp5, tmp6, tmp7, mesh, mesh0, model, f_EBal, f_TDBal,  f_EPad1, )))
 DETRUIRE(CONCEPT=_F(NOM=(f_EPad2, f_TDPad1, f_TDPad2, tie2, tie3, BCinterf, load10, load45, )))
-DETRUIRE(CONCEPT=_F(NOM=(matEl_K1, slprMat, railMat, padMat1, padMat2, fieldmat, tabModes, macroEl1, )))
+DETRUIRE(CONCEPT=_F(NOM=(matEl_K1, slprMat, railMat, padMat1, padMat2, fieldmat, macroEl1, tabModes))) 
 DETRUIRE(CONCEPT=_F(NOM=(matAs_K1, matEl_M1, matAs_M1, vectEl10, vectEl45, vectAs10, vectAs45, modeGene, numGene, )))
 DETRUIRE(CONCEPT=_F(NOM=(modStaR1, modStaR2, modStaS, Lint, bamo1, dplX, dplY, dplZ, CHdplF, CHcoord, temp, CHdpl)))
 DETRUIRE(CONCEPT=_F(NOM=(harmGe10, harmGe45, CH_id, intCH_id, clampia, clampib, clampea, clampeb, tie_clps)))

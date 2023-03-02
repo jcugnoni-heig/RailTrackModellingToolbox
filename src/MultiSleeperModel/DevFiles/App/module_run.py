@@ -510,78 +510,79 @@ def PostProcessResults(p_dictSimu):
 			if code != 0:
 				return code
 	
-	# Concatenate MED files
-	if os.path.exists(os.path.join(fullDirOutput, 'results_b1.med')) == False:
-		return "Phase 2: " + os.path.join(fullDirOutput, 'results_b1.med') + " does not exist."
-	
-	# Copy .comm & .export files to simu folder
-	try:
-		shutil.copyfile(os.path.join(cwd, 'DevFiles', 'AsterFiles', 'postPro_concatMedFiles.comm'), os.path.join(fullDir, 'postPro_concatMedFiles.comm'))
+	if p_dictSimu['writeMED'] == True:
+		# Concatenate MED files
+		if os.path.exists(os.path.join(fullDirOutput, 'results_b1.med')) == False:
+			return "Phase 2: " + os.path.join(fullDirOutput, 'results_b1.med') + " does not exist."
 		
-		postProExportFile = os.path.join(fullDir, 'postPro_concatMedFiles1.export')
-		shutil.copyfile(os.path.join(cwd, 'DevFiles', 'AsterFiles', 'postPro_concatMedFiles1.export'), postProExportFile)
-	except:
-		"Phase 2: error copying post-processing export and comm files."
-	
-	
-	# Export & comm files string replacements	
-	exportFile = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
-	
-	try:
-		nCPUs = p_dictSimu.get('nCPUs')
-		memlim = p_dictSimu.get('memLimit')
-		reptravroot = p_dictSimu.get('reptrav')
-		server = p_dictSimu.get('host')
-		
-		os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + exportFile)
-		os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + exportFile)
-		os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + exportFile)
-		os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + exportFile)
-		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFile)
-		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFile)
-		
-		reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_102001')
-		file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
-		os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
-		
-		if p_dictSimu.get('computeAcoustic') == True:
-			txt = 'F libr Inputs' + os.sep + 'acousticMesh.med D  7'
-		else:
-			txt = ''
-		os.system('sed -i -E "s!__acousticMesh__!' + txt + '!" ' + exportFile)
-	except:
-		return "Phase 2: string replacements (sed) in post-processing export & comm files did not run properly."
-	
-	
-	
-	with open(postProExportFile) as f:
-		fileContent = f.read()
-	f.close()
-	
-	for i in range(nJobs):
-		fileContent += '\nF mmed Outputs/results_b' + str(i+1) + '.med D  ' + str(10 + i)
-		if p_dictSimu['computeAcoustic'] == True:
-			fileContent += '\nF mmed Outputs/resuAcc_b' + str(i+1) + '.res.med D  ' + str(40 + i)
-		fileContent += '\nF libr Inputs/f' + str(i+1) + '.txt D  ' + str(70 + i)
-		
-	with open(postProExportFile, 'w') as f:
-		f.write(fileContent)
-	f.close()
-
-	messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
-	debugMode = p_dictSimu['debugPh2']
-
-	code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)
-	if code != 0:
-		return code
-	
-	for i in range(nJobs):
+		# Copy .comm & .export files to simu folder
 		try:
-			os.remove(os.path.join(fullDirOutput, 'results_b' + str(i+1) + '.med'))
-			if p_dictSimu['computeAcoustic'] == True:
-				os.remove(os.path.join(fullDirOutput, 'resuAcc_b' + str(i+1) + '.res.med'))
+			shutil.copyfile(os.path.join(cwd, 'DevFiles', 'AsterFiles', 'postPro_concatMedFiles.comm'), os.path.join(fullDir, 'postPro_concatMedFiles.comm'))
+			
+			postProExportFile = os.path.join(fullDir, 'postPro_concatMedFiles1.export')
+			shutil.copyfile(os.path.join(cwd, 'DevFiles', 'AsterFiles', 'postPro_concatMedFiles1.export'), postProExportFile)
 		except:
-			pass
+			"Phase 2: error copying post-processing export and comm files."
+		
+		
+		# Export & comm files string replacements	
+		exportFile = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
+		
+		try:
+			nCPUs = p_dictSimu.get('nCPUs')
+			memlim = p_dictSimu.get('memLimit')
+			reptravroot = p_dictSimu.get('reptrav')
+			server = p_dictSimu.get('host')
+			
+			os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + exportFile)
+			os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + exportFile)
+			os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + exportFile)
+			os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + exportFile)
+			os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFile)
+			os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFile)
+			
+			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_102001')
+			file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
+			os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
+			
+			if p_dictSimu.get('computeAcoustic') == True:
+				txt = 'F libr Inputs' + os.sep + 'acousticMesh.med D  7'
+			else:
+				txt = ''
+			os.system('sed -i -E "s!__acousticMesh__!' + txt + '!" ' + exportFile)
+		except:
+			return "Phase 2: string replacements (sed) in post-processing export & comm files did not run properly."
+		
+		
+		
+		with open(postProExportFile) as f:
+			fileContent = f.read()
+		f.close()
+		
+		for i in range(nJobs):
+			fileContent += '\nF mmed Outputs/results_b' + str(i+1) + '.med D  ' + str(10 + i)
+			if p_dictSimu['computeAcoustic'] == True:
+				fileContent += '\nF mmed Outputs/resuAcc_b' + str(i+1) + '.res.med D  ' + str(40 + i)
+			fileContent += '\nF libr Inputs/f' + str(i+1) + '.txt D  ' + str(70 + i)
+			
+		with open(postProExportFile, 'w') as f:
+			f.write(fileContent)
+		f.close()
+
+		messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
+		debugMode = p_dictSimu['debugPh2']
+
+		code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)
+		if code != 0:
+			return code
+		
+		for i in range(nJobs):
+			try:
+				os.remove(os.path.join(fullDirOutput, 'results_b' + str(i+1) + '.med'))
+				if p_dictSimu['computeAcoustic'] == True:
+					os.remove(os.path.join(fullDirOutput, 'resuAcc_b' + str(i+1) + '.res.med'))
+			except:
+				pass
 			
 		
 

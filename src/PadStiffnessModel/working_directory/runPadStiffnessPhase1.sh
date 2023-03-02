@@ -5,5 +5,6 @@
 ## INPUT PARAMETERS
 ASRUNPATH=/opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run
 ASRUNJOB="padStiffnessPhase1.export"
+TERMCMD="xterm -e "
 ### run ASTER to generate mesh to MED format 
-$ASRUNPATH $ASRUNJOB
+$TERMCMD $ASRUNPATH $ASRUNJOB

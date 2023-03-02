@@ -7,8 +7,8 @@ mesh = LIRE_MAILLAGE(FORMAT='MED',
 
 # For Pad Stiffness we need groups for : Hard, Soft, Top, Bot, RF and RF0D. This only for a single pad.
 
-topNodes = ('topn')
-botNodes = ('botn')
+topNodes = ('pntr')
+botNodes = ('pnts')
 rfNodes = ('RF')
 hardElem = ('hard')
 softElem = ('soft')
@@ -43,7 +43,7 @@ BCfix = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
 
                                    DZ=0.0,
 
-                                   GROUP_NO=('botn', )), #Bottom nodes are fixed
+                                   GROUP_NO=('pnts', )), #Bottom nodes are fixed
 
                        MODELE=model)
 
@@ -52,7 +52,7 @@ BCfixTop = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
 
                                    DZ=0.0,
 
-                                   GROUP_NO=('topn', )), #Top nodes are fixed laterally
+                                   GROUP_NO=('pntr', )), #Top nodes are fixed laterally
 
                           MODELE=model)
 
@@ -71,11 +71,11 @@ RFprop = AFFE_CARA_ELEM(DISCRET=_F(CARA='K_TR_D_N',
                          MODELE=model) #Add null rigidity in every direction to add the 6 degrees of liberty to my RF.
 
 
-# --------- infinit stiff link between topn and RF -------
+# --------- infinit stiff link between pntr and RF -------
 
 
 
-RFCtltop = AFFE_CHAR_MECA(LIAISON_SOLIDE=_F(GROUP_NO=('topn', 'RF', ),
+RFCtltop = AFFE_CHAR_MECA(LIAISON_SOLIDE=_F(GROUP_NO=('pntr', 'RF', ),
 					    DIST_MIN=1.8,
 
                                             ), #Top nodes and RF node are link to be rigid

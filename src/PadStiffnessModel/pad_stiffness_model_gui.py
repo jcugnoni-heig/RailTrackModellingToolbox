@@ -205,11 +205,14 @@ class PadStiffnessModelGUI(QMainWindow):
 		self.resultsDirectoryName = self.nameSimu.text()
 		self.resultsDirectoryPath = os.path.join(self.pathWorkingDirectory.text(), self.resultsDirectoryName)
          
-         # Create user folders for results
-		os.mkdir(self.resultsDirectoryPath)
-		os.mkdir(os.path.join(self.resultsDirectoryPath,'med_files'))
-		os.mkdir(os.path.join(self.resultsDirectoryPath,'stiffness_files'))
-		os.mkdir(os.path.join(self.resultsDirectoryPath,'message_files'))
+        # Create user folders for results
+		if os.path.exists(self.resultsDirectoryPath):
+			shutil.rmtree(self.resultsDirectoryPath)
+
+		os.makedirs(self.resultsDirectoryPath)
+		os.makedirs(os.path.join(self.resultsDirectoryPath,'med_files'))
+		os.makedirs(os.path.join(self.resultsDirectoryPath,'stiffness_files'))
+		os.makedirs(os.path.join(self.resultsDirectoryPath,'message_files'))
 		# Create a file for the study parameters
 		with open(os.path.join(self.resultsDirectoryPath,'study_parameters.txt'),'a+') as fp:
 			fp.write('Here are the parameters selected for the sutdy: ' + self.resultsDirectoryName + '\n\n')
@@ -249,10 +252,10 @@ class PadStiffnessModelGUI(QMainWindow):
 		os.system('/opt/SalomeMeca/appli_V2019_univ/salome -t ' + self.working_directorypath + '/add_RF_node_to_pad.py')
 
 		# Run phase I
-		os.system('cd working_directory \n ./runPadStiffnessPhase1.sh')
+		os.system('cd working_directory \n bash ./runPadStiffnessPhase1.sh')
 
 		# Run phase II
-		os.system('cd working_directory \n ./runPadStiffnessPhase2.sh')
+		os.system('cd working_directory \n bash ./runPadStiffnessPhase2.sh')
 
 
 		# Copy messages in User folder

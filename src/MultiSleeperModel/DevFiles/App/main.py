@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 import pyperclip as clipboard
 #import clipboard
 import module_run as mod
-#import json
+import json
 from datetime import datetime
 import multiprocessing
 
@@ -86,6 +86,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_simuName.setText(dictSimu['name'])
 		self.simuDir = dictSimu['simuDir']
 		self.cb_debugPh2.setChecked(dictSimu['debugPh2'])
+		self.cb_writeMED.setChecked(dictSimu['writeMED'])
 		self.txt_nJobs.setText(str(dictSimu['nJobs']))
 		self.txt_nCPUs.setText(str(dictSimu['nCPUs']))
 		self.txt_host.setText(dictSimu['host'])
@@ -252,6 +253,10 @@ class MultiSleeperModelGUI(QMainWindow):
 		#
 		debugPh2 = self.cb_debugPh2.isChecked()
 		dictSimu['debugPh2'] = debugPh2
+
+		#
+		writeMED = self.cb_writeMED.isChecked()
+		dictSimu['writeMED'] = writeMED
 
 		# 
 		nJobsMax = multiprocessing.cpu_count()
@@ -739,6 +744,19 @@ class MultiSleeperModelGUI(QMainWindow):
 			dictSimu['acousticMesh'] = self.acousticMesh
 	
 		#
+
+
+		try:
+			txt = json.dumps(dictSimu, indent = 4, sort_keys=True)
+			jsonPath = os.path.join(self.cwd, dictSimu['name'] + '.json')
+			with open(jsonPath, 'w') as f:
+				f.write(txt)
+			f.close()
+		except:
+			return jsonPath + ' could not be created.'
+
+
+
 		self.simuList.append(dictSimu)
 		newListItem = QListWidgetItem(simuName)
 		self.list_simu.addItem(newListItem)

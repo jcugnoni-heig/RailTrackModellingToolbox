@@ -52,6 +52,7 @@ clampStiffZ = parameters['clampStiffZ']
 clampDampX = parameters['clampDampX']
 clampDampY = parameters['clampDampY']
 clampDampZ = parameters['clampDampZ']
+writeMED = parameters['writeMED']
 
 if includeUSP == True:
     nuUSP = parameters['nuUSP']
@@ -358,7 +359,6 @@ railTiltX = railTiltXrad*180/math.pi
 railVerticalOffset = padVerticalOffset + padThickness*math.cos(railTiltXrad)
 
 meshSlp = LIRE_MAILLAGE(FORMAT="MED",UNITE=21);
-pySlp.FromAster('meshSlp')
 
 meshRaiR = LIRE_MAILLAGE(FORMAT="MED",UNITE=25);
 
@@ -410,8 +410,6 @@ meshRaiR = MODI_MAILLAGE(reuse=meshRaiR,
 meshRaiR = MODI_MAILLAGE(reuse=meshRaiR,
                        MAILLAGE=meshRaiR,
                        TRANSLATION=(0.0, railVerticalOffset, halfDistRails),)
-
-pyRai.FromAster('meshRaiR')
 
 meshPadR = LIRE_MAILLAGE(FORMAT="MED",UNITE=23);
 
@@ -469,6 +467,8 @@ else:
     slpSym = 'slpSym'
 
 clampDirIni = np.array([1,0,0])
+pyRai.FromAster('meshRaiR')
+pySlp.FromAster('meshSlp')
 
 # Clamp IA
 clampia = LIRE_MAILLAGE(FORMAT="MED",UNITE=22);
@@ -1128,7 +1128,6 @@ t_harmo0 = time.time()
 
 substructs = []
 liaisons = []
-print('nSlp is ' + str(nSlp))
 for i in range(nSlp):
     print('elem'+str(i)+'R  ' + 'elem'+str(i)+'L')
     substR = _F(NOM = 'elem'+str(i)+'R', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 0., 0.), TRANS=(i*slpSpacing,0.,0.))
@@ -1307,7 +1306,8 @@ if computeAcoustic == True:
             nodeDict['p_ballast_R'].append(p_ballast_R)
             nodeDict['p_ballast_I'].append(p_ballast_I)
 
-            listeAffe.append(_F(NOEUD=grpName, NOM_CMP=('SIXX', 'SIYY', 'SIZZ', 'SIXY', 'SIXZ', 'SIYZ'), VALE=(p_tot_R, p_tot_I, p_rails_R, p_rails_I, p_sleepers_R, p_sleepers_I),))
+            if writeMED:
+                listeAffe.append(_F(NOEUD=grpName, NOM_CMP=('SIXX', 'SIYY', 'SIZZ', 'SIXY', 'SIXZ', 'SIYZ'), VALE=(p_tot_R, p_tot_I, p_rails_R, p_rails_I, p_sleepers_R, p_sleepers_I),))
             
             if acMeshDim == '2D':        
                 I_tot = (p_tot_R**2 + p_tot_I**2)/(rho*c)
@@ -1346,28 +1346,35 @@ if computeAcoustic == True:
             filePress.write(fileContent)
             filePress.close()   
         
-        CH_pAc = CREA_CHAMP(OPERATION = 'AFFE',
-                            TYPE_CHAM ='NOEU_SIEF_R',
-                            MAILLAGE = grid ,
-                            AFFE = (listeAffe))
+        if writeMED:
+            CH_pAc = CREA_CHAMP(OPERATION = 'AFFE',
+                                TYPE_CHAM ='NOEU_SIEF_R',
+                                MAILLAGE = grid ,
+                                AFFE = (listeAffe))
         
-        if freq == allFreqs[0]:
-            RESpre=CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
-        else:
-            RESpre=CREA_RESU(reuse=RESpre, RESULTAT=RESpre, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
+        if writeMED:
+            if freq == allFreqs[0]:
+                RESpre=CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
+            else:
+                RESpre=CREA_RESU(reuse=RESpre, RESULTAT=RESpre, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
 
         for j in range(len(velR)):
             DETRUIRE(CONCEPT=_F(NOM=(velR[j], velI[j])))
         if acMeshDim == '2D':
             DETRUIRE(CONCEPT=_F(NOM=(CH_Iac, intField)))
-        DETRUIRE(CONCEPT=_F(NOM=(CHk, CHcoef, CH_pAc)))
+
+        if writeMED:
+            DETRUIRE(CONCEPT=_F(NOM=(CH_pAc)))
+
+        DETRUIRE(CONCEPT=_F(NOM=(CHk, CHcoef, )))
         
-    IMPR_RESU(FORMAT='MED',
-              RESU=_F(PARTIE='REEL',
-                      NOM_CHAM='SIEF_NOEU',
-                      NOM_CHAM_MED = 'acPressure',
-                      RESULTAT=RESpre,),
-              UNITE=81)
+    if writeMED:
+        IMPR_RESU(FORMAT='MED',
+                RESU=_F(PARTIE='REEL',
+                        NOM_CHAM='SIEF_NOEU',
+                        NOM_CHAM_MED = 'acPressure',
+                        RESULTAT=RESpre,),
+                UNITE=81)
                             
     pickle_out = open('fort.44',"wb")
     try: pickle.dump(acousticData, pickle_out, protocol=2)
@@ -1380,77 +1387,79 @@ t_postPro0 = time.time()
 ######################################################
 # RECONSTRUCT PHYSICAL MODEL
 ######################################################
-substructs2 = []
-for i in range(nSlp):
-    substructs2.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='TOUT'))
-    substructs2.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='TOUT'))
+if writeMED:
+    substructs2 = []
+    for i in range(nSlp):
+        substructs2.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='TOUT'))
+        substructs2.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='TOUT'))
+                                
+    squel=DEFI_SQUELETTE(MODELE_GENE=modeGene,
+                        SOUS_STRUC=substructs2);
+            
+    harmGlob=REST_SOUS_STRUC(RESU_GENE=harmGene, 
+                            SQUELETTE=squel,
+                            NOM_CHAM=FRFtype,)
+
+    for freq in allFreqs:
+        out = CREA_CHAMP(FREQ=freq,
+                            NOM_CHAM=FRFtype,
+                            OPERATION='EXTR',
+                            RESULTAT=harmGlob,
+                            TYPE_CHAM='NOEU_DEPL_C')
                             
-squel=DEFI_SQUELETTE(MODELE_GENE=modeGene,
-                     SOUS_STRUC=substructs2);
-        
-harmGlob=REST_SOUS_STRUC(RESU_GENE=harmGene, 
-                         SQUELETTE=squel,
-                         NOM_CHAM=FRFtype,)
+        outMag = CREA_CHAMP(CHAM_GD=out,
+                            OPERATION='C2R',
+                            PARTIE='REEL',
+                            TYPE_CHAM='NOEU_DEPL_R')
 
-for freq in allFreqs:
-    out = CREA_CHAMP(FREQ=freq,
-                          NOM_CHAM=FRFtype,
-                          OPERATION='EXTR',
-                          RESULTAT=harmGlob,
-                          TYPE_CHAM='NOEU_DEPL_C')
-                          
-    outMag = CREA_CHAMP(CHAM_GD=out,
-                          OPERATION='C2R',
-                          PARTIE='REEL',
-                          TYPE_CHAM='NOEU_DEPL_R')
+        # outPhas = CREA_CHAMP(CHAM_GD=out,
+                            # OPERATION='C2R',
+                            # PARTIE='PHASE',
+                            # TYPE_CHAM='NOEU_DEPL_R')
+            
+        if freq == allFreqs[0]:
+            resOut = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
+            # resOut2 = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
+        else:
+            resOut = CREA_RESU(reuse=resOut, RESULTAT=resOut, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
+            # resOut2 = CREA_RESU(reuse=resOut2, RESULTAT=resOut2, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
+            
+        DETRUIRE(CONCEPT=_F(NOM=(out, outMag, )))# outPhas)))
 
-    # outPhas = CREA_CHAMP(CHAM_GD=out,
-                          # OPERATION='C2R',
-                          # PARTIE='PHASE',
-                          # TYPE_CHAM='NOEU_DEPL_R')
-        
-    if freq == allFreqs[0]:
-        resOut = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
-        # resOut2 = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
-    else:
-        resOut = CREA_RESU(reuse=resOut, RESULTAT=resOut, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
-        # resOut2 = CREA_RESU(reuse=resOut2, RESULTAT=resOut2, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
-        
-    DETRUIRE(CONCEPT=_F(NOM=(out, outMag, )))# outPhas)))
+    IMPR_RESU(FORMAT='MED',
+            RESU=_F(RESULTAT=resOut,
+                    PARTIE='REEL',
+                    NOM_CHAM=FRFtype,
+                    NOM_CHAM_MED = 'resOut',),
+            UNITE=80)
 
-IMPR_RESU(FORMAT='MED',
-          RESU=_F(RESULTAT=resOut,
-                  PARTIE='REEL',
-                  NOM_CHAM=FRFtype,
-                  NOM_CHAM_MED = 'resOut',),
-          UNITE=80)
+    # IMPR_RESU(FORMAT='MED',
+            # RESU=_F(RESULTAT=resOut2,
+                    # PARTIE='REEL',
+                    # TOUT_CHAM='OUI'),
+            # UNITE=85)
 
-# IMPR_RESU(FORMAT='MED',
-          # RESU=_F(RESULTAT=resOut2,
-                  # PARTIE='REEL',
-                  # TOUT_CHAM='OUI'),
-          # UNITE=85)
-
-IMPR_RESU(FORMAT='MED',
-          RESU=_F(MAILLAGE=squel,),
-          UNITE=28)
+    IMPR_RESU(FORMAT='MED',
+            RESU=_F(MAILLAGE=squel,),
+            UNITE=28)
 
 ######################################################
 # POST-PROCESSING : Get force-velocity FRF functions
 ######################################################
-mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
-                  CREA_GROUP_NO = _F(NOM='tmp', OPTION='ENV_CYLINDRE', POINT=(0,0,753), RAYON=25, VECT_NORMALE=(0,1,0), PRECISION=25))
+# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
+#                   CREA_GROUP_NO = _F(NOM='tmp', OPTION='ENV_CYLINDRE', POINT=(0,0,753), RAYON=25, VECT_NORMALE=(0,1,0), PRECISION=25))
      
-mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
-                  CREA_GROUP_NO = _F(NOM='Ba_Y', INTERSEC=(discreteBalNodes, 'tmp')))
+# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
+#                   CREA_GROUP_NO = _F(NOM='Ba_Y', INTERSEC=(discreteBalNodes, 'tmp')))
 
-mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
-                     DETR_GROUP_NO = _F(NOM='tmp'))
+# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
+#                      DETR_GROUP_NO = _F(NOM='tmp'))
 
 pyMesh.FromAster('mesh')
 
-# FRFgroups = ['Ra_Z', 'Ra_Y', 'Rb_Z', 'Rb_Y', 'Sc_Y', 'Ss_Y', 'Rf_Y']
-FRFgroups = ['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']
+# FRFgroups = ['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']
+# FRFgroups = ['Ra_Y', 'Ra_Z', 'Rb_Y', 'Rb_Z', 'Ss_Y', ]
+FRFgroups = ['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z', ]
 FRFs = [None]*len(selectedSubstFRF)*len(FRFgroups)
 
 if FRFtype == 'VITE':
@@ -1621,21 +1630,20 @@ fileFRF.close()
 ######################################################
 # Write result files (MED)
 ######################################################
-IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
+if writeMED:
+    IMPR_RESU(FORMAT='MED',
+            RESU=_F(RESULTAT=mod_trim,),
+            UNITE=82)
 
-IMPR_RESU(FORMAT='MED',
-          RESU=_F(RESULTAT=mod_trim,),
-          UNITE=82)
-
-IMPR_RESU(FORMAT='MED',
-          RESU=_F(RESULTAT=moR1Trim,),
-          UNITE=85)
-IMPR_RESU(FORMAT='MED',
-          RESU=_F(RESULTAT=moR2Trim,),
-          UNITE=86)
-IMPR_RESU(FORMAT='MED',
-          RESU=_F(RESULTAT=moSlTrim,),
-          UNITE=87)
+    IMPR_RESU(FORMAT='MED',
+            RESU=_F(RESULTAT=moR1Trim,),
+            UNITE=85)
+    IMPR_RESU(FORMAT='MED',
+            RESU=_F(RESULTAT=moR2Trim,),
+            UNITE=86)
+    IMPR_RESU(FORMAT='MED',
+            RESU=_F(RESULTAT=moSlTrim,),
+            UNITE=87)
 
 
 print('TOTAL TIME ' + str(time.time()-t0))

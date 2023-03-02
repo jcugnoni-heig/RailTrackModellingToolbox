@@ -20,7 +20,7 @@ P noeud localhost
 P nomjob padStiffnessPhase1
 P origine ASTK 2018.1.final
 P platform Linux64
-P profastk cae@caesrv1:/opt/RailTrackModellingToolbox/src/PadStiffnessModel/working_directory/padStiffnessPhase1.astk
+P profastk cae@caesrv1:/home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/padStiffnessPhase1.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
@@ -37,7 +37,7 @@ A args
 A dbgjeveux 
 A memjeveux 994.125
 A tpmax 18900.0
-F mmed /opt/RailTrackModellingToolbox/src/PadStiffnessModel/working_directory/padWithRF.mesh.med D  20
-F comm /opt/RailTrackModellingToolbox/src/PadStiffnessModel/working_directory/padStiffnessPhase1.comm D  1
-F mess /opt/RailTrackModellingToolbox/src/PadStiffnessModel/working_directory/messages/messagePadStiffnessPhase1.mess R  6
-R base /opt/RailTrackModellingToolbox/src/PadStiffnessModel/working_directory/base1 RC 0
+F mmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/padWithRF.mesh.med D  20
+F comm /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/padStiffnessPhase1.comm D  1
+F mess /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/messages/messagePadStiffnessPhase1.mess R  6
+R base /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/base1 RC 0

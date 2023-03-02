@@ -279,14 +279,21 @@
        <string/>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="7" column="0">
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Host server</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
           <string>Memory limit (MB)</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QLineEdit" name="txt_repTrav">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Temporary folder where all files necessary for the simulation are copied to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -296,48 +303,10 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Host server</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <widget class="QLineEdit" name="txt_host">
          <property name="text">
           <string>localhost</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Working directory</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Number of CPUs</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLineEdit" name="txt_nCPUs">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Save results to</string>
          </property>
         </widget>
        </item>
@@ -348,28 +317,38 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="txt_simuName">
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="txt_nCPUs">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A new folder with this name will be created in the folder selected below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="btn_simuDir">
          <property name="text">
-          <string>Select folder...</string>
+          <string>1</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_8">
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Number of Jobs</string>
+          <string>Working directory</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Save results to</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Number of CPUs</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
         <widget class="QLineEdit" name="txt_nJobs">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bands dividing the frequency range and running simulateously. It has an impact on Rayleigh's damping approximation. See doc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -379,13 +358,34 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="txt_simuName">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A new folder with this name will be created in the folder selected below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Number of Jobs</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
         <widget class="QLineEdit" name="txt_memLimit">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RAM necessary for the simulation per job (=frequenc band). A typical simulation with 400 modes, 18 sleepers, 6 frequencies per job and 9 acoustic points needs about 5000MB. The default value is 20000MB to make sure the simulation runs properly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>20000</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="btn_simuDir">
+         <property name="text">
+          <string>Select folder...</string>
          </property>
         </widget>
        </item>
@@ -399,6 +399,22 @@
          </property>
          <property name="text">
           <string>Debug mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QCheckBox" name="cb_writeMED">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>MED files are useful to visualize results in ParaView. Creating them can take a lot of time for longer tracks, and they may take a lot of memory space.</string>
+         </property>
+         <property name="text">
+          <string>Write MED files</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -778,7 +794,7 @@
          <widget class="QLineEdit" name="txt_stiffX">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>150</x>
             <y>10</y>
             <width>111</width>
             <height>20</height>
@@ -807,7 +823,7 @@
          <widget class="QLineEdit" name="txt_stiffY">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>150</x>
             <y>40</y>
             <width>113</width>
             <height>20</height>
@@ -836,7 +852,7 @@
          <widget class="QLineEdit" name="txt_stiffZ">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>150</x>
             <y>70</y>
             <width>113</width>
             <height>20</height>
@@ -891,7 +907,7 @@
          <widget class="QLineEdit" name="txt_dampZ">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>150</x>
             <y>160</y>
             <width>113</width>
             <height>20</height>
@@ -907,7 +923,7 @@
          <widget class="QLineEdit" name="txt_dampX">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>150</x>
             <y>100</y>
             <width>111</width>
             <height>20</height>
@@ -923,7 +939,7 @@
          <widget class="QLineEdit" name="txt_dampY">
           <property name="geometry">
            <rect>
-            <x>140</x>
+            <x>150</x>
             <y>130</y>
             <width>113</width>
             <height>20</height>
