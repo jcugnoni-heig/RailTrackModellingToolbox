@@ -415,6 +415,7 @@ class MultiSleeperModelGUI(QMainWindow):
 				QMessageBox.information(self, 'Error', 'The number of frequencies (phase1) is smaller than the number of jobs (=' + str(dictSimu['nJobsPh1']) + ').', QMessageBox.Ok,)
 				return
 			
+			dictSimu['phase1Folder'] = None
 		else:
 			#
 			if self.phase1Folder is None or os.path.exists(self.phase1Folder) == False:
@@ -422,6 +423,17 @@ class MultiSleeperModelGUI(QMainWindow):
 				return
 				
 			dictSimu['phase1Folder'] = self.phase1Folder
+
+			dictSimu['phase1WorkingDir'] = None
+			dictSimu['nJobsPh1'] = None				
+			dictSimu['savePhase1To'] = None
+			dictSimu['phase1Name'] = None
+			dictSimu['debugPh1'] = None
+			dictSimu['phase1FreqMax'] = None				
+			dictSimu['phase1RailModes'] = None				
+			dictSimu['phase1SlpModes'] = None
+			dictSimu['phase1CPUs'] = None
+			dictSimu['phase1Freqs'] = None
 				
 				
 		# Materials ==============================================================================================
@@ -626,6 +638,17 @@ class MultiSleeperModelGUI(QMainWindow):
 				return
 				
 			dictSimu['tanDUSP'] = self.tanDUSP
+
+
+
+		else:
+			dictSimu['USPMesh'] = None
+			dictSimu['nuUSP'] = None
+			dictSimu['thkUSP'] = None
+			dictSimu['EUSP'] = None
+			dictSimu['tanDUSP'] = None
+
+
 			
 		# Simulation parameters ==================================================================================
 		#=========================================================================================================
@@ -742,10 +765,10 @@ class MultiSleeperModelGUI(QMainWindow):
 				return
 			
 			dictSimu['acousticMesh'] = self.acousticMesh
+		else:
+			dictSimu['acousticMesh'] = None
 	
 		#
-
-
 		try:
 			txt = json.dumps(dictSimu, indent = 4, sort_keys=True)
 			jsonPath = os.path.join(self.cwd, dictSimu['name'] + '.json')
