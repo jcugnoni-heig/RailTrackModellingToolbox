@@ -53,5 +53,6 @@ F libr Outputs/modeBal1_b1.med R  88
 F libr Outputs/modeBal2_b1.med R  89
 F libr Outputs/modeBal3_b1.med R  90
 F libr Outputs/deform_b1.med R  91
+F libr Outputs/resu_gene_modes R  9
 
 F mess __messagesDir__/message_phase2_b1.mess R  6

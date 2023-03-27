@@ -30,7 +30,7 @@ nuBal = parameters['nuBal']
 hBal = parameters['hBal']
 slpForce = parameters['slpForce']
 nForce = parameters['forceNode']
-nSelModesPerExcitDir = parameters['nModes']
+nSelModesPerExcitDir = int(parameters['nModes'])
 force = parameters['force']
 computeAcoustic = parameters['computeAcoustic']
 FRFtype = parameters['outputType']
@@ -53,6 +53,7 @@ clampDampX = parameters['clampDampX']
 clampDampY = parameters['clampDampY']
 clampDampZ = parameters['clampDampZ']
 writeMED = parameters['writeMED']
+nSlpForAcoustic = 1
 
 if includeUSP == True:
     nuUSP = parameters['nuUSP']
@@ -324,11 +325,11 @@ nModesRails_trim = max(listRails1[-1], listRails2[-1])
 nModesSleeper_trim = listSleeper[-1]
 
 print(str(len(listEigenModes) + len(listRails1) + len(listRails2) + len(listSleeper)) + ' modes in total')
-print('Eigenmodes : ' + str(listEigenModes))
-print('Rail interface1 modes : ' + str(listRails1))
-print('Rail interface2 modes : ' + str(listRails2))
-print('Sleeper interface modes : ' + str(listSleeper))
-
+print('Eigenmodes (' + str(len(listEigenModes)) + ') : ' + str(listEigenModes))
+print('Rail interface1 modes (' + str(len(listRails1)) + ') : ' + str(listRails1))
+print('Rail interface2 modes (' + str(len(listRails2)) + ') : ' + str(listRails2))
+print('Sleeper interface modes (' + str(len(listSleeper)) + ') : ' + str(listSleeper))
+# FIN()
 
 ######################################################
 # Get list of frequencies from freq files
@@ -627,7 +628,6 @@ for gp in nodeGrps:
         gpNodes = pyMesh.gno.get(gpName)
         nNodesBal = len(gpNodes)
         break
-print('nNodesBal = ' + str(nNodesBal))
 
 ######################################################
 # Acoustic parameters / functions definition
@@ -708,7 +708,7 @@ if computeAcoustic == True:
                               TYPE_CHAM='NOEU_NEUT_F')
 
     # Acoustic mesh grid
-    grid = LIRE_MAILLAGE(FORMAT='MED', UNITE=19)
+    grid = LIRE_MAILLAGE(FORMAT='MED', UNITE=19,VERI_MAIL=_F(VERIF='NON'),)
 
     gridMod = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
                                  PHENOMENE='MECANIQUE',
@@ -879,11 +879,38 @@ if includeUSP:
     eta_USP = np.array([f_TDUSP(f) for f in allFreqs])
     AB_USP = GetAlphaBeta(allFreqsNP, eta_USP)
                         
-slprMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_slprMat[0],
-                                AMOR_BETA=AB_slprMat[1],
-                                E=ESleeper,
-                                NU=nuSleeper,
-                                RHO=rhoSleeper*1e-12))
+# slprMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_slprMat[0],
+#                                 AMOR_BETA=AB_slprMat[1],
+#                                 E=ESleeper,
+#                                 NU=nuSleeper,
+#                                 RHO=rhoSleeper*1e-12))
+
+
+E_L=ESleeper
+E_N=20000
+E_T=20000
+
+G_LN=E_L/2/(1+nuSleeper)
+G_LT=E_L/2/(1+nuSleeper)
+G_TN=E_N/2/(1+nuSleeper)
+
+NU_TN=nuSleeper
+NU_LN=nuSleeper
+NU_LT=nuSleeper
+
+# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL="231". See R4.01.02
+slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(AMOR_ALPHA=AB_slprMat[0],
+                                     AMOR_BETA=AB_slprMat[1],
+                                     E_L=E_L,
+                                     E_N=E_N,
+                                     E_T=E_T,
+                                     G_LN=G_LN,
+                                     G_LT=G_LT,
+                                     G_TN=G_TN,
+                                     NU_LN=NU_LN,
+                                     NU_LT=NU_LT,
+                                     NU_TN=NU_TN,
+                                     RHO=rhoSleeper*1e-12))
                             
 railMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_railMat[0],
                               AMOR_BETA=AB_railMat[1],
@@ -968,6 +995,8 @@ elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N',
                                      ),
                                       
                                       ),
+                          # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                          MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
                           MODELE=model)
                           
 
@@ -1033,7 +1062,23 @@ modGene=CALC_MODES(TYPE_RESU='DYNAMIQUE',
                    SOLVEUR_MODAL=_F(METHODE='QZ'),
                    VERI_MODE=_F(STOP_ERREUR='NON',))
 
+
 modes_2 = REST_GENE_PHYS(RESU_GENE=modGene, NUME_DDL=num2)
+
+# IMPR_RESU(UNITE=82,
+#           FORMAT='MED',
+#           RESU=_F(RESULTAT=modes_2,
+#                   NOM_CHAM='DEPL',))
+
+# IMPR_RESU(MODELE=model, UNITE=9,
+#           FORMAT='RESULTAT',
+#           RESU=_F(RESULTAT=modes_2,
+#                   TOUT_CHAM='NON',
+#                   NOM_PARA=('FREQ', 'MASS_GENE', 'MASS_EFFE_DY', 'FACT_PARTICI_DY'),
+#                 #   FORM_TABL='OUI'
+#                   ))
+
+# FIN()
 
 t_modes = time.time() - t_modes0
 t_modeStat0 = time.time()
@@ -1094,7 +1139,9 @@ Lint=DEFI_INTERF_DYNA(NUME_DDL=num1,
 # Create modal basis
 ######################################################      
 bamo1=DEFI_BASE_MODALE(RITZ=(_F(MODE_MECA = modes_2, ),
-                             _F(MODE_INTF = moR1Trim, )),
+                             _F(MODE_INTF = moR1Trim, ),
+                             
+                             ),
                        INTERF_DYNA=Lint,
                        NUME_REF=num2)
 
@@ -1107,6 +1154,27 @@ bamo1=DEFI_BASE_MODALE(reuse=bamo1,
                        RITZ=(_F(BASE_MODALE=bamo1),
                              _F(MODE_INTF = moSlTrim, )),
                        NUME_REF=num2)
+
+# Add compression static mode
+mstat = MODE_STATIQUE (MATR_RIGI = matAs_K1, 
+                       FORCE_NODALE =_F(GROUP_NO = 'nAbvSlp', AVEC_CMP =('DY'),),)
+
+bamo1=DEFI_BASE_MODALE(reuse=bamo1,
+                       RITZ=(_F(BASE_MODALE=bamo1),
+                             _F(MODE_INTF = mstat, )),
+                       NUME_REF=num2)
+
+# Add compression static mode
+# mstat2 = MODE_STATIQUE (MATR_RIGI = matAs_K1, 
+#                         FORCE_NODALE =_F(GROUP_NO = 'nodeFmid', AVEC_CMP =('DY'),),)
+
+# bamo1=DEFI_BASE_MODALE(reuse=bamo1,
+#                        RITZ=(_F(BASE_MODALE=bamo1),
+#                              _F(MODE_INTF = mstat, )),
+#                        NUME_REF=num2)
+
+
+
 
     
 ######################################################
@@ -1129,7 +1197,6 @@ t_harmo0 = time.time()
 substructs = []
 liaisons = []
 for i in range(nSlp):
-    print('elem'+str(i)+'R  ' + 'elem'+str(i)+'L')
     substR = _F(NOM = 'elem'+str(i)+'R', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 0., 0.), TRANS=(i*slpSpacing,0.,0.))
     substL = _F(NOM = 'elem'+str(i)+'L', MACR_ELEM_DYNA = macroEl1, ANGL_NAUT = (0., 180., 0.), TRANS=(i*slpSpacing,0.,0.))
     substructs.append(substR)
@@ -1177,7 +1244,7 @@ harmGene = DYNA_VIBRA(BASE_CALCUL='GENE',
 
 
 t_harmo = time.time() - t_harmo0
-                                         
+
 
 
 
@@ -1201,7 +1268,7 @@ if computeAcoustic == True:
         velR = [None]*nSlp*2
         velI = [None]*nSlp*2
         ii = 0
-        for iElem in range(nSlp):
+        for iElem in range(slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic):
             for side in ['R', 'L']:
                 
                 resPhy = REST_SOUS_STRUC(RESU_GENE=harmGene,
@@ -1267,7 +1334,7 @@ if computeAcoustic == True:
             p_ballast_I = 0
             
             ii=0
-            for iElem in range(nSlp):
+            for iElem in range(slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic):
                 for side in ['R', 'L']: # in this section we deal with 1 particular macroelement
 
                     # Iterate over directions
@@ -1359,9 +1426,15 @@ if computeAcoustic == True:
                 RESpre=CREA_RESU(reuse=RESpre, RESULTAT=RESpre, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='SIEF_NOEU',AFFE=_F(CHAM_GD=CH_pAc, FREQ=freq),);
 
         for j in range(len(velR)):
-            DETRUIRE(CONCEPT=_F(NOM=(velR[j], velI[j])))
-        if acMeshDim == '2D':
-            DETRUIRE(CONCEPT=_F(NOM=(CH_Iac, intField)))
+            try:
+                DETRUIRE(CONCEPT=_F(NOM=(velR[j], velI[j])))
+            except:
+                pass
+            if acMeshDim == '2D':
+                try:
+                    DETRUIRE(CONCEPT=_F(NOM=(CH_Iac, intField)))
+                except:
+                    pass
 
         if writeMED:
             DETRUIRE(CONCEPT=_F(NOM=(CH_pAc)))
@@ -1389,7 +1462,8 @@ t_postPro0 = time.time()
 ######################################################
 if writeMED:
     substructs2 = []
-    for i in range(nSlp):
+    # for i in range(nSlp):
+    for i in range(slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic):
         substructs2.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='TOUT'))
         substructs2.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='TOUT'))
                                 
@@ -1459,7 +1533,7 @@ pyMesh.FromAster('mesh')
 
 # FRFgroups = ['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']
 # FRFgroups = ['Ra_Y', 'Ra_Z', 'Rb_Y', 'Rb_Z', 'Ss_Y', ]
-FRFgroups = ['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z', ]
+FRFgroups = ['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z', 'Sc_Y', 'Ss_Y']
 FRFs = [None]*len(selectedSubstFRF)*len(FRFgroups)
 
 if FRFtype == 'VITE':
@@ -1494,8 +1568,8 @@ for substr in selectedSubstFRF:
 
     for grp in FRFgroups: # grp = 'Ra_Y' for example
         gpNode = pyMesh.gno.get(grp)
-        print('gpNode is ')
-        print(gpNode)
+        # print('gpNode is ')
+        # print(gpNode)
         
         values = []
         for node in gpNode: # node = 18673 for example
@@ -1625,25 +1699,13 @@ fileFRF.close()
           # RESU=_F(RESULTAT=resu2, PARTIE='REEL', GROUP_MA=('hard','soft'), NOM_RESU_MED='depl'),
           # UNITE=91)
 
-
-
 ######################################################
 # Write result files (MED)
 ######################################################
 if writeMED:
     IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=mod_trim,),
+            RESU=_F(RESULTAT=bamo1,), # mod_trim
             UNITE=82)
-
-    IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=moR1Trim,),
-            UNITE=85)
-    IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=moR2Trim,),
-            UNITE=86)
-    IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=moSlTrim,),
-            UNITE=87)
 
 
 print('TOTAL TIME ' + str(time.time()-t0))
@@ -1653,7 +1715,7 @@ print('MACROEL ' + str(t_macroEl))
 print('HARMONIC MODEL ' + str(t_harmo) + ' (' + str(len(allFreqs)) + ' frequencies)')
 
 if computeAcoustic == True:
-    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies)')
+    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies, ' + str(nSlpForAcoustic) + ' sleepers)')
 
 print('POSTPRO ' + str(time.time() - t_postPro0))
           

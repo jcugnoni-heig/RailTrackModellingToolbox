@@ -61,8 +61,8 @@ if includeUSP == True:
 def GetAlphaBeta(freqList, dampingList):
 # Computes optimized Rayleigh's coefs alpha & beta ( eta=1/2*(alpha*w+beta/w) )
 # freqList in Hz ; both lists = np.array()
-    print(freqList)
-    print(dampingList)
+    # print(freqList)
+    # print(dampingList)
     if len(freqList) == 1: # only 1 freq: set beta to 0 and alpha s.t. damping is exact
         return [dampingList[0]/(math.pi*freqList[0]), 0] 
     elif len(freqList) == 2: # only 2 freqs: return alpha, beta s.t. damping is exact at both freqs
@@ -93,6 +93,7 @@ def GetAlphaBeta(freqList, dampingList):
 ######################################################
 t0=time.time()
 freqBands1 = list(range(0, int(maxFreq) + 1, min(250, int(maxFreq))))
+
 if freqBands1[-1] != int(maxFreq):
     freqBands1.append(int(maxFreq))
 
@@ -731,6 +732,39 @@ modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
                    NORM_MODE=_F(NORME='TRAN'),
                    MATR_MASS=matAs_M1,
                    VERI_MODE=_F(STOP_ERREUR='NON',),)
+
+try:
+    extrnor=EXTR_MODE(
+                    FILTRE_MODE=_F(
+                                MODE=modes_1,
+                                CRIT_EXTR='MASS_EFFE_UN',
+                                SEUIL=0,
+                                    ),
+            IMPRESSION=_F(
+                        CUMUL='OUI',
+                        CRIT_EXTR='MASS_EFFE_UN',
+                        ),
+                    );
+except:
+    pass
+
+
+IMPR_RESU(UNITE=82,
+          FORMAT='MED',
+          RESU=_F(RESULTAT=modes_1,
+                  NOM_CHAM='DEPL',))
+
+
+IMPR_RESU(MODELE=model, UNITE=83,
+          FORMAT='RESULTAT',
+          RESU=_F(RESULTAT=modes_1,
+                  TOUT_CHAM='NON',
+                  NOM_PARA=('FREQ', 'MASS_EFFE_UN_DY', 'MASS_EFFE_DY', 'FACT_PARTICI_DY'),
+                  FORM_TABL='OUI'
+                  ))
+
+
+
 # modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
 #                    CALC_FREQ=_F(FREQ=(0.0, 4726.851851851852, 4750, 4771.604938271605, 4796.2962962962965, 4820.9876543209875, 4845.679012345679, 4870.37037037037, 4895.061728395061, 4919.753086419753, 4944.444444444444, 4969.135802469135, 4993.827160493827, 5023.006134969325),),
 #                    STOP_BANDE_VIDE='NON',
@@ -953,7 +987,7 @@ for line in lines:
     imag = float(listLine[2])
     magn = (real**2+imag**2)**(1/2)
 
-    print(str(lineNo) + ' ' + str(modeNo) + ' ' + str(macroElNo) + ' ' + str(magn))
+    # print(str(lineNo) + ' ' + str(modeNo) + ' ' + str(macroElNo) + ' ' + str(magn))
         
     vect_mag[modeNo][macroElNo] = max(vect_mag[modeNo][macroElNo], magn)
 
