@@ -53,7 +53,21 @@ clampDampX = parameters['clampDampX']
 clampDampY = parameters['clampDampY']
 clampDampZ = parameters['clampDampZ']
 writeMED = parameters['writeMED']
-nSlpForAcoustic = 1
+
+nSlpForAcoustic = 1 # /!\
+cumulX_mini = parameters['cumul_massEff']
+cumulY_mini = cumulX_mini
+cumulZ_mini = cumulX_mini
+
+E_L=ESleeper
+E_N=20000
+E_T=20000
+G_LN=E_L/2/(1+nuSleeper)
+G_LT=E_L/2/(1+nuSleeper)
+G_TN=E_N/2/(1+nuSleeper)
+NU_TN=nuSleeper
+NU_LN=nuSleeper
+NU_LT=nuSleeper
 
 if includeUSP == True:
     nuUSP = parameters['nuUSP']
@@ -69,14 +83,79 @@ pyMesh = partition.MAIL_PY()
 # Define functions
 ######################################################
 
-def GetModesList(p_vectPath, p_nSelModes, p_nEigen, p_nRai1, p_nRai2, p_nSlp):
+def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
+    with open(p_path, 'r') as f:
+        lines = f.read().splitlines()
+    f.close()
+
+    modes = []
+    for line in lines:
+        splittedLine = line.split(' ')
+        splittedLine = [x for x in splittedLine if x != '']
+        if not splittedLine:
+            continue
+
+        try:
+            modeNbr = int(splittedLine[0])
+            freq = float(splittedLine[1].replace('D', 'e'))
+            MASS_EFFE_UN_DX = float(splittedLine[2].replace('D', 'e'))
+            MASS_EFFE_UN_DY = float(splittedLine[3].replace('D', 'e'))
+            MASS_EFFE_UN_DZ = float(splittedLine[4].replace('D', 'e'))
+        except:
+            continue
+
+        mode = {'no' : modeNbr, 'freq' : freq, 'massX' : MASS_EFFE_UN_DX, 'massY' : MASS_EFFE_UN_DY, 'massZ' : MASS_EFFE_UN_DZ, 'massYZ' : MASS_EFFE_UN_DY + MASS_EFFE_UN_DZ}
+        modes.append(mode)
+
+    sortedModesX = sorted(modes, key=lambda d: d['massX'], reverse=True)
+    sortedModesY = sorted(modes, key=lambda d: d['massY'], reverse=True)
+    sortedModesZ = sorted(modes, key=lambda d: d['massZ'], reverse=True)
+
+    listModesX = []
+    cumulX = 0
+    for mode in sortedModesX:
+        cumulX += mode['massX']
+        listModesX.append(mode['no'])
+        if cumulX > p_cumulX_mini:
+            break
+
+    listModesY = []
+    cumulY = 0
+    for mode in sortedModesY:
+        cumulY += mode['massY']
+        listModesY.append(mode['no'])
+        if cumulY > p_cumulY_mini:
+            break
+
+    listModesZ = []
+    cumulZ = 0
+    for mode in sortedModesZ:
+        cumulZ += mode['massZ']
+        listModesZ.append(mode['no'])
+        if cumulZ > p_cumulZ_mini:
+            break
+
+    listModes = sorted(list(set(listModesX + listModesY + listModesZ)))
+    if listModes == []:
+        listModes.append(1)
+
+    print('Eigenmodes X (' + str(len(listModesX)) +  ') : ' + str(listModesX))
+    print('Eigenmodes Y (' + str(len(listModesY)) +  ') : ' + str(listModesY))
+    print('Eigenmodes Z (' + str(len(listModesZ)) +  ') : ' + str(listModesZ))
+    print('Selected eigenmodes (' + str(len(listModes)) +  ') : ' + str(listModes))
+
+    return listModes
+
+
+def GetStaticModesList(p_vectPath, p_nSelModes, p_nRai1, p_nRai2, p_nSlp):
 # Returns the lists of eigenmodes and interface modes to be used for trimming complete sets of modes
     with open(p_vectPath) as file:
         fileContent = file.read().splitlines()
     file.close()
     
-    # Rebuild the file content in an 2D array
+    # Rebuild the file content in a list of dictionaries
     modeMag = []
+    i = 0
     for line in fileContent:
         valListStr = line.split('\t')
         valListFlt = []
@@ -87,71 +166,126 @@ def GetModesList(p_vectPath, p_nSelModes, p_nEigen, p_nRai1, p_nRai2, p_nSlp):
                 continue
                 
             valListFlt.append(val)
-        modeMag.append(valListFlt)
         
+        i += 1
+        modeMag.append({'modeNo' : i, 'amp1' : valListFlt[0], 'amp2' : valListFlt[1], 'amp3' : valListFlt[2], 'amp4' : valListFlt[3], 'amp5' : valListFlt[4], 'amp6' : valListFlt[5]})
+
+    n = 0
+    listOfModes = [] 
+    while len(listOfModes) < p_nSelModes and n < p_nRai1 + p_nRai2 + p_nSlp:
+        n += 1
+        listOfModes = [] 
+
+        for mael in range(6):
+            lcls = locals() # just a trick otherwise exec doesnt work within a function...
+            exec("list_sorted = sorted(modeMag, key=lambda d: d['amp" + str(mael+1) + "'], reverse=True)", globals(), lcls)
+            list_sorted = lcls["list_sorted"]
+            for iMode in range(n):
+                listOfModes.append(list_sorted[iMode]['modeNo'])
+
+        listOfModes = list(set(listOfModes))
+        # print('n = ' + str(n) + '  (' + str(len(listOfModes)) + ')')
+        # print(listOfModes)
+    
+    listOfModes = sorted(listOfModes)
+
     # Initiate lists (of lists)
-    listEigenModes = []
     listRails1 = []
     listRails2 = []
     listSleeper = []
     
-    nMaEl = len(modeMag[0])
-    for ii in range(nMaEl):
-        listEigenModes.append([])
-        listRails1.append([])
-        listRails2.append([])
-        listSleeper.append([])
+    for modeNo in listOfModes:
+        if modeNo <= p_nRai1:
+            listRails1.append(modeNo)
+        elif modeNo > p_nRai1 and modeNo <= p_nRai1 + p_nRai2:
+            listRails2.append(modeNo - p_nRai1)
+        elif modeNo > p_nRai1 + p_nRai2:
+            listSleeper.append(modeNo - (p_nRai1 + p_nRai2))
+
+    if listRails1 == []:
+        listRails1.append(1)
+    if listRails2 == []:
+        listRails2.append(1)
+    if listSleeper == []:
+        listSleeper.append(1)
+
+    return [listRails1, listRails2, listSleeper]
+
+
+# def GetStaticModesList(p_vectPath, p_nSelModes, p_nRai1, p_nRai2):
+# # Returns the lists of eigenmodes and interface modes to be used for trimming complete sets of modes
+#     with open(p_vectPath) as file:
+#         fileContent = file.read().splitlines()
+#     file.close()
     
-    # Get the mode lists once per macroelement
-    for mael in range(nMaEl):
-        vect = []
-        for elem in modeMag:
-            vect.append(elem[mael])
+#     # Rebuild the file content in an 2D array
+#     modeMag = []
+#     for line in fileContent:
+#         valListStr = line.split('\t')
+#         valListFlt = []
+#         for valStr in valListStr:
+#             try:
+#                 val=float(valStr)
+#             except:
+#                 continue
+                
+#             valListFlt.append(val)
+#         modeMag.append(valListFlt)
+        
+#     # Initiate lists (of lists)
+#     listRails1 = []
+#     listRails2 = []
+#     listSleeper = []
+    
+#     nMaEl = len(modeMag[0])
+#     for ii in range(nMaEl):
+#         listRails1.append([])
+#         listRails2.append([])
+#         listSleeper.append([])
+    
+#     # Get the mode lists once per macroelement
+#     for mael in range(nMaEl):
+#         vect = []
+#         for elem in modeMag:
+#             vect.append(elem[mael])
     
 
-        vect_sorted = sorted(vect, reverse=True)
-        try:
-            threshold = (vect_sorted[p_nSelModes-1] + vect_sorted[p_nSelModes])/2
-        except:
-            threshold = 0
+#         vect_sorted = sorted(vect, reverse=True)
+#         try:
+#             threshold = (vect_sorted[p_nSelModes-1] + vect_sorted[p_nSelModes])/2
+#         except:
+#             threshold = 0
 
-        for i in range(len(vect)):
-            if vect[i] > threshold:
-                if i>=0 and i<p_nEigen:
-                    listEigenModes[mael].append(i+1)
-                elif i>=p_nEigen and i<p_nEigen + p_nRai1:
-                    listRails1[mael].append(i+1 - p_nEigen)
-                elif i >= p_nEigen + p_nRai1 and i < p_nEigen + p_nRai1 + p_nRai2:
-                    listRails2[mael].append(i + 1 -(p_nEigen + p_nRai1))
-                elif i >= p_nEigen + p_nRai1 + p_nRai2 and i < p_nEigen + p_nRai1 + p_nRai2 + p_nSlp:
-                    listSleeper[mael].append(i + 1 - (p_nEigen + p_nRai1 + p_nRai2))
+#         for i in range(len(vect)):
+#             if vect[i] > threshold:
+#                 if i<p_nRai1:
+#                     listRails1[mael].append(i+1)
+#                 elif i >= p_nRai1 and i < p_nRai1 + p_nRai2:
+#                     listRails2[mael].append(i + 1 -(p_nRai1))
+#                 elif i >= p_nRai1 + p_nRai2:
+#                     listSleeper[mael].append(i + 1 - (p_nRai1 + p_nRai2))
 
-        if listEigenModes[mael] == []:
-            listEigenModes[mael].append(1)
-        if listRails1[mael] == []:
-            listRails1[mael].append(1)
-        if listRails2[mael] == []:
-            listRails2[mael].append(1)
-        if listSleeper[mael] == []:
-            listSleeper[mael].append(1)
+#         if listRails1[mael] == []:
+#             listRails1[mael].append(1)
+#         if listRails2[mael] == []:
+#             listRails2[mael].append(1)
+#         if listSleeper[mael] == []:
+#             listSleeper[mael].append(1)
     
-    eigen = []
-    rai1 = []
-    rai2 = []
-    slp = []
+#     rai1 = []
+#     rai2 = []
+#     slp = []
 
-    for mael in range(nMaEl):
-        eigen = eigen + listEigenModes[mael]
-        rai1 = rai1 + listRails1[mael]
-        rai2 = rai2 + listRails2[mael]
-        slp = slp + listSleeper[mael]
+#     for mael in range(nMaEl):
+#         rai1 = rai1 + listRails1[mael]
+#         rai2 = rai2 + listRails2[mael]
+#         slp = slp + listSleeper[mael]
 
-    eigenModes = sorted(list(set(eigen)))
-    rails1 = sorted(list(set(rai1)))
-    rails2 = sorted(list(set(rai2)))
-    sleeper = sorted(list(set(slp)))
+#     rails1 = sorted(list(set(rai1)))
+#     rails2 = sorted(list(set(rai2)))
+#     sleeper = sorted(list(set(slp)))
 
-    return [eigenModes, rails1, rails2, sleeper]
+#     return [rails1, rails2, sleeper]
 
 
 def GetAlphaBeta(freqList, dampingList):
@@ -311,25 +445,26 @@ def computePressure(femodel, chFpress, ac_grps, velocR, velocI, side):
 ######################################################
 # Trim eigenmodes and define min number of interface modes to compute
 ######################################################
-t0 = time.time()
+listEigenModes = GetEigenModesList('fort.7', cumulX_mini, cumulY_mini, cumulZ_mini)
 
-listEigenModesA, listRails1A, listRails2A, listSleeperA = GetModesList('fort.3', nSelModesPerExcitDir, nEigen, nModesRails, nModesRails, nModesSleeper)
-listEigenModesB, listRails1B, listRails2B, listSleeperB = GetModesList('fort.4', nSelModesPerExcitDir, nEigen, nModesRails, nModesRails, nModesSleeper)
+mod_trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modes_1, NUME_MODE=listEigenModes))
 
-listEigenModes = sorted(list(set(listEigenModesA + listEigenModesB)))
-listRails1 = sorted(list(set(listRails1A + listRails1B)))
-listRails2 = sorted(list(set(listRails2A + listRails2B)))
-listSleeper = sorted(list(set(listSleeperA + listSleeperB)))
+listRails1, listRails2, listSleeper = GetStaticModesList('fort.3', nSelModesPerExcitDir, nModesRails, nModesRails, nModesSleeper)
+listSleeper = list(range(1,listSleeper[-1]+1))
+# Rail intf modes numbering is well conserved between phases 1 and 2 ;
+# but sleeper intf modes numbering is not. So to avoid missing some important sleeper modes, 
+# it is safer to keep all sleeper modes up to the largest which has been selected.
+
+print('Rail interface1 modes: ' + str(listRails1))
+print('Rail interface2 modes: ' + str(listRails2))
+print('Sleeper interface modes: ' + str(listSleeper))
 
 nModesRails_trim = max(listRails1[-1], listRails2[-1])
 nModesSleeper_trim = listSleeper[-1]
+listRails = list(set(listRails1 + listRails2))
 
-print(str(len(listEigenModes) + len(listRails1) + len(listRails2) + len(listSleeper)) + ' modes in total')
-print('Eigenmodes (' + str(len(listEigenModes)) + ') : ' + str(listEigenModes))
-print('Rail interface1 modes (' + str(len(listRails1)) + ') : ' + str(listRails1))
-print('Rail interface2 modes (' + str(len(listRails2)) + ') : ' + str(listRails2))
-print('Sleeper interface modes (' + str(len(listSleeper)) + ') : ' + str(listSleeper))
-# FIN()
+
+print(str(len(listEigenModes) + len(listRails)*2 + len(listSleeper)) + ' modes in total + 1 static compression mode')
 
 ######################################################
 # Get list of frequencies from freq files
@@ -886,18 +1021,6 @@ if includeUSP:
 #                                 RHO=rhoSleeper*1e-12))
 
 
-E_L=ESleeper
-E_N=20000
-E_T=20000
-
-G_LN=E_L/2/(1+nuSleeper)
-G_LT=E_L/2/(1+nuSleeper)
-G_TN=E_N/2/(1+nuSleeper)
-
-NU_TN=nuSleeper
-NU_LN=nuSleeper
-NU_LT=nuSleeper
-
 # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL="231". See R4.01.02
 slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(AMOR_ALPHA=AB_slprMat[0],
                                      AMOR_BETA=AB_slprMat[1],
@@ -1000,8 +1123,6 @@ elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N',
                           MODELE=model)
                           
 
-mod_trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modes_1, NUME_MODE=listEigenModes))
-
 # If the first band (iBand=-1) was created artificially, its frequency is in principle far from the other frequencies
 # (very low, to compute ballast protection criterion). So it is worth computing the stiffness matrix one time for this band,
 # and a second time for the rest of the frequencies. On the other hand, damping properties are recomputed for EVERY band
@@ -1041,8 +1162,6 @@ matAs_A1 = ASSE_MATRICE(MATR_ELEM=matEl_A1, NUME_DDL=num2)
 ######################################################
 # Compute eigen modes (once since damping-independent)
 ######################################################
-t_modes0 = time.time()
-
 bamoRef = DEFI_BASE_MODALE(RITZ = _F(MODE_MECA=mod_trim))#, NUME_REF=num1)
 
 nddlgen = NUME_DDL_GENE(BASE=bamoRef, STOCKAGE= 'PLEIN',);
@@ -1065,28 +1184,9 @@ modGene=CALC_MODES(TYPE_RESU='DYNAMIQUE',
 
 modes_2 = REST_GENE_PHYS(RESU_GENE=modGene, NUME_DDL=num2)
 
-# IMPR_RESU(UNITE=82,
-#           FORMAT='MED',
-#           RESU=_F(RESULTAT=modes_2,
-#                   NOM_CHAM='DEPL',))
-
-# IMPR_RESU(MODELE=model, UNITE=9,
-#           FORMAT='RESULTAT',
-#           RESU=_F(RESULTAT=modes_2,
-#                   TOUT_CHAM='NON',
-#                   NOM_PARA=('FREQ', 'MASS_GENE', 'MASS_EFFE_DY', 'FACT_PARTICI_DY'),
-#                 #   FORM_TABL='OUI'
-#                   ))
-
-# FIN()
-
-t_modes = time.time() - t_modes0
-t_modeStat0 = time.time()
-
 ######################################################
 # Compute static interface modes (once as well cause damping indep)
 ######################################################
-
 modStaR1=MODE_STATIQUE(MATR_RIGI=matAs_K1,
                        MATR_MASS=matAs_M1,
                        MODE_INTERF=_F(GROUP_NO = 'railBk',
@@ -1115,11 +1215,14 @@ modStaR2 = NORM_MODE(reuse=modStaR2, MODE=modStaR2, NORME='TRAN')
 modStaS = NORM_MODE(reuse=modStaS, MODE=modStaS, NORME='TRAN')
 
 # Trim static modes list
-moR1Trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaR1, NUME_MODE=listRails1))
-moR2Trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaR2, NUME_MODE=listRails2))
+listRails = list(set(listRails1 + listRails2))
+moR1Trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaR1, NUME_MODE=listRails))
+moR2Trim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaR2, NUME_MODE=listRails))
 moSlTrim = EXTR_MODE(FILTRE_MODE = _F(MODE=modStaS, NUME_MODE=listSleeper))
 
-t_modeStat = time.time() - t_modeStat0
+# Rail intf modes numbering is well conserved between phases 1 and 2 ;
+# but sleeper intf modes numbering is not. So to avoid missing some important sleeper modes, 
+# it is safer to keep all sleeper modes up to the largest which has been selected.
 
 # Define dynamic interfaces   
 Lint=DEFI_INTERF_DYNA(NUME_DDL=num1,
@@ -1156,17 +1259,8 @@ bamo1=DEFI_BASE_MODALE(reuse=bamo1,
                        NUME_REF=num2)
 
 # Add compression static mode
-mstat = MODE_STATIQUE (MATR_RIGI = matAs_K1, 
-                       FORCE_NODALE =_F(GROUP_NO = 'nAbvSlp', AVEC_CMP =('DY'),),)
-
-bamo1=DEFI_BASE_MODALE(reuse=bamo1,
-                       RITZ=(_F(BASE_MODALE=bamo1),
-                             _F(MODE_INTF = mstat, )),
-                       NUME_REF=num2)
-
-# Add compression static mode
-# mstat2 = MODE_STATIQUE (MATR_RIGI = matAs_K1, 
-#                         FORCE_NODALE =_F(GROUP_NO = 'nodeFmid', AVEC_CMP =('DY'),),)
+# mstat = MODE_STATIQUE (MATR_RIGI = matAs_K1, 
+#                        FORCE_NODALE =_F(GROUP_NO = 'nAbvSlp', AVEC_CMP =('DY'),),)
 
 # bamo1=DEFI_BASE_MODALE(reuse=bamo1,
 #                        RITZ=(_F(BASE_MODALE=bamo1),
@@ -1174,26 +1268,19 @@ bamo1=DEFI_BASE_MODALE(reuse=bamo1,
 #                        NUME_REF=num2)
 
 
-
-
     
 ######################################################
 # Create macro element
 ######################################################
-t_macroEl0 = time.time()
-
 macroEl1 = MACR_ELEM_DYNA(BASE_MODALE=bamo1,
                           MATR_MASS=matAs_M1,
                           MATR_RIGI=matAs_K1,
                           MATR_AMOR=matAs_A1)
                           
-t_macroEl = time.time() - t_macroEl0
 
 ######################################################
 # Macroelements coupling and generalized model creation
 ######################################################
-t_harmo0 = time.time()
-
 substructs = []
 liaisons = []
 for i in range(nSlp):
@@ -1242,12 +1329,6 @@ harmGene = DYNA_VIBRA(BASE_CALCUL='GENE',
                                  ELIM_LAGR='NON',
                                  STOP_SINGULIER='OUI',),)
 
-
-t_harmo = time.time() - t_harmo0
-
-
-
-
 ######################################################
 # COMPUTE ACOUSTIC PART
 ######################################################
@@ -1268,7 +1349,7 @@ if computeAcoustic == True:
         velR = [None]*nSlp*2
         velI = [None]*nSlp*2
         ii = 0
-        for iElem in range(slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic):
+        for iElem in range(nSlp): # slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic
             for side in ['R', 'L']:
                 
                 resPhy = REST_SOUS_STRUC(RESU_GENE=harmGene,
@@ -1314,7 +1395,6 @@ if computeAcoustic == True:
             # node = gpNode[0] # suppose exactly 1 node per GROUP_NO... Otherwise, should iterate over gpNode
             # print(pyGrid.cn)
             coords = pyGrid.cn[acNode-1]
-            print('coords ' + str(coords))
     
             nodeDict = None
             for nd in acousticData:
@@ -1334,7 +1414,7 @@ if computeAcoustic == True:
             p_ballast_I = 0
             
             ii=0
-            for iElem in range(slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic):
+            for iElem in range(nSlp): # slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic
                 for side in ['R', 'L']: # in this section we deal with 1 particular macroelement
 
                     # Iterate over directions
@@ -1454,16 +1534,14 @@ if computeAcoustic == True:
     except: pickle.dump(None, pickle_out, protocol=2)
     pickle_out.close()
                   
-t_ac = time.time() - t_ac0
-t_postPro0 = time.time()
-    
+t_ac = time.time() - t_ac0    
 ######################################################
 # RECONSTRUCT PHYSICAL MODEL
 ######################################################
 if writeMED:
     substructs2 = []
     # for i in range(nSlp):
-    for i in range(slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic):
+    for i in range(nSlp): # slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic
         substructs2.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='TOUT'))
         substructs2.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='TOUT'))
                                 
@@ -1492,10 +1570,10 @@ if writeMED:
                             # TYPE_CHAM='NOEU_DEPL_R')
             
         if freq == allFreqs[0]:
-            resOut = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
+            resOut = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
             # resOut2 = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
         else:
-            resOut = CREA_RESU(reuse=resOut, RESULTAT=resOut, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
+            resOut = CREA_RESU(reuse=resOut, RESULTAT=resOut, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=outMag, FREQ=freq),);
             # resOut2 = CREA_RESU(reuse=resOut2, RESULTAT=resOut2, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=outPhas, FREQ=freq),);
             
         DETRUIRE(CONCEPT=_F(NOM=(out, outMag, )))# outPhas)))
@@ -1503,7 +1581,7 @@ if writeMED:
     IMPR_RESU(FORMAT='MED',
             RESU=_F(RESULTAT=resOut,
                     PARTIE='REEL',
-                    NOM_CHAM=FRFtype,
+                    NOM_CHAM='DEPL',
                     NOM_CHAM_MED = 'resOut',),
             UNITE=80)
 
@@ -1707,16 +1785,7 @@ if writeMED:
             RESU=_F(RESULTAT=bamo1,), # mod_trim
             UNITE=82)
 
-
-print('TOTAL TIME ' + str(time.time()-t0))
-print('MODES ' + str(t_modes))
-print('MODSTAT ' + str(t_modeStat))
-print('MACROEL ' + str(t_macroEl))
-print('HARMONIC MODEL ' + str(t_harmo) + ' (' + str(len(allFreqs)) + ' frequencies)')
-
 if computeAcoustic == True:
-    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies, ' + str(nSlpForAcoustic) + ' sleepers)')
-
-print('POSTPRO ' + str(time.time() - t_postPro0))
+    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies, ' + str(nSlp) + ' sleepers)') # nSlpForAcoustic
           
 FIN()

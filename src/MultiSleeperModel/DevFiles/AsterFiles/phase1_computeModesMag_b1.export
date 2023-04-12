@@ -16,6 +16,7 @@ P tpsjob 60016
 P version stable
 A memjeveux __memjeveux__
 A tpmax 3600900.0
+F base base1_b1 RC 0
 F comm phase1_computeModesMag.comm D  1
 F libr parameters.json D  2
 F libr sleeper.med D  21
@@ -33,8 +34,8 @@ __tanDUSP__
 F libr E_bal.csv D  36
 F libr tanD_bal.csv D  37
 F libr f1.txt D  40
-F libr modes_b1.med R  82
-F libr resu_gene_modes R  83
+F libr modal_basis.med R  82
+F libr info_modes.txt R  83
 
 F libr modeRail1_b1.med R  85
 F libr modeRail2_b1.med R  86
@@ -43,8 +44,6 @@ F libr modeBal1_b1.med R  88
 F libr modeBal2_b1.med R  89
 F libr modeBal3_b1.med R  90
 F libr modeMag10_b1.txt R  91
-F libr modeMag45_b1.txt R  92
 F libr dispGene10_b1 R  8
-F libr dispGene45_b1 R  9
 F libr modesNumber.py R  10
 F mess __messagesDir__/message_phase1_b1.mess R  6

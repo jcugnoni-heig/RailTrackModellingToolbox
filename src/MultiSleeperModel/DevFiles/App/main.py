@@ -339,16 +339,16 @@ class MultiSleeperModelGUI(QMainWindow):
 				
 			dictSimu['phase1Name'] = phase1Name
 			
-			dir = os.path.join(dictSimu['savePhase1To'], dictSimu['phase1Name'])
+			dirBase = os.path.join(dictSimu['savePhase1To'], dictSimu['phase1Name'])
 			try:
-				shutil.rmtree(dir)
+				shutil.rmtree(dirBase)
 			except:
 				pass
 				
 			try:
-				os.makedirs(dir)
+				os.makedirs(dirBase)
 			except:
-				QMessageBox.information(self, 'Error', dir + 'could not be created', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', dirBase + 'could not be created', QMessageBox.Ok,)
 				return
 			
 
@@ -415,7 +415,7 @@ class MultiSleeperModelGUI(QMainWindow):
 				QMessageBox.information(self, 'Error', 'The number of frequencies (phase1) is smaller than the number of jobs (=' + str(dictSimu['nJobsPh1']) + ').', QMessageBox.Ok,)
 				return
 			
-			dictSimu['phase1Folder'] = None
+			dictSimu['phase1Folder'] = dirBase
 		else:
 			#
 			if self.phase1Folder is None or os.path.exists(self.phase1Folder) == False:

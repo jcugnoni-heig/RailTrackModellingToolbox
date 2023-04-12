@@ -20,8 +20,9 @@ F base Inputs/base1 DC 0
 F comm phase2_runSimulation.comm D  1
 F libr parameters.json D  2
 F nom Inputs/modesNumber.py D  5
+F libr Inputs/info_modes.txt D  7
 F libr Inputs/modesMag10.txt D  3
-F libr Inputs/modesMag45.txt D  4
+
 
 __acousticMesh__
 
@@ -40,7 +41,8 @@ F libr Inputs/E_bal.csv D  36
 F libr Inputs/tanD_bal.csv D  37
 F libr Inputs/f6.txt D  40
 F libr Outputs/acousticResults_b6.txt R  41
-
+F libr Outputs/modeRail1_b6.med R  85
+F libr Outputs/modeSlp_b6.med R  87
 
 F libr Outputs/data_b6 R  44
 

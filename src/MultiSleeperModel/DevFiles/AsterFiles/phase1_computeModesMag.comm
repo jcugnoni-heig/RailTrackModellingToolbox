@@ -92,7 +92,7 @@ def GetAlphaBeta(freqList, dampingList):
 # Trim eigenmodes and define min number of interface modes to compute
 ######################################################
 t0=time.time()
-freqBands1 = list(range(0, int(maxFreq) + 1, min(250, int(maxFreq))))
+freqBands1 = [0] + list(range(2000, int(maxFreq) + 1, min(500, int(maxFreq))))
 
 if freqBands1[-1] != int(maxFreq):
     freqBands1.append(int(maxFreq))
@@ -365,7 +365,6 @@ mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes,
                      MAILLAGE=mesh0) 
 
 IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
-# FIN()
 
 model = AFFE_MODELE(MAILLAGE=mesh,
                     AFFE=(_F(TOUT='OUI',
@@ -405,10 +404,8 @@ for gp in nodeGrps:
 # BOUNDARY CONDITIONS AND INTERACTIONS
 ######################################################
 
-nodeF10 = 'nodeF10'
+nodeF10 = 'nodeFmid'
 force10 = (0, -100000.0, 10000.0)
-nodeF45 = 'nodeF45'
-force45 = (0, -173205, -173205)
 
 if includeUSP == True:
     tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ),
@@ -456,18 +453,6 @@ load10 = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force10[0],
                                       FZ = force10[2],
                                       GROUP_NO=(nodeF10, )),
                       MODELE=model)
-                      
-load45 = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force45[0],
-                                      FY = force45[1],
-                                      FZ = force45[2],
-                                      GROUP_NO=(nodeF45, )),
-                      MODELE=model)
-
-t_macroEl = 0
-t_modeGe = 0
-t_harmo = 0
-
-
 
 ######################################################
 # Import materials properties / functions
@@ -521,9 +506,8 @@ f_TDBal=LIRE_FONCTION(UNITE = 37,
 # meanFreq is the frequency at which E' is gonna be taken. Since modes are damping independent, 
 # we decide to compute them (interface and eigen) only once per job. So we evaluate them with 
 # E' at the middle of the whole frequency range (among all jobs). It must be so, otherwise each job
-# provides a different list of modes and analyzing their contributions to the response is much harder. 
-# However, the frequency range of each job can be divided in nBands bands to better model Rayleigh damping. 
-# So the damping matrices are recomputed for each band, as well as the macroelement.
+# provides a slightly different list of modes and identifying them to analyze their contributions to the response is much harder. 
+
 meanFreqGlob = (freq1+freq2)/2.0 # (allFreqs[0] + allFreqs[-1])/2
 meanFreqJob = (allFreqs[0] + allFreqs[-1])/2
 
@@ -542,14 +526,32 @@ AB_padMat2 = GetAlphaBeta(allFreqsNP, eta_padMat2)
 if includeUSP:
     eta_USP = np.array([f_TDUSP(f) for f in allFreqs])
     AB_USP = GetAlphaBeta(allFreqsNP, eta_USP)
+                  
+E_L=ESleeper
+E_N=20000
+E_T=20000
 
+G_LN=E_L/2/(1+nuSleeper)
+G_LT=E_L/2/(1+nuSleeper)
+G_TN=E_N/2/(1+nuSleeper)
 
-                        
-slprMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_slprMat[0],
-                                AMOR_BETA=AB_slprMat[1],
-                                E=ESleeper,
-                                NU=nuSleeper,
-                                RHO=rhoSleeper*1e-12))
+NU_TN=nuSleeper
+NU_LN=nuSleeper
+NU_LT=nuSleeper
+
+# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL="231". See R4.01.02
+slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(AMOR_ALPHA=AB_slprMat[0],
+                                     AMOR_BETA=AB_slprMat[1],
+                                     E_L=E_L,
+                                     E_N=E_N,
+                                     E_T=E_T,
+                                     G_LN=G_LN,
+                                     G_LT=G_LT,
+                                     G_TN=G_TN,
+                                     NU_LN=NU_LN,
+                                     NU_LT=NU_LT,
+                                     NU_TN=NU_TN,
+                                     RHO=rhoSleeper*1e-12))
                             
 railMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_railMat[0],
                               AMOR_BETA=AB_railMat[1],
@@ -632,6 +634,8 @@ elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N',
                                      ),
                                       
                                       ),
+                          # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                          MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
                           MODELE=model)
                               
 matEl_K1=CALC_MATR_ELEM(MODELE=model,
@@ -653,12 +657,8 @@ matAs_M1 = ASSE_MATRICE(MATR_ELEM=matEl_M1, NUME_DDL=num1)
 
 vectEl10=CALC_VECT_ELEM(OPTION='CHAR_MECA',
                       CHARGE=load10, CARA_ELEM=elemprop)
-                      
-vectEl45=CALC_VECT_ELEM(OPTION='CHAR_MECA',
-                      CHARGE=load45, CARA_ELEM=elemprop)
 
 vectAs10 = ASSE_VECTEUR(VECT_ELEM=vectEl10, NUME_DDL=num1)
-vectAs45 = ASSE_VECTEUR(VECT_ELEM=vectEl45, NUME_DDL=num1)
 
 matEl_A1=CALC_MATR_ELEM(MODELE=model,
                         RIGI_MECA=matEl_K1,
@@ -673,8 +673,6 @@ matAs_A1 = ASSE_MATRICE(MATR_ELEM=matEl_A1, NUME_DDL=num1)
 ######################################################
 # Compute eigen modes (once since damping-independent)
 ######################################################
-t_modes0 = time.time()
-
 tabModes = INFO_MODE( MATR_RIGI = matAs_K1,
                       MATR_MASS = matAs_M1,
                       FREQ = freqBands1)                              
@@ -733,54 +731,30 @@ modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
                    MATR_MASS=matAs_M1,
                    VERI_MODE=_F(STOP_ERREUR='NON',),)
 
-try:
-    extrnor=EXTR_MODE(
-                    FILTRE_MODE=_F(
-                                MODE=modes_1,
-                                CRIT_EXTR='MASS_EFFE_UN',
-                                SEUIL=0,
-                                    ),
-            IMPRESSION=_F(
-                        CUMUL='OUI',
-                        CRIT_EXTR='MASS_EFFE_UN',
-                        ),
-                    );
-except:
-    pass
-
-
-IMPR_RESU(UNITE=82,
-          FORMAT='MED',
-          RESU=_F(RESULTAT=modes_1,
-                  NOM_CHAM='DEPL',))
+# extrnor=EXTR_MODE(
+#                 FILTRE_MODE=_F(
+#                             MODE=modes_1,
+#                             CRIT_EXTR='MASS_EFFE_UN',
+#                             SEUIL=0,
+#                                 ),
+#         IMPRESSION=_F(
+#                     CUMUL='OUI',
+#                     CRIT_EXTR='MASS_EFFE_UN',
+#                     ),)
 
 
 IMPR_RESU(MODELE=model, UNITE=83,
           FORMAT='RESULTAT',
           RESU=_F(RESULTAT=modes_1,
                   TOUT_CHAM='NON',
-                  NOM_PARA=('FREQ', 'MASS_EFFE_UN_DY', 'MASS_EFFE_DY', 'FACT_PARTICI_DY'),
+                  NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ'),
                   FORM_TABL='OUI'
                   ))
 
-
-
-# modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
-#                    CALC_FREQ=_F(FREQ=(0.0, 4726.851851851852, 4750, 4771.604938271605, 4796.2962962962965, 4820.9876543209875, 4845.679012345679, 4870.37037037037, 4895.061728395061, 4919.753086419753, 4944.444444444444, 4969.135802469135, 4993.827160493827, 5023.006134969325),),
-#                    STOP_BANDE_VIDE='NON',
-#                    OPTION='BANDE',
-#                    NORM_MODE=_F(NORME='TRAN'),
-#                    MATR_MASS=matAs_M1,
-#                    VERI_MODE=_F(STOP_ERREUR='NON',),)
                    
-
-# print('TIME FOR INFO_MODE + CALC_MODES     ' + str(time.time() - t_modes0))
-
 ######################################################
 # Compute static interface modes (once as well (iBand==0) cause damping indep)
 ######################################################
-t_modesSta0 = time.time()
-
 modStaR1=MODE_STATIQUE(MATR_RIGI=matAs_K1,
                        MATR_MASS=matAs_M1,
                        MODE_INTERF=_F(GROUP_NO = 'railBk',
@@ -802,14 +776,11 @@ modStaS=MODE_STATIQUE(MATR_RIGI=matAs_K1,
                                       NB_MODE=nModesSleeper,
                                       SHIFT=10.,),);
 
-                                      
-print('TIME FOR INTF MODES     ' + str(time.time() - t_modesSta0))
+
 # Normalize static modes
 modStaR1 = NORM_MODE(reuse=modStaR1, MODE=modStaR1, NORME='TRAN')
 modStaR2 = NORM_MODE(reuse=modStaR2, MODE=modStaR2, NORME='TRAN')
 modStaS = NORM_MODE(reuse=modStaS, MODE=modStaS, NORME='TRAN')
-
-t_bamo0 = time.time()
 
 # Define dynamic interfaces   
 Lint=DEFI_INTERF_DYNA(NUME_DDL=num1,
@@ -840,25 +811,25 @@ bamo1=DEFI_BASE_MODALE(reuse=bamo1,
                        RITZ=(_F(BASE_MODALE=bamo1),
                              _F(MODE_INTF = modStaS, )),
                        NUME_REF=num1)
-
-print('TIME FOR BAMO     ' + str(time.time() - t_bamo0))
     
+try:
+    IMPR_RESU(FORMAT='MED',
+              RESU=_F(RESULTAT=bamo1),
+              UNITE=82)
+except:
+    pass
+
 ######################################################
 # Create macro element
 ######################################################
-t_macroEl0 = time.time()
-
 macroEl1 = MACR_ELEM_DYNA(BASE_MODALE=bamo1,
                           MATR_MASS=matAs_M1,
                           MATR_RIGI=matAs_K1,
                           MATR_AMOR=matAs_A1)
                           
-print('TIME FOR MACROEL     ' + str(time.time() - t_macroEl0))
 ######################################################
 # Macroelements coupling and generalized model creation
 ######################################################
-t_modeGe0 = time.time()
-
 substructs = []
 liaisons = []
 nSlp = 3
@@ -893,15 +864,10 @@ amoGene=ASSE_MATR_GENE(NUME_DDL_GENE=numGene,
                                   OPTION='AMOR_GENE');
 
 vectGe10 = ASSE_VECT_GENE(NUME_DDL_GENE=numGene,CHAR_SOUS_STRUC=(_F(SOUS_STRUC = 'elem'+str(slpForce-1)+'R',VECT_ASSE = vectAs10),))        
-vectGe45 = ASSE_VECT_GENE(NUME_DDL_GENE=numGene,CHAR_SOUS_STRUC=(_F(SOUS_STRUC = 'elem'+str(slpForce-1)+'R',VECT_ASSE = vectAs45),)) 
-
-print('TIME FOR MODEGENE     ' + str(time.time() - t_modeGe0))
     
 ######################################################
 # HARMONIC SIMULATION
 ######################################################
-t_harmo0 = time.time()
-
 harmGe10 = DYNA_VIBRA(BASE_CALCUL='GENE',
                       TYPE_CALCUL='HARM',
                       MATR_MASS=masGene,
@@ -915,31 +881,10 @@ harmGe10 = DYNA_VIBRA(BASE_CALCUL='GENE',
                                  NPREC=8,
                                  ELIM_LAGR='NON',
                                  STOP_SINGULIER='OUI',),)
-                                 
-harmGe45 = DYNA_VIBRA(BASE_CALCUL='GENE',
-                      TYPE_CALCUL='HARM',
-                      MATR_MASS=masGene,
-                      MATR_RIGI=rigGene,
-                      MATR_AMOR=amoGene,
-                      FREQ=allFreqs,
-                      TOUT_CHAM='OUI',
-                      EXCIT=_F(VECT_ASSE_GENE=vectGe45, COEF_MULT=1.0,),
-                      SOLVEUR=_F(METHODE='LDLT',
-                                 RENUM='RCMK',
-                                 NPREC=8,
-                                 ELIM_LAGR='NON',
-                                 STOP_SINGULIER='OUI',),)
  
-print('TIME FOR HARMO     ' + str(time.time() - t_harmo0))
 ######################################################
 # POST-PROCESSING : vect_mag (envelope of max modal vector components)
-######################################################
-nModesTot = nEigen + 2*nModesRails + nModesSleeper
-
-vect_mag = [0]*nModesTot
-for i in range(len(vect_mag)):
-    vect_mag[i] = [0.0]*(nSlp*2)
-    
+######################################################    
 for freq in allFreqs:
     dispGene = RECU_GENE(RESU_GENE=harmGe10,
                          NOM_CHAM='DEPL',
@@ -958,6 +903,13 @@ if len(allFreqs) == 1:
     IMPR_GENE(UNITE=8, GENE=_F(RESU_GENE=dispGen2))
     DETRUIRE(CONCEPT=_F(NOM=(dispGen2)))
 
+nModesTot = nEigen + 2*nModesRails + nModesSleeper
+nStaticModes = 2*nModesRails + nModesSleeper
+
+vect_mag = [0]*nStaticModes
+for i in range(len(vect_mag)):
+    vect_mag[i] = [0.0]*(nSlp*2)
+
     
 with open('fort.8','r') as f:
     content = f.read()
@@ -971,9 +923,6 @@ for line in lines:
         lineNo = int(listLine[0])
     except:
         continue
-      
-    # if lineNo > nModesTot:
-        # continue
 
     modeNo = lineNo % nModesTot 
     macroElNo = (lineNo // nModesTot) % (3*nSlp) # 0 => 5
@@ -982,6 +931,9 @@ for line in lines:
         macroElNo = macroElNo - 1
         
     modeNo = modeNo - 1 # 0 => 1409 p.ex
+
+    if modeNo < nEigen: # which means this mode number corresponds to an eigenmode
+        continue # we want to deal with static modes only. Eigenmodes will be selected wrt their effective modal masses
         
     real = float(listLine[1])
     imag = float(listLine[2])
@@ -989,7 +941,7 @@ for line in lines:
 
     # print(str(lineNo) + ' ' + str(modeNo) + ' ' + str(macroElNo) + ' ' + str(magn))
         
-    vect_mag[modeNo][macroElNo] = max(vect_mag[modeNo][macroElNo], magn)
+    vect_mag[modeNo-nEigen][macroElNo] = max(vect_mag[modeNo-nEigen][macroElNo], magn)
 
 vect_mag_str = []
 for i in vect_mag:
@@ -1003,100 +955,21 @@ fileVect=open('fort.91','w')
 fileVect.write(fileVectContent)
 fileVect.close()
 
-#=====================================================
-
-vect_mag = [0]*nModesTot
-for i in range(len(vect_mag)):
-    vect_mag[i] = [0.0]*(nSlp*2)
-    
-for freq in allFreqs:
-    dispGene = RECU_GENE(RESU_GENE=harmGe45,
-                         NOM_CHAM='DEPL',
-                         FREQ=freq)
-
-    IMPR_GENE(UNITE=9, GENE=_F(RESU_GENE=dispGene))
-    DETRUIRE(CONCEPT=_F(NOM=(dispGene)))
-
-# if only 1 concept is printed to fort.9, nothing appears in it while still in the calculation (content=''). It's a bug..
-if len(allFreqs) == 1:
-    dispGen2 = RECU_GENE(RESU_GENE=harmGe45,
-                         NOM_CHAM='DEPL',
-                         FREQ=allFreqs[0])
-
-    IMPR_GENE(UNITE=9, GENE=_F(RESU_GENE=dispGen2))
-    DETRUIRE(CONCEPT=_F(NOM=(dispGen2)))
-    
-    
-with open('fort.9','r') as f:
-    content = f.read()
-f.close()
-lines = content.split('\n')
-
-
-for line in lines:
-    listLine = line.split(' ')
-    listLine = [x.replace('D','e') for x in listLine if x]
-    try:
-        lineNo = int(listLine[0])
-    except:
-        continue
-      
-    # if lineNo > nModesTot:
-        # continue
-
-    modeNo = lineNo % nModesTot 
-    macroElNo = (lineNo // nModesTot) % (3*nSlp) # 0 => 5
-    if modeNo == 0: # True when lineNo == nModesTot
-        modeNo = nModesTot
-        macroElNo = macroElNo - 1
-        
-    modeNo = modeNo - 1 # 0 => 1409 p.ex
-        
-    real = float(listLine[1])
-    imag = float(listLine[2])
-    magn = (real**2+imag**2)**(1/2)
-        
-    vect_mag[modeNo][macroElNo] = max(vect_mag[modeNo][macroElNo], magn)
-
-vect_mag_str = []
-for i in vect_mag:
-    myStrList = []
-    for j in i:
-        myStrList.append(str(j))
-    vect_mag_str.append('\t'.join(myStrList))
-    
-fileVectContent = '\n'.join(vect_mag_str)
-fileVect=open('fort.92','w')
-fileVect.write(fileVectContent)
-fileVect.close()
-
-try:
-    IMPR_RESU(FORMAT='MED',
-              RESU=_F(RESULTAT=modes_1),
-              UNITE=82)
-except:
-    pass
-          
-
-
- 
-t_fin = time.time()
 print('nModesTot ' + str(nModesTot))
 print('nEigen ' + str(nEigen))
-print('TOTAL TIME ' + str(t_fin-t0))
 
 fileModesContent = 'nEigen = ' + str(nEigen) + '\nnModesRails = ' + str(nModesRails) + '\nnModesSleeper = ' + str(nModesSleeper)
 fileModes=open('fort.10','w')
 fileModes.write(fileModesContent)
 fileModes.close()
 
-DETRUIRE(CONCEPT=_F(NOM=(matEl_A1, matAs_A1, masGene, rigGene, amoGene, vectGe10, vectGe45, elemprop)))
+DETRUIRE(CONCEPT=_F(NOM=(matEl_A1, matAs_A1, masGene, rigGene, amoGene, vectGe10, elemprop)))
 DETRUIRE(CONCEPT=_F(NOM=(meshSlp, meshRaiR, meshPadR, tmp2, tmp4, tmp5, tmp6, tmp7, mesh, mesh0, model, f_EBal, f_TDBal,  f_EPad1, )))
-DETRUIRE(CONCEPT=_F(NOM=(f_EPad2, f_TDPad1, f_TDPad2, tie2, tie3, BCinterf, load10, load45, )))
+DETRUIRE(CONCEPT=_F(NOM=(f_EPad2, f_TDPad1, f_TDPad2, tie2, tie3, BCinterf, load10, )))
 DETRUIRE(CONCEPT=_F(NOM=(matEl_K1, slprMat, railMat, padMat1, padMat2, fieldmat, macroEl1, tabModes))) 
-DETRUIRE(CONCEPT=_F(NOM=(matAs_K1, matEl_M1, matAs_M1, vectEl10, vectEl45, vectAs10, vectAs45, modeGene, numGene, )))
+DETRUIRE(CONCEPT=_F(NOM=(matAs_K1, matEl_M1, matAs_M1, vectEl10, vectAs10, modeGene, numGene, )))
 DETRUIRE(CONCEPT=_F(NOM=(modStaR1, modStaR2, modStaS, Lint, bamo1, dplX, dplY, dplZ, CHdplF, CHcoord, temp, CHdpl)))
-DETRUIRE(CONCEPT=_F(NOM=(harmGe10, harmGe45, CH_id, intCH_id, clampia, clampib, clampea, clampeb, tie_clps)))
+DETRUIRE(CONCEPT=_F(NOM=(harmGe10, CH_id, intCH_id, clampia, clampib, clampea, clampeb, tie_clps)))
 if includeUSP == True:
     DETRUIRE(CONCEPT=_F(NOM=(meshUSP, tmp3, tie1, f_EUSP, f_TDUSP, USPmat)))
 

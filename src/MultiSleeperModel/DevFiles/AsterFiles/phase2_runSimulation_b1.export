@@ -20,8 +20,9 @@ F base Inputs/base1 DC 0
 F comm phase2_runSimulation.comm D  1
 F libr parameters.json D  2
 F nom Inputs/modesNumber.py D  5
+F libr Inputs/info_modes.txt D  7
 F libr Inputs/modesMag10.txt D  3
-F libr Inputs/modesMag45.txt D  4
+
 __acousticMesh__
 F libr Inputs/sleeper.med D  21
 F libr Inputs/Clamp.med D  22
@@ -44,7 +45,7 @@ F libr Outputs/mesh.med R  27
 F libr Outputs/skeleton.med R  28
 F libr Outputs/results_b1.med R  80
 F rmed Outputs/resuAcc_b1.res.med R  81
-F libr Outputs/modes_b1.med R  82
+F libr Outputs/modalBasis_b1.med R  82
 F libr Outputs/FRF_b1.txt R  83
 F libr Outputs/modeRail1_b1.med R  85
 F libr Outputs/modeRail2_b1.med R  86
@@ -53,6 +54,5 @@ F libr Outputs/modeBal1_b1.med R  88
 F libr Outputs/modeBal2_b1.med R  89
 F libr Outputs/modeBal3_b1.med R  90
 F libr Outputs/deform_b1.med R  91
-F libr Outputs/resu_gene_modes R  9
 
 F mess __messagesDir__/message_phase2_b1.mess R  6

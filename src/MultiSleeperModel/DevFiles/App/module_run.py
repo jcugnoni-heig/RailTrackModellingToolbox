@@ -207,8 +207,13 @@ def PrepareFilesPhase2(p_dictSimu):
 	try:
 		shutil.copyfile(os.path.join(phase1Folder, 'modesNumber.py'), os.path.join(fullDirInput, 'modesNumber.py'))
 		shutil.copyfile(os.path.join(phase1Folder, 'modesMag10.txt'), os.path.join(fullDirInput, 'modesMag10.txt'))
-		shutil.copyfile(os.path.join(phase1Folder, 'modesMag45.txt'), os.path.join(fullDirInput, 'modesMag45.txt'))
-		shutil.copytree(os.path.join(phase1Folder, 'base1_b2'), os.path.join(fullDirInput, 'base1'))
+		shutil.copyfile(os.path.join(phase1Folder, 'info_modes.txt'), os.path.join(fullDirInput, 'info_modes.txt'))
+		for jobNo in range(1,25):
+			try:
+				shutil.copytree(os.path.join(phase1Folder, 'base1_b'+str(jobNo)), os.path.join(fullDirInput, 'base1'))
+				break
+			except:
+				pass
 	except:
 		return "Some files from phase 1 (base) were not found."
 	
@@ -392,12 +397,7 @@ def SaveBaseFiles(p_saveBaseDir, p_simFolder, p_nJobs):
 	except:
 		return "The folder " + p_saveBaseDir + " could not be created."
 
-	
 	code = SaveModesMag(p_saveBaseDir, p_simFolder, '10', p_nJobs)
-	if code != 0:
-		return code
-		
-	code = SaveModesMag(p_saveBaseDir, p_simFolder, '45', p_nJobs)
 	if code != 0:
 		return code
 	
@@ -407,21 +407,30 @@ def SaveBaseFiles(p_saveBaseDir, p_simFolder, p_nJobs):
 		return "Phase 1: impossible to copy " + os.path.join(p_simFolder, 'modesNumber.py') + " to " + os.path.join(p_saveBaseDir, 'modesNumber.py') + "."
 	
 	done = False
-	for i in range(p_nJobs):
-		dir1 = os.path.join(p_simFolder, 'base1_b' + str(i+1))
-		dir2 = os.path.join(p_saveBaseDir, 'base1_b' + str(i+1))
-		
+	for jobNo in [round(p_nJobs/2), 1]:
+		print('jobNo = ' + str(jobNo))
+		dir1 = os.path.join(p_simFolder, 'base1_b' + str(jobNo))
+		dir2 = os.path.join(p_saveBaseDir, 'base1_b' + str(jobNo))
+
 		if os.path.exists(dir2):
 			shutil.rmtree(dir2)
 		
 		try:
 			shutil.copytree(dir1, dir2)
+			print('done')
 			done = True
+			break
 		except:
-			continue
-			
+			pass
+
 	if not done:
 		return "Phase 1: impossible to copy base from " + p_simFolder + " to " + p_saveBaseDir + "."
+	
+	try:
+		shutil.copyfile(os.path.join(p_simFolder, 'info_modes.txt'), os.path.join(p_saveBaseDir, 'info_modes.txt'))
+	except:
+		return "Phase 1: impossible to copy " + os.path.join(p_simFolder, 'info_modes.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes.txt') + "."
+	
 		
 	return 0
 	
@@ -498,7 +507,7 @@ def PostProcessResults(p_dictSimu):
 	code = ConcatTxtFiles(fullDirOutput, nJobs, 'FRF', 1)
 	if code != 0:
 		return code
-	
+	 
 	if p_dictSimu['computeAcoustic'] == True:
 		if p_dictSimu['acMeshDim'] == '1D':
 			code = ConcatTxtFiles(fullDirOutput, nJobs, 'acousticResults', 1)
