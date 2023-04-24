@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>729</width>
-    <height>378</height>
+    <width>767</width>
+    <height>403</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,7 @@
    <widget class="QPushButton" name="btn_simulate">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>550</x>
       <y>300</y>
       <width>82</width>
       <height>25</height>
@@ -51,8 +51,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>537</width>
-      <height>291</height>
+      <width>541</width>
+      <height>285</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -87,7 +87,7 @@
           <string>The eigenmodes of the macroelement are computed up to this frequency.</string>
          </property>
          <property name="text">
-          <string>10000</string>
+          <string>15000</string>
          </property>
         </widget>
        </item>
@@ -110,7 +110,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>85</string>
+          <string>60</string>
          </property>
         </widget>
        </item>
@@ -190,7 +190,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>100</string>
+          <string>60</string>
          </property>
         </widget>
        </item>
@@ -378,7 +378,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RAM necessary for the simulation per job (=frequenc band). A typical simulation with 400 modes, 18 sleepers, 6 frequencies per job and 9 acoustic points needs about 5000MB. The default value is 20000MB to make sure the simulation runs properly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>20000</string>
+          <string>50000</string>
          </property>
         </widget>
        </item>
@@ -673,15 +673,15 @@
            <rect>
             <x>10</x>
             <y>10</y>
-            <width>221</width>
-            <height>161</height>
+            <width>251</width>
+            <height>201</height>
            </rect>
           </property>
           <property name="title">
            <string/>
           </property>
           <layout class="QGridLayout" name="gridLayout_10">
-           <item row="4" column="1">
+           <item row="7" column="1">
             <widget class="QLineEdit" name="txt_nuSleeper">
              <property name="enabled">
               <bool>true</bool>
@@ -691,7 +691,7 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
+           <item row="7" column="0">
             <widget class="QLabel" name="label_31">
              <property name="enabled">
               <bool>true</bool>
@@ -701,7 +701,17 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="1">
+           <item row="10" column="0">
+            <widget class="QLabel" name="label_32">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Density (kg/m3)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
             <widget class="QLineEdit" name="txt_rhoSleeper">
              <property name="enabled">
               <bool>true</bool>
@@ -711,13 +721,26 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="0">
-            <widget class="QLabel" name="label_32">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_33">
              <property name="enabled">
               <bool>true</bool>
              </property>
              <property name="text">
-              <string>Density (kg/m3)</string>
+              <string>Young's modulus E1 (MPa)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="txt_E1Sleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>Longitudinal = along the steel reinforcement if concrete sleepers</string>
+             </property>
+             <property name="text">
+              <string>46300</string>
              </property>
             </widget>
            </item>
@@ -731,27 +754,7 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_33">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Young's modulus (MPa)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="txt_ESleeper">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>46300</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
+           <item row="8" column="1">
             <widget class="QLineEdit" name="txt_tanDSleeper">
              <property name="enabled">
               <bool>true</bool>
@@ -761,13 +764,59 @@
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
+           <item row="8" column="0">
             <widget class="QLabel" name="label_34">
              <property name="enabled">
               <bool>true</bool>
              </property>
              <property name="text">
               <string>Damping (tanD) (-)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_42">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Young's modulus E2 (MPa)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="txt_E2Sleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>Vertical storage modulus</string>
+             </property>
+             <property name="text">
+              <string>20000</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_43">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Young's modulus E3 (MPa)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="txt_E3Sleeper">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>Lateral storage modulus</string>
+             </property>
+             <property name="text">
+              <string>20000</string>
              </property>
             </widget>
            </item>
@@ -1164,259 +1213,379 @@
      <attribute name="title">
       <string>Simulation setup</string>
      </attribute>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QGroupBox" name="groupBox_7">
-        <property name="title">
-         <string>Parameters</string>
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>9</y>
+        <width>276</width>
+        <height>240</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Parameters</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_8">
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>Load direction</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QRadioButton" name="rb_10pct">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>5.7° (10%)</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="2">
+        <widget class="QRadioButton" name="rb_45deg">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>45°</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0" colspan="3">
+        <widget class="QPushButton" name="btn_freqs">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Select frequencies...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLineEdit" name="txt_nModes">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The modes (computed in phase 1) that are going to be used are the union of the N most influent modes to the response computed in phase 1, among the 6 substructures used and the frequency spectrum. This number is an approximation. The total number of modes may be larger. N can be decreased for quicker but perhaps less accurate simulations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>50</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_25">
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Number of interface modes</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLineEdit" name="txt_cumulMassEffeUn">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the minimum cumulated effective unit mass requested in each direction (see doc Code_Aster R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value ([0;1]) in each direction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>0.9</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QLabel" name="label_44">
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Total effective unit mass</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLineEdit" name="txt_nSlp">
+         <property name="text">
+          <string>400</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QLineEdit" name="txt_slpSpacing">
+         <property name="text">
+          <string>600</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="QLabel" name="label_36">
+         <property name="text">
+          <string>Sleeper spacing (mm)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>Number of sleepers</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="2">
+        <widget class="QLineEdit" name="txt_forceNode">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>nodeF10</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QCheckBox" name="cb_defaultNode">
+         <property name="text">
+          <string>Default node</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="2">
+        <widget class="QLineEdit" name="txt_slpForce">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force will be applied to the group of node indicated above, on the substructure corresponding to the sleeper number entered here. The excited side is always the right side.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>200</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>Applied on &quot;sleeper&quot; n°</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_8">
+      <property name="geometry">
+       <rect>
+        <x>291</x>
+        <y>9</y>
+        <width>241</width>
+        <height>240</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Post-processing</string>
+      </property>
+      <widget class="QCheckBox" name="cb_computeAcoustic">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>150</y>
+         <width>121</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Compute acoustic</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_22">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>31</y>
+         <width>76</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Outpout type</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_24">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>64</y>
+         <width>131</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>FRFs on &quot;sleepers&quot; n°</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_selectAcousticMesh">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>197</y>
+         <width>135</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Select acoustic mesh...</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="cbb_output">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>30</y>
+         <width>95</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRFs and the harmonic .med file result are expressed either in terms of velocity or acceleration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Velocity</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_8">
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_36">
-           <property name="text">
-            <string>Sleeper spacing (mm)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1" colspan="2">
-          <widget class="QLineEdit" name="txt_slpSpacing">
-           <property name="text">
-            <string>600</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_21">
-           <property name="text">
-            <string>Load direction</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1" colspan="2">
-          <widget class="QLineEdit" name="txt_nSlp">
-           <property name="text">
-            <string>18</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_25">
-           <property name="whatsThis">
-            <string/>
-           </property>
-           <property name="text">
-            <string>Number of modes</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Number of sleepers</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="0">
-          <widget class="QLabel" name="label_23">
-           <property name="text">
-            <string>Applied on &quot;sleeper&quot; n°</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QCheckBox" name="cb_defaultNode">
-           <property name="text">
-            <string>Default node</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QRadioButton" name="rb_10pct">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>5.7° (10%)</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="QRadioButton" name="rb_45deg">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>45°</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="1" colspan="2">
-          <widget class="QLineEdit" name="txt_slpForce">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force will be applied to the group of node indicated above, on the substructure corresponding to the sleeper number entered here. The excited side is always the right side.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>8</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="QLineEdit" name="txt_forceNode">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>nodeF10</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1" colspan="2">
-          <widget class="QLineEdit" name="txt_nModes">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The modes (computed in phase 1) that are going to be used are the union of the N most influent modes to the response computed in phase 1, among the 6 substructures used. The total number of modes may be larger than this number (N). N can be decreased for quicker and perhaps less accurate simulations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="statusTip">
-            <string/>
-           </property>
-           <property name="text">
-            <string>1e12</string>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="0" colspan="3">
-          <widget class="QPushButton" name="btn_freqs">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="text">
-            <string>Select frequencies...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_8">
-        <property name="title">
-         <string>Post-processing</string>
+       </item>
+       <item>
+        <property name="text">
+         <string>Acceleration</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_9">
-         <item row="2" column="0" colspan="2">
-          <widget class="QCheckBox" name="cb_computeAcoustic">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Compute acoustic</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_22">
-           <property name="text">
-            <string>Outpout type</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_24">
-           <property name="text">
-            <string>&quot;Sleepers&quot; n°</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0" colspan="2">
-          <widget class="QPushButton" name="btn_selectAcousticMesh">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Select acoustic mesh...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cbb_output">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRFs and the harmonic .med file result are expressed either in terms of velocity or acceleration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <item>
-            <property name="text">
-             <string>Velocity</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Acceleration</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="btn_selectSubstructures">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRF is extracted at each of the following mesh groups : &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;on each &amp;quot;Sleeper number&amp;quot; that is selected here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Select...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QRadioButton" name="rb_2D">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>2D mesh</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QRadioButton" name="rb_1D">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>1D mesh</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
+       </item>
+      </widget>
+      <widget class="QPushButton" name="btn_selectSubstructures">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>60</y>
+         <width>82</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRF is extracted at each of the following mesh groups : &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;on each &amp;quot;Sleeper number&amp;quot; that is selected here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Select...</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="rb_2D">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>170</y>
+         <width>71</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>2D mesh</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="rb_1D">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>170</y>
+         <width>71</width>
+         <height>18</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>1D mesh</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_45">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>100</y>
+         <width>149</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="whatsThis">
+        <string/>
+       </property>
+       <property name="text">
+        <string>Sleepers for MED/acoustic</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="txt_nSlpAcoustic">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>170</x>
+         <y>100</y>
+         <width>61</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of sleepers on each side of the load application point, for which the results will be written to a MED file.&lt;/p&gt;&lt;p&gt;Also, these sleepers are considered to contribute to the acoustic pressure on the acoustic grid points, if the acoustic calculation is requested. &lt;/p&gt;&lt;p&gt;Select &amp;quot;-1&amp;quot; for all sleepers.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;/!\&lt;/span&gt; This number has a huge influence on the simulation time if the acoustic calculation is done.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>-1</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </widget>
    <widget class="QListWidget" name="list_simu">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>550</x>
       <y>20</y>
       <width>131</width>
       <height>271</height>
@@ -1426,7 +1595,7 @@
    <widget class="QToolButton" name="btn_moveUp">
     <property name="geometry">
      <rect>
-      <x>673</x>
+      <x>683</x>
       <y>40</y>
       <width>27</width>
       <height>20</height>
@@ -1442,7 +1611,7 @@
    <widget class="QToolButton" name="btn_moveDown">
     <property name="geometry">
      <rect>
-      <x>673</x>
+      <x>683</x>
       <y>60</y>
       <width>27</width>
       <height>20</height>
@@ -1458,7 +1627,7 @@
    <widget class="QToolButton" name="btn_deleteSimu">
     <property name="geometry">
      <rect>
-      <x>673</x>
+      <x>683</x>
       <y>20</y>
       <width>27</width>
       <height>20</height>
@@ -1477,7 +1646,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>729</width>
+     <width>767</width>
      <height>23</height>
     </rect>
    </property>
@@ -1530,7 +1699,7 @@
   <tabstop>txt_nuMat1</tabstop>
   <tabstop>txt_nuMat2</tabstop>
   <tabstop>btn_sleeperMesh</tabstop>
-  <tabstop>txt_ESleeper</tabstop>
+  <tabstop>txt_E1Sleeper</tabstop>
   <tabstop>txt_nuSleeper</tabstop>
   <tabstop>txt_tanDSleeper</tabstop>
   <tabstop>txt_rhoSleeper</tabstop>

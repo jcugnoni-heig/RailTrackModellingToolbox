@@ -116,7 +116,9 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_rhoRail.setText(str(dictSimu['rhoRail']))
 
 		self.sleeperMesh = dictSimu['sleeperMesh']
-		self.txt_ESleeper.setText(str(dictSimu['ESleeper']))
+		self.txt_E1Sleeper.setText(str(dictSimu['E1Sleeper']))
+		self.txt_E2Sleeper.setText(str(dictSimu['E2Sleeper']))
+		self.txt_E3Sleeper.setText(str(dictSimu['E3Sleeper']))
 		self.txt_nuSleeper.setText(str(dictSimu['nuSleeper']))
 		self.txt_tanDSleeper.setText(str(dictSimu['tanDSleeper']))
 		self.txt_rhoSleeper.setText(str(dictSimu['rhoSleeper']))
@@ -506,18 +508,22 @@ class MultiSleeperModelGUI(QMainWindow):
 		
 		#
 		try:
-			ESleeper = float(self.txt_ESleeper.text())
+			E1Sleeper = float(self.txt_E1Sleeper.text())
+			E2Sleeper = float(self.txt_E2Sleeper.text())
+			E3Sleeper = float(self.txt_E3Sleeper.text())
 			nuSleeper = float(self.txt_nuSleeper.text())
 			tanDSleeper = float(self.txt_tanDSleeper.text())
 			rhoSleeper = float(self.txt_rhoSleeper.text())
-			if ESleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0:
+			if E1Sleeper <= 0 or E2Sleeper <= 0 or E3Sleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0:
 				QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
 				return
 		except:
 			QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
 			return
 			
-		dictSimu['ESleeper'] = ESleeper
+		dictSimu['E1Sleeper'] = E1Sleeper
+		dictSimu['E2Sleeper'] = E2Sleeper
+		dictSimu['E3Sleeper'] = E3Sleeper
 		dictSimu['nuSleeper'] = nuSleeper
 		dictSimu['tanDSleeper'] = tanDSleeper
 		dictSimu['rhoSleeper'] = rhoSleeper
@@ -662,6 +668,18 @@ class MultiSleeperModelGUI(QMainWindow):
 			return
 			
 		dictSimu['nModes'] = nModes
+
+		#
+		try:
+			cumulMassEffeUn = float(self.txt_cumulMassEffeUn.text())
+			if cumulMassEffeUn < 0 or cumulMassEffeUn > 1:
+				QMessageBox.information(self, 'Error', 'Please enter a correct total effective unit mass.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter a correct total effective unit mass.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['cumulMassEffeUn'] = cumulMassEffeUn
 		
 		#
 		try:
@@ -745,6 +763,18 @@ class MultiSleeperModelGUI(QMainWindow):
 		
 		self.selectedSubst = tmp
 		dictSimu['selectedSubstFRF'] = self.selectedSubst
+
+		#
+		try:
+			nSlpAcoustic = int(self.txt_nSlpAcoustic.text())
+			if nSlpAcoustic < -1 or nSlpAcoustic == 0:
+				QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
+			return
+		
+		dictSimu['nSlpAcoustic'] = nSlpAcoustic
 		
 		#
 		computeAcoustic = self.cb_computeAcoustic.isChecked()

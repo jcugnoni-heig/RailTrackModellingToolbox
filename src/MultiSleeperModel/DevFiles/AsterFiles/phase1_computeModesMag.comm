@@ -35,7 +35,9 @@ ERail = parameters['ERail']
 nuRail = parameters['nuRail']
 tanDRail = parameters['tanDRail']
 rhoRail = parameters['rhoRail']
-ESleeper = parameters['ESleeper']
+E1Sleeper = parameters['E1Sleeper']
+E2Sleeper = parameters['E2Sleeper']
+E3Sleeper = parameters['E3Sleeper']
 nuSleeper = parameters['nuSleeper']
 tanDSleeper = parameters['tanDSleeper']
 rhoSleeper = parameters['rhoSleeper']
@@ -527,9 +529,9 @@ if includeUSP:
     eta_USP = np.array([f_TDUSP(f) for f in allFreqs])
     AB_USP = GetAlphaBeta(allFreqsNP, eta_USP)
                   
-E_L=ESleeper
-E_N=20000
-E_T=20000
+E_L=E1Sleeper
+E_N=E3Sleeper
+E_T=E2Sleeper
 
 G_LN=E_L/2/(1+nuSleeper)
 G_LT=E_L/2/(1+nuSleeper)
@@ -539,7 +541,7 @@ NU_TN=nuSleeper
 NU_LN=nuSleeper
 NU_LT=nuSleeper
 
-# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL="231". See R4.01.02
+# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL. See R4.01.02
 slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(AMOR_ALPHA=AB_slprMat[0],
                                      AMOR_BETA=AB_slprMat[1],
                                      E_L=E_L,

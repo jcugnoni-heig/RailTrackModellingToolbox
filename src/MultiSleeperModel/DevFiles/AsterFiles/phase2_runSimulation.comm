@@ -40,7 +40,9 @@ ERail = parameters['ERail']
 nuRail = parameters['nuRail']
 tanDRail = parameters['tanDRail']
 rhoRail = parameters['rhoRail']
-ESleeper = parameters['ESleeper']
+E1Sleeper = parameters['E1Sleeper']
+E2Sleeper = parameters['E2Sleeper']
+E3Sleeper = parameters['E3Sleeper']
 nuSleeper = parameters['nuSleeper']
 tanDSleeper = parameters['tanDSleeper']
 rhoSleeper = parameters['rhoSleeper']
@@ -54,14 +56,14 @@ clampDampY = parameters['clampDampY']
 clampDampZ = parameters['clampDampZ']
 writeMED = parameters['writeMED']
 
-nSlpForAcoustic = 1 # /!\
-cumulX_mini = parameters['cumul_massEff']
+nSlpAcoustic = parameters['nSlpAcoustic']
+cumulX_mini = parameters['cumulMassEffeUn']
 cumulY_mini = cumulX_mini
 cumulZ_mini = cumulX_mini
 
-E_L=ESleeper
-E_N=20000
-E_T=20000
+E_L=E1Sleeper
+E_N=E3Sleeper
+E_T=E2Sleeper
 G_LN=E_L/2/(1+nuSleeper)
 G_LT=E_L/2/(1+nuSleeper)
 G_TN=E_N/2/(1+nuSleeper)
@@ -119,6 +121,9 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
         if cumulX > p_cumulX_mini:
             break
 
+    if cumulX < p_cumulX_mini:
+        print('Warning: the effective mass cumulation requested in X was ' + str(p_cumulX_mini) + '. The actual value obtained is ' + str(cumulX))
+
     listModesY = []
     cumulY = 0
     for mode in sortedModesY:
@@ -127,6 +132,9 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
         if cumulY > p_cumulY_mini:
             break
 
+    if cumulY < p_cumulY_mini:
+        print('Warning: the effective mass cumulation requested in Y was ' + str(p_cumulY_mini) + '. The actual value obtained is ' + str(cumulY))
+
     listModesZ = []
     cumulZ = 0
     for mode in sortedModesZ:
@@ -134,6 +142,9 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
         listModesZ.append(mode['no'])
         if cumulZ > p_cumulZ_mini:
             break
+
+    if cumulZ < p_cumulZ_mini:
+        print('Warning: the effective mass cumulation requested in Z was ' + str(p_cumulZ_mini) + '. The actual value obtained is ' + str(cumulZ))
 
     listModes = sorted(list(set(listModesX + listModesY + listModesZ)))
     if listModes == []:
@@ -210,82 +221,6 @@ def GetStaticModesList(p_vectPath, p_nSelModes, p_nRai1, p_nRai2, p_nSlp):
         listSleeper.append(1)
 
     return [listRails1, listRails2, listSleeper]
-
-
-# def GetStaticModesList(p_vectPath, p_nSelModes, p_nRai1, p_nRai2):
-# # Returns the lists of eigenmodes and interface modes to be used for trimming complete sets of modes
-#     with open(p_vectPath) as file:
-#         fileContent = file.read().splitlines()
-#     file.close()
-    
-#     # Rebuild the file content in an 2D array
-#     modeMag = []
-#     for line in fileContent:
-#         valListStr = line.split('\t')
-#         valListFlt = []
-#         for valStr in valListStr:
-#             try:
-#                 val=float(valStr)
-#             except:
-#                 continue
-                
-#             valListFlt.append(val)
-#         modeMag.append(valListFlt)
-        
-#     # Initiate lists (of lists)
-#     listRails1 = []
-#     listRails2 = []
-#     listSleeper = []
-    
-#     nMaEl = len(modeMag[0])
-#     for ii in range(nMaEl):
-#         listRails1.append([])
-#         listRails2.append([])
-#         listSleeper.append([])
-    
-#     # Get the mode lists once per macroelement
-#     for mael in range(nMaEl):
-#         vect = []
-#         for elem in modeMag:
-#             vect.append(elem[mael])
-    
-
-#         vect_sorted = sorted(vect, reverse=True)
-#         try:
-#             threshold = (vect_sorted[p_nSelModes-1] + vect_sorted[p_nSelModes])/2
-#         except:
-#             threshold = 0
-
-#         for i in range(len(vect)):
-#             if vect[i] > threshold:
-#                 if i<p_nRai1:
-#                     listRails1[mael].append(i+1)
-#                 elif i >= p_nRai1 and i < p_nRai1 + p_nRai2:
-#                     listRails2[mael].append(i + 1 -(p_nRai1))
-#                 elif i >= p_nRai1 + p_nRai2:
-#                     listSleeper[mael].append(i + 1 - (p_nRai1 + p_nRai2))
-
-#         if listRails1[mael] == []:
-#             listRails1[mael].append(1)
-#         if listRails2[mael] == []:
-#             listRails2[mael].append(1)
-#         if listSleeper[mael] == []:
-#             listSleeper[mael].append(1)
-    
-#     rai1 = []
-#     rai2 = []
-#     slp = []
-
-#     for mael in range(nMaEl):
-#         rai1 = rai1 + listRails1[mael]
-#         rai2 = rai2 + listRails2[mael]
-#         slp = slp + listSleeper[mael]
-
-#     rails1 = sorted(list(set(rai1)))
-#     rails2 = sorted(list(set(rai2)))
-#     sleeper = sorted(list(set(slp)))
-
-#     return [rails1, rails2, sleeper]
 
 
 def GetAlphaBeta(freqList, dampingList):
@@ -455,15 +390,14 @@ listSleeper = list(range(1,listSleeper[-1]+1))
 # but sleeper intf modes numbering is not. So to avoid missing some important sleeper modes, 
 # it is safer to keep all sleeper modes up to the largest which has been selected.
 
-print('Rail interface1 modes: ' + str(listRails1))
-print('Rail interface2 modes: ' + str(listRails2))
-print('Sleeper interface modes: ' + str(listSleeper))
-
 nModesRails_trim = max(listRails1[-1], listRails2[-1])
 nModesSleeper_trim = listSleeper[-1]
-listRails = list(set(listRails1 + listRails2))
+listRails = sorted(list(set(listRails1 + listRails2)))
 
-
+print('Rail interface1 modes: ' + str(listRails1))
+print('Rail interface2 modes: ' + str(listRails2))
+print('Selected rail interface modes: ' + str(listRails))
+print('Sleeper interface modes: ' + str(listSleeper))
 print(str(len(listEigenModes) + len(listRails)*2 + len(listSleeper)) + ' modes in total + 1 static compression mode')
 
 ######################################################
@@ -768,6 +702,11 @@ for gp in nodeGrps:
 # Acoustic parameters / functions definition
 # More comments available in the 3-sleeper model command file
 ######################################################
+if nSlpAcoustic == -1:
+    nSlpAcoustRange = range(nSlp)
+else:
+    nSlpAcoustRange = range(slpForce-nSlpAcoustic, slpForce+nSlpAcoustic)
+
 if computeAcoustic == True:
     c = 343.0
     rho = 1.21
@@ -1013,13 +952,7 @@ AB_padMat2 = GetAlphaBeta(allFreqsNP, eta_padMat2)
 if includeUSP:
     eta_USP = np.array([f_TDUSP(f) for f in allFreqs])
     AB_USP = GetAlphaBeta(allFreqsNP, eta_USP)
-                        
-# slprMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_slprMat[0],
-#                                 AMOR_BETA=AB_slprMat[1],
-#                                 E=ESleeper,
-#                                 NU=nuSleeper,
-#                                 RHO=rhoSleeper*1e-12))
-
+                    
 
 # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL="231". See R4.01.02
 slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(AMOR_ALPHA=AB_slprMat[0],
@@ -1349,7 +1282,8 @@ if computeAcoustic == True:
         velR = [None]*nSlp*2
         velI = [None]*nSlp*2
         ii = 0
-        for iElem in range(nSlp): # slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic
+
+        for iElem in nSlpAcoustRange: 
             for side in ['R', 'L']:
                 
                 resPhy = REST_SOUS_STRUC(RESU_GENE=harmGene,
@@ -1414,7 +1348,7 @@ if computeAcoustic == True:
             p_ballast_I = 0
             
             ii=0
-            for iElem in range(nSlp): # slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic
+            for iElem in nSlpAcoustRange: 
                 for side in ['R', 'L']: # in this section we deal with 1 particular macroelement
 
                     # Iterate over directions
@@ -1541,7 +1475,7 @@ t_ac = time.time() - t_ac0
 if writeMED:
     substructs2 = []
     # for i in range(nSlp):
-    for i in range(nSlp): # slpForce-nSlpForAcoustic, slpForce+nSlpForAcoustic
+    for i in nSlpAcoustRange:
         substructs2.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='TOUT'))
         substructs2.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='TOUT'))
                                 
@@ -1691,93 +1625,6 @@ fileFRF.close()
 
 
 ######################################################
-# Compute pad deformation 
-######################################################
-# remember to modify export files 1-4 (deform_bi.med) and frequencies for 4 bands
-# n = 11
-
-# meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(n*slpSpacing.0, 0, 0),)
-
-# padMod = AFFE_MODELE(MAILLAGE=meshPadR, AFFE=(_F(TOUT='OUI', PHENOMENE='MECANIQUE', MODELISATION='3D',),));
-
-# padMat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('hard'),
-                                  # MATER=(padMat1, )),
-                               # _F(GROUP_MA=('soft'),
-                                  # MATER=(padMat2, )),),
-                         # MAILLAGE=meshPadR,
-                         # MODELE=padMod,)
-
-# vmis_F = FORMULE(NOM_PARA=('EPXX', 'EPXX', 'EPZZ', 'EPXY', 'EPXZ', 'EPYZ'),
-                 # VALE='(2/9)**(1/2)*((EPXX-EPYY)**2+(EPYY-EPZZ)**2+(EPXX-EPZZ)**2+6*(EPXY**2+EPYZ**2+EPXZ**2))**(1/2)',)
-                   
-# vmis_CHF = CREA_CHAMP(AFFE=_F(GROUP_MA=('hard', 'soft'),
-                              # NOM_CMP=('X7'),
-                              # VALE_F=vmis_F),
-                      # MODELE=padMod,
-                      # OPERATION='AFFE',
-                      # TYPE_CHAM='NOEU_NEUT_F')
-                      
-
-
-
-
-# for freq in allFreqs:
-    # skel=DEFI_SQUELETTE(MODELE_GENE=modeGene, SOUS_STRUC=_F(NOM='elem' + str(n) + 'R', GROUP_MA=('hard','soft')));
-    # res=REST_SOUS_STRUC(RESU_GENE=harmGene, SQUELETTE=skel, FREQ=freq, NOM_CHAM='DEPL')
-    
-    # resProj = PROJ_CHAMP(MAILLAGE_1=skel, MAILLAGE_2=meshPadR, RESULTAT=res, NOM_CHAM='DEPL', FREQ=freq)                   
-    # resProj = CALC_CHAMP(reuse=resProj, RESULTAT=resProj, MODELE=padMod, CHAM_MATER=padMat, DEFORMATION=('EPSI_NOEU'))
-    
-    # chDepl = CREA_CHAMP(FREQ=freq,
-                          # NOM_CHAM='DEPL',
-                          # OPERATION='EXTR',
-                          # RESULTAT=resProj,
-                          # TYPE_CHAM='NOEU_DEPL_C')
-                          
-    # chDeplR = CREA_CHAMP(CHAM_GD=chDepl,
-                          # OPERATION='C2R',
-                          # PARTIE='REEL',
-                          # TYPE_CHAM='NOEU_DEPL_R')
-    
-    # cham = CREA_CHAMP(FREQ=freq,
-                          # NOM_CHAM='EPSI_NOEU',
-                          # OPERATION='EXTR',
-                          # RESULTAT=resProj,
-                          # TYPE_CHAM='NOEU_EPSI_C')
-
-    # chamR = CREA_CHAMP(CHAM_GD=cham,
-                          # OPERATION='C2R',
-                          # PARTIE='REEL',
-                          # TYPE_CHAM='NOEU_EPSI_R')
-
-    # vmis_CH = CREA_CHAMP(CHAM_F=vmis_CHF,
-                         # CHAM_PARA=(chamR),
-                         # OPERATION='EVAL',
-                         # TYPE_CHAM='NOEU_NEUT_R')
-
-    # if freq == allFreqs[0]:
-        # # resu = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmis_CH, FREQ=freq),);
-        # resu = CREA_RESU(OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmis_CH,MODELE=padMod, INST=freq),);
-        # resu2 = CREA_RESU(OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=chDeplR,MODELE=padMod, INST=freq),);   
-    # else:
-        # resu = CREA_RESU(reuse=resu, RESULTAT=resu, OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmis_CH,MODELE=padMod, INST=freq),);
-        # resu2 = CREA_RESU(reuse=resu2, RESULTAT=resu2, OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=chDeplR,MODELE=padMod, INST=freq),);   
-              
-    # DETRUIRE(CONCEPT=_F(NOM=(skel, res, resProj, cham, chamR, vmis_CH, chDepl, chDeplR)))
-
-
-# vmisMax = CREA_CHAMP(TYPE_CHAM='NOEU_NEUT_R', OPERATION='EXTR',RESULTAT=resu,NOM_CHAM='UT01_NOEU',TYPE_MAXI='MAXI');
-# resu = CREA_RESU(reuse=resu, RESULTAT=resu, OPERATION='AFFE',TYPE_RESU='EVOL_ELAS',NOM_CHAM='UT01_NOEU',AFFE=_F(CHAM_GD=vmisMax, MODELE=padMod, INST=0.0),);
-
-# IMPR_RESU(FORMAT='MED',
-          # RESU=_F(RESULTAT=resu, PARTIE='REEL', GROUP_MA=('hard','soft'), NOM_RESU_MED='inva2'),
-          # UNITE=91)
-          
-# IMPR_RESU(FORMAT='MED',
-          # RESU=_F(RESULTAT=resu2, PARTIE='REEL', GROUP_MA=('hard','soft'), NOM_RESU_MED='depl'),
-          # UNITE=91)
-
-######################################################
 # Write result files (MED)
 ######################################################
 if writeMED:
@@ -1786,6 +1633,6 @@ if writeMED:
             UNITE=82)
 
 if computeAcoustic == True:
-    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies, ' + str(nSlp) + ' sleepers)') # nSlpForAcoustic
+    print('ACOUSTIC COMP : ' + str(t_ac) + ' (' + str(nNodesGrid) + 'nodes, ' + str(len(allFreqs)) + ' frequencies, ' + str(len(nSlpAcoustRange)) + ' sleepers)')
           
 FIN()

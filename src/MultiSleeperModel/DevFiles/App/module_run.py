@@ -50,6 +50,11 @@ def RunPhase1(p_dictSimu):
 	if code != 0:
 		return code
 	
+	try:
+		shutil.copyfile(messageFile, os.path.join(simFolder, 'message_phase1_b1.mess'))
+	except:
+		return "Could not copy message_phase1_b1.mess to Phase 1 working directory."
+
 	return 0
 	
 def RunPhase2(p_dictSimu):
@@ -75,6 +80,11 @@ def RunPhase2(p_dictSimu):
 	if code != 0:
 		return code
 	
+	try:
+		shutil.copyfile(messageFile, os.path.join(simFolder, 'Outputs', 'message_phase2_b1.mess'))
+	except:
+		return "Could not copy message_phase2_b1.mess to Phase 2 working directory."
+
 	return 0
 		
 def PrepareFilesPhase1(p_dictSimu):
@@ -407,8 +417,7 @@ def SaveBaseFiles(p_saveBaseDir, p_simFolder, p_nJobs):
 		return "Phase 1: impossible to copy " + os.path.join(p_simFolder, 'modesNumber.py') + " to " + os.path.join(p_saveBaseDir, 'modesNumber.py') + "."
 	
 	done = False
-	for jobNo in [round(p_nJobs/2), 1]:
-		print('jobNo = ' + str(jobNo))
+	for jobNo in [int(round(p_nJobs/2)), 1]:
 		dir1 = os.path.join(p_simFolder, 'base1_b' + str(jobNo))
 		dir2 = os.path.join(p_saveBaseDir, 'base1_b' + str(jobNo))
 
@@ -417,7 +426,6 @@ def SaveBaseFiles(p_saveBaseDir, p_simFolder, p_nJobs):
 		
 		try:
 			shutil.copytree(dir1, dir2)
-			print('done')
 			done = True
 			break
 		except:
