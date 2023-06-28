@@ -94,7 +94,7 @@ def GetAlphaBeta(freqList, dampingList):
 # Trim eigenmodes and define min number of interface modes to compute
 ######################################################
 t0=time.time()
-freqBands1 = [0] + list(range(2000, int(maxFreq) + 1, min(500, int(maxFreq))))
+freqBands1 = [0] + list(range(4500, int(maxFreq) + 1, min(1000, int(maxFreq))))
 
 if freqBands1[-1] != int(maxFreq):
     freqBands1.append(int(maxFreq))
@@ -608,8 +608,8 @@ else:
 ######################################################
 # Compute elementary matrices & assemble (K, M and vect are independent of damping)
 ######################################################  
-nodeStiff_Y = f_EBal(meanFreqGlob)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
-nodeStiff_XZ = f_EBal(meanFreqGlob)/2/(1+nuBal)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
+nodeStiff_Y = f_EBal(meanFreqGlob)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
+nodeStiff_XZ = f_EBal(meanFreqGlob)/2/(1+nuBal)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
 nodeAmo_Y = nodeStiff_Y*f_TDBal(meanFreqJob)/(2*math.pi*meanFreqJob)
 nodeAmo_XZ = nodeStiff_XZ*f_TDBal(meanFreqJob)/(2*math.pi*meanFreqJob)
 
@@ -813,10 +813,15 @@ bamo1=DEFI_BASE_MODALE(reuse=bamo1,
                        RITZ=(_F(BASE_MODALE=bamo1),
                              _F(MODE_INTF = modStaS, )),
                        NUME_REF=num1)
-    
+
+eigenModesToPrint = min(200, nEigen)
+numordre = list(range(1, eigenModesToPrint + 1))
+numordre.extend(list(range(nEigen + 1, nEigen + 2*nModesRails + nModesSleeper + 1)))
+
 try:
+    print('Printing ' + str(eigenModesToPrint) + ' eigenmodes + 2*' + str(nModesRails) + ' rail intf modes + ' + str(nModesSleeper) + ' sleeper intf modes to MED file.')
     IMPR_RESU(FORMAT='MED',
-              RESU=_F(RESULTAT=bamo1),
+              RESU=_F(RESULTAT=bamo1, NUME_ORDRE=numordre),
               UNITE=82)
 except:
     pass

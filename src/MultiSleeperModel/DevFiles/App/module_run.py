@@ -39,6 +39,12 @@ def RunPhase1(p_dictSimu):
 	debugMode = p_dictSimu['debugPh1']
 	
 	code = RunMultiJobs(cwd, simFolder, 'phase1_computeModesMag_b', nJobs, messageFile, debugMode)
+
+	try:
+		shutil.copyfile(messageFile, os.path.join(simFolder, 'message_phase1_b1.mess'))
+	except:
+		return "Could not copy message_phase1_b1.mess to Phase 1 working directory."
+
 	if code != 0:
 		return code
 		
@@ -49,11 +55,6 @@ def RunPhase1(p_dictSimu):
 	code = DeletePycFiles(p_dictSimu['appPath'])
 	if code != 0:
 		return code
-	
-	try:
-		shutil.copyfile(messageFile, os.path.join(simFolder, 'message_phase1_b1.mess'))
-	except:
-		return "Could not copy message_phase1_b1.mess to Phase 1 working directory."
 
 	return 0
 	
@@ -69,6 +70,12 @@ def RunPhase2(p_dictSimu):
 	debugMode = p_dictSimu['debugPh2']
 		
 	code = RunMultiJobs(cwd, simFolder, 'phase2_runSimulation_b', nJobs, messageFile, debugMode)
+
+	try:
+		shutil.copyfile(messageFile, os.path.join(simFolder, 'Outputs', 'message_phase2_b1.mess'))
+	except:
+		return "Could not copy message_phase2_b1.mess to Phase 2 working directory."
+
 	if code != 0:
 		return code
 	
@@ -79,11 +86,6 @@ def RunPhase2(p_dictSimu):
 	code = DeletePycFiles(cwd)
 	if code != 0:
 		return code
-	
-	try:
-		shutil.copyfile(messageFile, os.path.join(simFolder, 'Outputs', 'message_phase2_b1.mess'))
-	except:
-		return "Could not copy message_phase2_b1.mess to Phase 2 working directory."
 
 	return 0
 		
@@ -590,6 +592,12 @@ def PostProcessResults(p_dictSimu):
 		debugMode = p_dictSimu['debugPh2']
 
 		code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)
+
+		try:
+			shutil.copyfile(messageFile, os.path.join(fullDirOutput, 'message_concatMedFiles.mess'))
+		except:
+			return "Could not copy message_concatMedFiles.mess to Phase 2 working directory."
+
 		if code != 0:
 			return code
 		

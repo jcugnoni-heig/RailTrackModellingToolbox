@@ -1,0 +1,57 @@
+P actions make_etude
+P debug nodebug
+P facmtps 1
+P memjob 30783488
+P memory_limit 30062.0
+P mode interactif
+P mpi_nbcpu 1
+P mpi_nbnoeud 1
+P ncpus 24
+P nomjob Impulse
+P origine AsterStudy 0.11
+P rep_trav /tmp/caelinux-caelinux-interactif_40111
+P server localhost
+P time_limit 3600900.0
+P tpsjob 60016
+P version stable
+A memjeveux 3757.75
+A tpmax 3600900.0
+
+F comm impulse.comm D  1
+F mmed unitCellWithClamps.med D  2
+F libr parameters.json D  3
+F libr GeneralizedMaxwell.mfront D  10
+F libr E_mx1.csv D  20
+F libr poisson_mx1.csv D  21
+F libr density_mx1.csv D  22
+F libr K_mx1.csv D  23
+F libr G_mx1.csv D  24
+F libr tau_mx1.csv D  25
+F libr E_mx2.csv D  26
+F libr poisson_mx2.csv D  27
+F libr density_mx2.csv D  28
+F libr K_mx2.csv D  29
+F libr G_mx2.csv D  30
+F libr tau_mx2.csv D  31
+F libr sleeper_E.csv D  32
+F libr sleeper_Nu.csv D  33
+F libr sleeper_Rho.csv D  34
+F libr sleeper_AmHyst.csv D  35
+F libr rail_E.csv D  36
+F libr rail_Nu.csv D  37
+F libr rail_Rho.csv D  38
+F libr rail_AmHyst.csv D  39
+F libr ballast_E.csv D  40
+F libr ballast_Nu.csv D  41
+F libr ballast_Rho.csv D  42
+F libr ballast_AmHyst.csv D  43
+__USP_E__
+__USP_Nu__
+__USP_Rho__
+__USP_AmHyst__
+
+F mess messages/impulse.mess R  6
+F libr Resultats_impulse.txt R  40
+F libr Resultats_ballast_impulse_INVAR.txt R  8
+F libr Resultats_ballast_impulse_SGIM.txt R  9
+F libr resultImpulse.res.med R  81

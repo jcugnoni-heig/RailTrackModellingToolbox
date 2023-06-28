@@ -398,7 +398,7 @@ print('Rail interface1 modes: ' + str(listRails1))
 print('Rail interface2 modes: ' + str(listRails2))
 print('Selected rail interface modes: ' + str(listRails))
 print('Sleeper interface modes: ' + str(listSleeper))
-print(str(len(listEigenModes) + len(listRails)*2 + len(listSleeper)) + ' modes in total + 1 static compression mode')
+print(str(len(listEigenModes) + len(listRails)*2 + len(listSleeper)) + ' modes in total')
 
 ######################################################
 # Get list of frequencies from freq files
@@ -705,7 +705,7 @@ for gp in nodeGrps:
 if nSlpAcoustic == -1:
     nSlpAcoustRange = range(nSlp)
 else:
-    nSlpAcoustRange = range(slpForce-nSlpAcoustic, slpForce+nSlpAcoustic)
+    nSlpAcoustRange = range(slpForce-nSlpAcoustic-1, slpForce+nSlpAcoustic-1)
 
 if computeAcoustic == True:
     c = 343.0
@@ -783,6 +783,9 @@ if computeAcoustic == True:
 
     # Acoustic mesh grid
     grid = LIRE_MAILLAGE(FORMAT='MED', UNITE=19,VERI_MAIL=_F(VERIF='NON'),)
+
+    gridTransX = 99.5*slpSpacing + 55*slpSpacing/600 - (99.5*600 + 55)
+    grid = MODI_MAILLAGE(reuse=grid, MAILLAGE=grid, TRANSLATION=[gridTransX, 0, 0],)
 
     gridMod = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
                                  PHENOMENE='MECANIQUE',
@@ -1022,8 +1025,8 @@ else:
 # Compute elementary matrices & assemble (K, M and vect are independent of damping)
 ######################################################
 
-nodeStiff_Y = f_EBal(meanFreq)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
-nodeStiff_XZ = f_EBal(meanFreq)/2/(1+0.3)*(coefSlpBotArea*A_slpBot)/hBal/nNodesBal
+nodeStiff_Y = f_EBal(meanFreq)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
+nodeStiff_XZ = f_EBal(meanFreq)/2/(1+0.3)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
 nodeAmo_Y = nodeStiff_Y*f_TDBal(meanFreq)/(2*pi*meanFreq)
 nodeAmo_XZ = nodeStiff_XZ*f_TDBal(meanFreq)/(2*pi*meanFreq)
 
@@ -1481,14 +1484,14 @@ if writeMED:
                                 
     squel=DEFI_SQUELETTE(MODELE_GENE=modeGene,
                         SOUS_STRUC=substructs2);
-            
+
     harmGlob=REST_SOUS_STRUC(RESU_GENE=harmGene, 
                             SQUELETTE=squel,
-                            NOM_CHAM=FRFtype,)
+                            NOM_CHAM='DEPL',)
 
     for freq in allFreqs:
         out = CREA_CHAMP(FREQ=freq,
-                            NOM_CHAM=FRFtype,
+                            NOM_CHAM='DEPL',
                             OPERATION='EXTR',
                             RESULTAT=harmGlob,
                             TYPE_CHAM='NOEU_DEPL_C')
@@ -1545,7 +1548,9 @@ pyMesh.FromAster('mesh')
 
 # FRFgroups = ['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']
 # FRFgroups = ['Ra_Y', 'Ra_Z', 'Rb_Y', 'Rb_Z', 'Ss_Y', ]
-FRFgroups = ['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z', 'Sc_Y', 'Ss_Y']
+# FRFgroups = ['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z', 'Sc_Y', 'Ss_Y']
+FRFgroups = ['nRai1_Y', 'nRai1_Z', 'nRai2_Y', 'nRai2_Z', 'nRai3_Y', 'nRai3_Z', 'nRai4_Y', 'nRai4_Z', 'nSlp1_Y', 'nSlp2_Y', 'nSlp3_Y', 'nSlp4_Y', 'nSlp5_Y', 'nSlp6_Y', 'nSlp7_Y', 'nSlp8_Y', ]
+# FRFgroups.extend(['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z'])
 FRFs = [None]*len(selectedSubstFRF)*len(FRFgroups)
 
 if FRFtype == 'VITE':
@@ -1580,8 +1585,13 @@ for substr in selectedSubstFRF:
 
     for grp in FRFgroups: # grp = 'Ra_Y' for example
         gpNode = pyMesh.gno.get(grp)
-        # print('gpNode is ')
-        # print(gpNode)
+        
+        try:
+            for node in gpNode:
+                break 
+        except:
+            print('GROUP OF NODE ' + grp + ' NOT FOUND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            continue
         
         values = []
         for node in gpNode: # node = 18673 for example
@@ -1593,11 +1603,6 @@ for substr in selectedSubstFRF:
                 values[-1].append(fMagn(freq))
                 
             DETRUIRE(CONCEPT=_F(NOM=(f, fMagn)))
-    
-        # averageFRF = np.array([0.0]*len(allFreqs))
-        # for vect in values:
-            # averageFRF += np.array(vect)
-        # averageFRF /= len(values)
         
         maxFRF = [0.0]*len(allFreqs)
         for vect in values:
@@ -1615,7 +1620,10 @@ for freq in allFreqs:
     FRFdataline = [str(freq)]
     
     for frf in FRFs:
-        FRFdataline.append(str(frf(freq)*normCoef))
+        if frf is None:
+            FRFdataline.append('NaN')
+        else:
+            FRFdataline.append(str(frf(freq)*normCoef))
 
     fileFRFContent += '\t'.join(FRFdataline) + '\n'
 

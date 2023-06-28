@@ -1,67 +1,27 @@
 P actions make_etude
-P aster_root /opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180
-P consbtc oui
-P corefilesize unlimited
-P cpresok RESNOOK
 P debug nodebug
-P display lmafpc22:0.0
-P facmtps 1
-P follow_output yes
-P lang en
-P mclient lmafpc22
 P memjob 8255488
 P memory_limit 8062.0
 P mode interactif
 P mpi_nbcpu 1
 P mpi_nbnoeud 1
-P nbmaxnook 5
-P ncpus 12
+P ncpus 4
 P noeud localhost
-P nomjob sensitivityAnalysis
-P origine ASTK 2017.0
-P platform Linux64
-P profastk cae@lmafpc22:/home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/Props_Identification.astk
-P protocol_copyfrom asrun.plugins.server.SCPServer
-P protocol_copyto asrun.plugins.server.SCPServer
-P protocol_exec asrun.plugins.server.SSHServer
-P proxy_dir /tmp
+P nomjob sleeperPropsID
 P rep_trav /tmp/cae-caesrv1-interactif_106001
 P serveur localhost
-P soumbtc oui
 P time_limit 3600900.0
 P tpsjob 60016
-P uclient cae
-P username cae
 P version stable
-A args 
 A memjeveux 1007.75
 A tpmax 3600900.0
-F comm /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/Props_Identification.comm D  1
-F mmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/Input/sleeperB9160E2.med D  2
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/Input/Initial_properties.txt D  36
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/Input/Experimental_eigenfrequencies.txt D  37
-F mess /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/message/Props_Identification.mess R  6
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_Nominal.txt R  20
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_EL.txt R  21
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_EN.txt R  22
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_ET.txt R  23
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_GLN.txt R  24
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_GLT.txt R  25
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_GTN.txt R  26
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_NULN.txt R  27
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_NULT.txt R  28
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_NUTN.txt R  29
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/eigenFrequencies_VF.txt R  30
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/matrix.txt R  38
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/results_summary.txt R  39
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_Nominal.res.med R  80
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_EL.res.med R  81
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_EN.res.med R  82
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_ET.res.med R  83
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_GLN.res.med R  84
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_GLT.res.med R  85
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_GTN.res.med R  86
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_NULN.res.med R  87
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_NULT.res.med R  88
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_NUTN.res.med R  89
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PropertiesIdentification/Sleepers/results/resultSensitivityAnalysis_VF.res.med R  90
+
+F comm Props_Identification.comm D  1
+F mmed Input/sleeperB9160E2.med D  2
+F libr Input/parameters.json D  3
+
+F rmed Results/num_modes.res.med R  80
+F libr Results/num_modes.txt R  81
+F libr Results/tabModesAster.txt R  82
+F libr Results/num_modes.json R  83
+F mess message/Props_Identification.mess R  6

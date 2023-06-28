@@ -1,0 +1,327 @@
+#_____________________________Ballast____________________________
+#|             Rail 1                          Rail 2            |
+#|             |   |                           |   |             |         
+#|    _________|   |_________Sleeper_1_________|   |_________    |         
+#|   |         |   |                           |   |         |   |         
+#|   |  Pad 1->|   |       Z<----.             |   |<-Pad 2  |   |         
+#|   |_________|   |_____________|_____________|   |_________|   |          
+#|             |   |             |             |   |             |
+#|             |   |             |             |   |             |
+#|             |   |            \/             |   |             |
+#|             |   |            X              |   |             |
+#|             |   |                           |   |             |
+#|             |   |                           |   |             |
+#|    _________|   |_________Sleeper_2_________|   |_________    |
+#|   |         |   |                           |   |         |   |
+#|   |  Pad 3->|   |                           |   |<-Pad 4  |   |
+#|   |_________|   |___________________________|   |_________|   |
+#|             |   |                           |   |             |
+#|             |   |                           |   |             |
+#|             |   |                           |   |             |
+#|             |   |                           |   |             |
+#|             |   |                           |   |             |
+#|    _________|   |_________Sleeper_3_________|   |_________    |
+#|   |         |   |                           |   |         |   |
+#|   |  Pad 5->|   |                           |   |<-Pad 6  |   |
+#|   |_________|   |___________________________|   |_________|   |
+#|             |   |                           |   |             |
+#|             |   |                           |   |             |
+#|             |___|                           |___|             |
+#|_______________________________________________________________|
+
+import json
+import math
+
+DEBUT(LANG='EN')
+
+###################################
+# Import JSON parameters
+###################################
+with open('fort.7', 'r') as f:
+    txt = f.read()
+f.close()
+parameters = json.loads(txt)
+
+USP_on = parameters['USP_on']
+slpSpacing = parameters['slpSpacing']
+
+#slpSpacing = 600
+#slpSpacing = distance or 600
+tiltAngle_rad = -math.atan(1/40.0)
+tiltAngle_deg = tiltAngle_rad*180/math.pi
+padThickness = 7
+halfDistBtwnRails = 757.54
+USPthickness = 8.5
+
+ballastXOffset = slpSpacing 
+ballastYOffset = -90
+
+sleeper2XOffset = slpSpacing
+sleeper3XOffset = 2*slpSpacing 
+
+padYOffset = 214.0       
+pad3XOffset = slpSpacing   
+pad4XOffset = slpSpacing   
+pad5XOffset = 2*slpSpacing  
+pad6XOffset = 2*slpSpacing  
+
+railXOffset = slpSpacing 
+railYOffset = padYOffset + padThickness*math.cos(tiltAngle_rad)
+
+
+###################################
+# Sleeper1
+###################################
+
+slp1 = LIRE_MAILLAGE(UNITE=4)
+
+###################################
+# Sleeper2
+###################################
+
+slp2 = LIRE_MAILLAGE(UNITE=4)
+
+slp2 = MODI_MAILLAGE(reuse=slp2,
+                     MAILLAGE=slp2,
+                     TRANSLATION=(sleeper2XOffset, 0.0, 0.0),
+)
+
+comb1 = ASSE_MAILLAGE(MAILLAGE_1=slp1,
+                      MAILLAGE_2=slp2,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Sleeper3
+###################################
+
+slp3 = LIRE_MAILLAGE(UNITE=4)
+
+slp3 = MODI_MAILLAGE(reuse=slp3,
+                     MAILLAGE=slp3,
+                     TRANSLATION=(sleeper3XOffset, 0.0, 0.0),
+)
+
+comb2 = ASSE_MAILLAGE(MAILLAGE_1=comb1,
+                      MAILLAGE_2=slp3,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Pad1 (on sleeper1 right)
+###################################
+
+pad1 = LIRE_MAILLAGE(UNITE=2)
+
+pad1 = MODI_MAILLAGE(reuse=pad1,
+                     MAILLAGE=pad1,
+                     ROTATION=_F(ANGLE=tiltAngle_deg, 
+                                 POIN_1=(0.0, 0.0, 0.0), 
+                                 POIN_2=(1000.0, 0.0, 0.0)))
+
+
+pad1 = MODI_MAILLAGE(reuse=pad1,
+                     MAILLAGE=pad1,
+                     TRANSLATION=(0.0, padYOffset, halfDistBtwnRails),
+)
+
+
+
+comb3 = ASSE_MAILLAGE(MAILLAGE_1=comb2,
+                      MAILLAGE_2=pad1,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Pad2 (on sleeper1 left)
+###################################
+
+pad2 = LIRE_MAILLAGE(UNITE=2)
+
+pad2 = MODI_MAILLAGE(reuse=pad2,
+                     MAILLAGE=pad2,
+                     ROTATION=_F(ANGLE=-tiltAngle_deg, 
+                                 POIN_1=(0.0, 0.0, 0.0), 
+                                 POIN_2=(1000.0, 0.0, 0.0)))
+
+pad2 = MODI_MAILLAGE(reuse=pad2,
+                     MAILLAGE=pad2,
+                     TRANSLATION=(0.0, padYOffset, -halfDistBtwnRails),
+)
+
+comb4 = ASSE_MAILLAGE(MAILLAGE_1=comb3,
+                      MAILLAGE_2=pad2,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Pad3 (on sleeper2 right)
+###################################
+
+pad3 = LIRE_MAILLAGE(UNITE=2)
+
+pad3 = MODI_MAILLAGE(reuse=pad3,
+                     MAILLAGE=pad3,
+                     ROTATION=_F(ANGLE=tiltAngle_deg, 
+                                 POIN_1=(0.0, 0.0, 0.0), 
+                                 POIN_2=(1000.0, 0.0, 0.0)))
+
+pad3 = MODI_MAILLAGE(reuse=pad3,
+                     MAILLAGE=pad3,
+                     TRANSLATION=(pad3XOffset, padYOffset, halfDistBtwnRails),)
+
+
+comb5 = ASSE_MAILLAGE(MAILLAGE_1=comb4,
+                      MAILLAGE_2=pad3,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Pad4 (on sleeper2 left)
+###################################
+
+pad4 = LIRE_MAILLAGE(UNITE=2)
+
+pad4 = MODI_MAILLAGE(reuse=pad4,
+                     MAILLAGE=pad4,
+                     ROTATION=_F(ANGLE=-tiltAngle_deg, 
+                                 POIN_1=(0.0, 0.0, 0.0), 
+                                 POIN_2=(1000.0, 0.0, 0.0)))
+
+pad4 = MODI_MAILLAGE(reuse=pad4,
+                     MAILLAGE=pad4,
+                     TRANSLATION=(pad4XOffset, padYOffset, -halfDistBtwnRails),)
+
+comb6 = ASSE_MAILLAGE(MAILLAGE_1=comb5,
+                      MAILLAGE_2=pad4,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Pad5 (on sleeper3 right)
+###################################
+
+pad5 = LIRE_MAILLAGE(UNITE=2)
+
+pad5 = MODI_MAILLAGE(reuse=pad5,
+                     MAILLAGE=pad5,
+                     ROTATION=_F(ANGLE=tiltAngle_deg, 
+                                 POIN_1=(0.0, 0.0, 0.0), 
+                                 POIN_2=(1000.0, 0.0, 0.0)))
+
+pad5 = MODI_MAILLAGE(reuse=pad5,
+                     MAILLAGE=pad5,
+                     TRANSLATION=(pad5XOffset, padYOffset, halfDistBtwnRails),)
+
+comb7 = ASSE_MAILLAGE(MAILLAGE_1=comb6,
+                      MAILLAGE_2=pad5,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Pad6 (on sleeper3 left)
+###################################
+
+pad6 = LIRE_MAILLAGE(UNITE=2)
+
+pad6 = MODI_MAILLAGE(reuse=pad6,
+                     MAILLAGE=pad6,
+                     ROTATION=_F(ANGLE=-tiltAngle_deg, 
+                                 POIN_1=(0.0, 0.0, 0.0), 
+                                 POIN_2=(1000.0, 0.0, 0.0)))
+
+pad6 = MODI_MAILLAGE(reuse=pad6,
+                     MAILLAGE=pad6,
+                     TRANSLATION=(pad6XOffset, padYOffset, -halfDistBtwnRails),)
+
+comb8 = ASSE_MAILLAGE(MAILLAGE_1=comb7,
+                      MAILLAGE_2=pad6,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Rail1 (right side)
+###################################
+
+rail1 = LIRE_MAILLAGE(UNITE=5)
+
+rail1 = MODI_MAILLAGE(reuse=rail1,
+                      MAILLAGE=rail1,
+                      ROTATION=_F(ANGLE=tiltAngle_deg, 
+                                  POIN_1=(0.0, 0.0, 0.0), 
+                                  POIN_2=(1000.0, 0.0, 0.0)))
+
+rail1 = MODI_MAILLAGE(reuse=rail1,
+                     MAILLAGE=rail1,
+                     TRANSLATION=(railXOffset, railYOffset, halfDistBtwnRails),)
+
+comb9 = ASSE_MAILLAGE(MAILLAGE_1=comb8,
+                      MAILLAGE_2=rail1,
+                      OPERATION='SUPERPOSE')
+
+###################################
+# Rail2 (left side)
+###################################
+
+rail2 = LIRE_MAILLAGE(UNITE=5)
+
+rail2 = MODI_MAILLAGE(reuse=rail2,
+                      MAILLAGE=rail2,
+                      ROTATION=_F(ANGLE=-tiltAngle_deg, 
+                                  POIN_1=(0.0, 0.0, 0.0), 
+                                  POIN_2=(1000.0, 0.0, 0.0)))
+
+rail2 = MODI_MAILLAGE(reuse=rail2,
+                      MAILLAGE=rail2,
+                      TRANSLATION=(railXOffset, railYOffset, -halfDistBtwnRails),)
+
+comb10 = ASSE_MAILLAGE(MAILLAGE_1=comb9,
+                                 MAILLAGE_2=rail2,
+                                 OPERATION='SUPERPOSE')
+
+###################################
+# USPs
+###################################
+if USP_on:
+  USP1 = LIRE_MAILLAGE(UNITE=10)
+  USP2 = LIRE_MAILLAGE(UNITE=10)
+  USP2 = MODI_MAILLAGE(reuse=USP2, MAILLAGE=USP2, TRANSLATION=(slpSpacing, 0, 0.0),)
+  USP3 = LIRE_MAILLAGE(UNITE=10)
+  USP3 = MODI_MAILLAGE(reuse=USP3, MAILLAGE=USP3, TRANSLATION=(2*slpSpacing, 0, 0.0),)
+
+  comb10 = MODI_MAILLAGE(reuse=comb10, MAILLAGE=comb10, TRANSLATION=(0, USPthickness, 0.0),)
+  
+  comb11 = ASSE_MAILLAGE(MAILLAGE_1=comb10,
+                                  MAILLAGE_2=USP1,
+                                  OPERATION='SUPERPOSE')
+  
+  comb12 = ASSE_MAILLAGE(MAILLAGE_1=comb11,
+                                  MAILLAGE_2=USP2,
+                                  OPERATION='SUPERPOSE')
+  
+  comb13 = ASSE_MAILLAGE(MAILLAGE_1=comb12,
+                                  MAILLAGE_2=USP3,
+                                  OPERATION='SUPERPOSE')
+
+
+###################################
+# ballast
+###################################
+
+ballast = LIRE_MAILLAGE(UNITE=3)
+
+ballast = MODI_MAILLAGE(reuse=ballast,
+                        MAILLAGE=ballast,
+                        TRANSLATION=(ballastXOffset, ballastYOffset, 0.0),)
+
+if USP_on:
+  unitCell = ASSE_MAILLAGE(MAILLAGE_1=comb13,
+                                  MAILLAGE_2=ballast,
+                                  OPERATION='SUPERPOSE')
+else:
+  unitCell = ASSE_MAILLAGE(MAILLAGE_1=comb10,
+                                  MAILLAGE_2=ballast,
+                                  OPERATION='SUPERPOSE')
+
+
+###################################
+# Print resulting mesh
+###################################                      
+
+IMPR_RESU(RESU=_F(MAILLAGE=unitCell,
+                  TOUT='OUI'),
+          UNITE=80)
+
+FIN()
