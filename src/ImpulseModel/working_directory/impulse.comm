@@ -50,14 +50,16 @@ model = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
 
 elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_L',
                                       GROUP_MA=('edgeaa','edgeab', 'edgeba', 'edgebb', 'edgeca', 'edgecb', 'edgeda', 'edgedb', 'edgeea', 'edgeeb', 'edgefa', 'edgefb', 'edgega', 'edgegb', 'edgeha', 'edgehb', 'edgeia', 'edgeib', 'edgeja', 'edgejb', 'edgeka', 'edgekb', 'edgela', 'edgelb', ),
-                                      VALE=(stiff_X, stiff_Y, stiff_Z)    # Stiffness of the clamps
+                                      VALE=(stiff_X/2, stiff_Y/2, stiff_Z/2)    # Stiffness of the clamps
                                      ),
                                    _F(CARA='A_T_D_L',
                                       GROUP_MA=('edgeaa','edgeab', 'edgeba', 'edgebb', 'edgeca', 'edgecb', 'edgeda', 'edgedb', 'edgeea', 'edgeeb', 'edgefa', 'edgefb', 'edgega', 'edgegb', 'edgeha', 'edgehb', 'edgeia', 'edgeib', 'edgeja', 'edgejb', 'edgeka', 'edgekb', 'edgela', 'edgelb',),
-                                      VALE=(damp_X, damp_Y, damp_Z)    # Damping of the clamps
+                                      VALE=(damp_X/2, damp_Y/2, damp_Z/2)    # Damping of the clamps
                                      ),
                                   ),
+                          MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', 'sleeper0', 'sleeper1', )),
                           MODELE=model)
+
 
 ###################################
 # Ballast fixed to ground
@@ -301,7 +303,12 @@ with open('fort.31') as fp:
 
 with open('fort.32') as fp: 
 			Lines = fp.readlines()
-			slp_E = float(Lines[0].split('\\')[0])
+			slp_E1 = float(Lines[0].split('\r')[0])
+			slp_E2 = float(Lines[1].split('\r')[0])
+			slp_E3 = float(Lines[2].split('\r')[0])
+			print('slp E1 ' + str(slp_E1))
+			print('slp E2 ' + str(slp_E2))
+			print('slp E3 ' + str(slp_E3))
 
 with open('fort.33') as fp: 
 			Lines = fp.readlines()
@@ -423,11 +430,18 @@ padsoft = DEFI_MATERIAU(ELAS=_F(E=E_mx2, NU=nu_mx2, RHO=rho_mx2),
                                                  tau1_mx2,tau2_mx2,tau3_mx2,tau4_mx2,)),
                         )
 
-
-slpMx = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=slp_Am,
-                                E=slp_E,
-                                NU=slp_Nu,
-                                RHO=slp_Rho))
+# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL. See R4.01.02
+slpMx = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=slp_E1,
+                                     E_N=slp_E3,
+                                     E_T=slp_E2,
+                                     G_LN=slp_E1/2/(1+slp_Nu),
+                                     G_LT=slp_E1/2/(1+slp_Nu),
+                                     G_TN=slp_E3/2/(1+slp_Nu),
+                                     NU_LN=slp_Nu,
+                                     NU_LT=slp_Nu,
+                                     NU_TN=slp_Nu,
+                                     AMOR_HYST=slp_Am,
+                                     RHO=slp_Rho))
 
 
 balMx = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=bal_Am,
@@ -571,8 +585,8 @@ Mimp=DEFI_FONCTION(NOM_PARA='INST',
                    INFO=2,TITRE='Mimp',
                    PROL_DROITE='CONSTANT',);
 
-tsteps = 2 # 101
-tFin = 0.005 # 0.1
+tsteps = 101
+tFin = 0.1
 
 time = DEFI_LIST_REEL(DEBUT=0.0,
                       INFO=2,

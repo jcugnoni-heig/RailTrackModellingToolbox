@@ -24,14 +24,14 @@ P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
 P proxy_dir /tmp
-P rep_trav /tmp/caelinux-caelinux-interactif_40109
+P rep_trav /tmp/cae-caesrv1-interactif_0201
 P serveur caelinux
 P soumbtc oui
 P time_limit 900.0
 P tpsjob 16
 P uclient caelinux
 P username caelinux
-P version stable
+P version 14.6MUPT
 A args 
 A memjeveux 625.0
 A tpmax 900.0

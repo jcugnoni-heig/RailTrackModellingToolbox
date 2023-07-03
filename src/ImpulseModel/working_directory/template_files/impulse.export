@@ -6,14 +6,14 @@ P memory_limit 30062.0
 P mode interactif
 P mpi_nbcpu 1
 P mpi_nbnoeud 1
-P ncpus 24
+P ncpus 16
 P nomjob Impulse
 P origine AsterStudy 0.11
-P rep_trav /tmp/caelinux-caelinux-interactif_40111
+P rep_trav /tmp/cae-caesrv1-interactif_0202
 P server localhost
 P time_limit 3600900.0
 P tpsjob 60016
-P version stable
+P version 14.6MUPT
 A memjeveux 3757.75
 A tpmax 3600900.0
 
