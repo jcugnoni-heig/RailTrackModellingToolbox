@@ -63,11 +63,13 @@ class ImpulseModelGUI(QMainWindow):
 		
 		for i in range(len(comboBoxes)):
 			cb = comboBoxes[i]
+			currentText = cb.currentText()
 			path = paths[i]
 			
 			cb.clear()
 			myList = os.listdir(path)
 			cb.addItems(myList)
+			cb.setCurrentText(currentText)
 
 		
 	def NewPadMesh(self):
@@ -251,6 +253,7 @@ class ImpulseModelGUI(QMainWindow):
 
 
 	def Run(self):
+		# Clear Folders
 		self.ClearFolders()
 
 		parameters = {}
@@ -278,6 +281,33 @@ class ImpulseModelGUI(QMainWindow):
 		except:
 			print("Problem creating the results folders.")
 			return
+		
+		# Rep trav
+		repTrav = self.txt_repTrav.text()
+
+		if os.path.exists(repTrav) == False:
+			try:
+				os.makedirs(repTrav)
+			except:
+				print('Impossible to create Aster working directory (rep_trav) ' + repTrav)
+				return
+			
+		repTravPh1 = os.path.join(repTrav, 'cae-caesrv1-interactif_0201')
+		repTravPh2 = os.path.join(repTrav, 'cae-caesrv1-interactif_0202')
+
+		# Memory limit, CPU
+		try:
+			memLim = float(self.txt_memLim.text())
+		except:
+			print("Problem with memory limit definition.")
+			return
+		
+		try:
+			nCPU = int(self.txt_nCPU.text())
+		except:
+			print("Problem with CPU definition.")
+			return
+		
 			
 		# Create a file for the study parameters
 		with open(os.path.join(resultsDirectoryPath,'study_parameters.txt'),'a+') as fp:
@@ -313,9 +343,9 @@ class ImpulseModelGUI(QMainWindow):
 
 		
 		# Clamps properties		
-		parameters['clampStiffX'] = float(self.stiffnessX.text())*1000
-		parameters['clampStiffY'] = float(self.stiffnessY.text())*1000
-		parameters['clampStiffZ'] = float(self.stiffnessZ.text())*1000
+		parameters['clampStiffX'] = float(self.stiffnessX.text())
+		parameters['clampStiffY'] = float(self.stiffnessY.text())
+		parameters['clampStiffZ'] = float(self.stiffnessZ.text())
 		parameters['clampDampX'] = float(self.dampingX.text())
 		parameters['clampDampY'] = float(self.dampingY.text())
 		parameters['clampDampZ'] = float(self.dampingZ.text())
@@ -391,6 +421,13 @@ class ImpulseModelGUI(QMainWindow):
 			os.system('sed -i -E "s!__USP_Nu__!!" ' + os.path.join(self.workingDir, 'impulse.export'))
 			os.system('sed -i -E "s!__USP_Rho__!!" ' + os.path.join(self.workingDir, 'impulse.export'))
 			os.system('sed -i -E "s!__USP_AmHyst__!!" ' + os.path.join(self.workingDir, 'impulse.export'))
+		
+		os.system('sed -i -E "s!__rep_trav__!' + repTravPh1 + '!" ' + os.path.join(self.workingDir, 'generateMesh.export'))
+		os.system('sed -i -E "s!__rep_trav__!' + repTravPh2 + '!" ' + os.path.join(self.workingDir, 'impulse.export'))
+		os.system('sed -i -E "s!__memLim__!' + str(memLim) + '!" ' + os.path.join(self.workingDir, 'impulse.export'))
+		os.system('sed -i -E "s!__memJob__!' + str(memLim*1000) + '!" ' + os.path.join(self.workingDir, 'impulse.export'))
+		os.system('sed -i -E "s!__memJV__!' + str(memLim/5) + '!" ' + os.path.join(self.workingDir, 'impulse.export'))
+		os.system('sed -i -E "s!__nCPU__!' + str(nCPU) + '!" ' + os.path.join(self.workingDir, 'impulse.export'))
 
 		######################################################################################################################
 		# Run the command file to assemble the mesh
@@ -511,10 +548,25 @@ class ImpulseModelGUI(QMainWindow):
 					os.remove(path)
 
 		# Correct potential problems with DOS / Unix files
-		scriptPath = os.path.join(os.path.dirname(self.modelDir), 'correctBashFiles.sh')
-		os.system('bash ' + scriptPath)
+		# src = os.path.dirname(self.modelDir)
+		# toolbox = os.path.dirname(src)
+		# scriptPath = os.path.join(toolbox, 'setup.sh')
+		# os.system('bash ' + scriptPath)
 
+		# Delete fodlers of Rep_trav
+		repTrav = self.txt_repTrav.text()
 
+		try:
+			repTravPh1 = os.path.join(repTrav, 'cae-caesrv1-interactif_0201')
+			shutil.rmtree(repTravPh1)
+		except:
+			pass
+
+		try:
+			repTravPh2 = os.path.join(repTrav, 'cae-caesrv1-interactif_0202')
+			shutil.rmtree(repTravPh2)
+		except:
+			pass
 
 
 
@@ -549,7 +601,8 @@ class NewMeshDialog(QDialog):
 		self.interface = interface
   
 	def MeshDownload(self):
-		self.newMesh = QFileDialog.getOpenFileName(self, "Open " + self.partName + " Med File", self.interface.modelDir)
+		temp = QFileDialog.getOpenFileName(self, "Open " + self.partName + " Med File", self.interface.modelDir)
+		self.newMesh = temp[0]
 
 	def AddNewMesh(self):
 		if self.newMeshName.text() == '':
@@ -588,16 +641,20 @@ class NewViscMatDialog(QDialog):
 		self.newtau = None
 
 	def EDownload(self):
-		self.newModulus = QFileDialog.getOpenFileName(self, "Open csv File", self.interface.modelDir)
+		temp = QFileDialog.getOpenFileName(self, "Open csv File", self.interface.modelDir)
+		self.newModulus = temp[0]
 
 	def KDownload(self):
-		self.newK = QFileDialog.getOpenFileName(self, "Open csv File",self.interface.modelDir)
+		temp = QFileDialog.getOpenFileName(self, "Open csv File",self.interface.modelDir)
+		self.newK = temp[0]
 		
 	def GDownload(self):
-		self.newG = QFileDialog.getOpenFileName(self, "Open csv File",self.interface.modelDir)
+		temp = QFileDialog.getOpenFileName(self, "Open csv File",self.interface.modelDir)
+		self.newG = temp[0]
 		
 	def tauDownload(self):
-		self.newtau = QFileDialog.getOpenFileName(self, "Open csv File",self.interface.modelDir)
+		temp = QFileDialog.getOpenFileName(self, "Open csv File",self.interface.modelDir)
+		self.newtau = temp[0]
 
 	def AddNewMaterial(self):
 

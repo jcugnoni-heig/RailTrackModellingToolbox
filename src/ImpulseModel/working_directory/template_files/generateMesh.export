@@ -24,7 +24,7 @@ P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
 P proxy_dir /tmp
-P rep_trav /tmp/cae-caesrv1-interactif_0201
+P rep_trav __rep_trav__
 P serveur caelinux
 P soumbtc oui
 P time_limit 900.0

@@ -14,12 +14,12 @@ parameters = json.loads(txt)
 
 USP_on = parameters['USP_on']
 slpSpacing = parameters['slpSpacing']
-stiff_X = parameters['clampStiffX']
-stiff_Y = parameters['clampStiffY']
-stiff_Z = parameters['clampStiffZ']
-damp_X = parameters['clampDampX']
-damp_Y = parameters['clampDampY']
-damp_Z = parameters['clampDampZ']
+stiff_X = parameters['clampStiffX']*1000/2
+stiff_Y = parameters['clampStiffY']*1000/2
+stiff_Z = parameters['clampStiffZ']*1000/2
+damp_X = parameters['clampDampX']/2
+damp_Y = parameters['clampDampY']/2
+damp_Z = parameters['clampDampZ']/2
 
 ###################################
 # Open the Unit-Cell mesh
@@ -41,7 +41,8 @@ model = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
                              PHENOMENE='MECANIQUE',
                              GROUP_MA=('edgeaa','edgeab', 'edgeba', 'edgebb', 'edgeca', 'edgecb', 'edgeda', 'edgedb', 'edgeea', 'edgeeb', 'edgefa', 'edgefb', 'edgega', 'edgegb', 'edgeha', 'edgehb', 'edgeia', 'edgeib', 'edgeja', 'edgejb', 'edgeka', 'edgekb', 'edgela', 'edgelb', )
                             ),),
-                    INFO=2,
+                    INFO=1,
+                    DISTRIBUTION=_F(METHODE='SOUS_DOMAINE'), # PARTITIONNEUR='SCOTCH'),
                     MAILLAGE=mesh)
 
 ###################################
@@ -50,11 +51,11 @@ model = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
 
 elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_L',
                                       GROUP_MA=('edgeaa','edgeab', 'edgeba', 'edgebb', 'edgeca', 'edgecb', 'edgeda', 'edgedb', 'edgeea', 'edgeeb', 'edgefa', 'edgefb', 'edgega', 'edgegb', 'edgeha', 'edgehb', 'edgeia', 'edgeib', 'edgeja', 'edgejb', 'edgeka', 'edgekb', 'edgela', 'edgelb', ),
-                                      VALE=(stiff_X/2, stiff_Y/2, stiff_Z/2)    # Stiffness of the clamps
+                                      VALE=(stiff_X, stiff_Y, stiff_Z)    # Stiffness of the clamps
                                      ),
                                    _F(CARA='A_T_D_L',
                                       GROUP_MA=('edgeaa','edgeab', 'edgeba', 'edgebb', 'edgeca', 'edgecb', 'edgeda', 'edgedb', 'edgeea', 'edgeeb', 'edgefa', 'edgefb', 'edgega', 'edgegb', 'edgeha', 'edgehb', 'edgeia', 'edgeib', 'edgeja', 'edgejb', 'edgeka', 'edgekb', 'edgela', 'edgelb',),
-                                      VALE=(damp_X/2, damp_Y/2, damp_Z/2)    # Damping of the clamps
+                                      VALE=(damp_X, damp_Y, damp_Z)    # Damping of the clamps
                                      ),
                                   ),
                           MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', 'sleeper0', 'sleeper1', )),
@@ -184,38 +185,44 @@ tie9 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts___4',),
 
 # Pad 1
 tie10 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('pntr', ),
-                                         GROUP_MA_MAIT=('retp1', ),
-                                         TYPE_RACCORD='MASSIF')),
+                                         GROUP_MA_MAIT=('retp', ),
+                                         TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
                        MODELE=model)
 
 # Pad 2
 tie11 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=( 'pntr___0',),
-                                         GROUP_MA_MAIT=('retp1__0', ),
-                                         TYPE_RACCORD='MASSIF')),
+                                         GROUP_MA_MAIT=('retp__0', ),
+                                         TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
                        MODELE=model)
 
 # Pad 3                          
 tie12 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('pntr___1',),
-                                         GROUP_MA_MAIT=('retp2', ),
-                                         TYPE_RACCORD='MASSIF')),
+                                         GROUP_MA_MAIT=('retp', ),
+                                         TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
                        MODELE=model)
 
 # Pad 4
 tie13 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr___2', ),
-                                        GROUP_MA_MAIT=('retp2__0', ),
-                                        TYPE_RACCORD='MASSIF')),
+                                        GROUP_MA_MAIT=('retp__0', ),
+                                        TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
                        MODELE=model)
 
 # Pad 5
 tie14 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr___3', ),
-                                        GROUP_MA_MAIT=('retp3', ),
-                                        TYPE_RACCORD='MASSIF')),
+                                        GROUP_MA_MAIT=('retp', ),
+                                        TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
                        MODELE=model)
 
 # Pad 6                       
 tie15 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=( 'pntr___4',),
-                                        GROUP_MA_MAIT=('retp3__0', ),
-                                        TYPE_RACCORD='MASSIF')),
+                                        GROUP_MA_MAIT=('retp__0', ),
+                                        TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
                        MODELE=model)
 
 ###########################
@@ -444,7 +451,7 @@ slpMx = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=slp_E1,
                                      RHO=slp_Rho))
 
 
-balMx = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=bal_Am,
+balMx = DEFI_MATERIAU(ELAS=_F(AMOR_HYST=0.5,
                              E=bal_E,
                              NU=bal_Nu,
                              RHO=bal_Rho))
@@ -530,7 +537,7 @@ Mimp=DEFI_FONCTION(NOM_PARA='INST',
                          0.017,0.945503262,
                          0.018,0.975528258,
                          0.019,0.99384417,
-                         0.02,1,
+                         0.02,1, ###
                          0.021,0.99384417,
                          0.022,0.975528258,
                          0.023,0.945503262,
@@ -560,7 +567,7 @@ Mimp=DEFI_FONCTION(NOM_PARA='INST',
                          0.047,0.945503262,
                          0.048,0.975528258,
                          0.049,0.99384417,
-                         0.05,1,
+                         0.05,1, ###
                          0.051,0.99384417,
                          0.052,0.975528258,
                          0.053,0.945503262,
@@ -582,29 +589,61 @@ Mimp=DEFI_FONCTION(NOM_PARA='INST',
                          0.069,0.00615583,
                          0.07,0,
                           ),
-                   INFO=2,TITRE='Mimp',
+                   INFO=1,TITRE='Mimp',
                    PROL_DROITE='CONSTANT',);
 
-tsteps = 101
-tFin = 0.1
+# tsteps = 101
+# tFin = 0.1
 
-time = DEFI_LIST_REEL(DEBUT=0.0,
-                      INFO=2,
-                      INTERVALLE=_F(JUSQU_A=tFin,
-                                    NOMBRE=tsteps),
+# time = DEFI_LIST_REEL(DEBUT=0.0,
+                      # INFO=2,
+                      # INTERVALLE=_F(JUSQU_A=tFin, NOMBRE=tsteps),
+                      # TITRE='time')
+
+# pyTime = np.append(np.linspace(0, 0.018, 3), np.linspace(0.018, 0.022, 5)) # start to before peak 1 + peak 1
+# pyTime = np.append(pyTime,  np.linspace(0.022, 0.048, 5)) # + between peaks
+# pyTime = np.append(pyTime,  np.linspace(0.048, 0.052, 5)) # + peak 2
+# pyTime = np.append(pyTime,  np.linspace(0.052, 0.1, 6)) # + end
+# pyTime = np.unique(pyTime)
+
+pyTime = np.append(np.linspace(0, 0.015, 4), np.linspace(0.018, 0.022, 9)) # start to before peak 1 + peak 1
+pyTime = np.append(pyTime, np.array([0.023, 0.024, 0.027, 0.031, 0.035])) # + between peaks
+pyTime = np.unique(pyTime)
+
+# pyTime = [0, 0.001]
+
+dt = pyTime[1:] - pyTime[0:-1]
+pasMaxi = max(dt)
+
+
+
+time = DEFI_LIST_REEL(INFO=1,
+                      VALE=pyTime,
                       TITRE='time')
 
 deflist = DEFI_LIST_INST(DEFI_LIST=_F(LIST_INST=time,
                                       PAS_MINI=1e-07,
-                                      PAS_MAXI=1e-03), #PAS_MAXI=0.1),
-                         INFO=1,
+                                      PAS_MAXI=pasMaxi),
+                         INFO=2,
                          METHODE='AUTO')
 excit = []
 for bc in fixedBC:
 	excit.append(_F(CHARGE=bc,))
 excit.append(_F(CHARGE=BCload,FONC_MULT=Mimp,))
 
+# parallel iterative solver with single precision inverse as precond, robust and fast
+SOLVOPT={'METHODE':'PETSC','PRE_COND':'LDLT_SP', 'MATR_DISTRIBUEE':'OUI'}  
+
+#alternativement:
+ 
+# parallel MUMPS, robust and pretty fast
+#SOLVOPT={'ELIM_LAGR':'LAGR2','LOW_RANK_SEUIL':'1e-09', 'MATR_DISTRIBUEE':'OUI','METHODE':'MUMPS','RENUM':'SCOTCH'} 
+
+# efficient iterative solver, best when using only one or two load cases
+#SOLVOPT={'METHODE':'PETSC','PRE_COND':'BOOMER','MATR_DISTRIBUEE':'OUI'} 
+
 resImp=STAT_NON_LINE(MODELE=model,
+                     SOLVEUR=SOLVOPT,
                      CHAM_MATER=fieldmat,
                      CARA_ELEM=elemprop,
                      EXCIT=excit,
@@ -617,15 +656,24 @@ resImp=STAT_NON_LINE(MODELE=model,
                                MATRICE='TANGENTE',
                                REAC_ITER=1,),
                      CONVERGENCE=_F(ITER_GLOB_MAXI=200,),
-                     ARCHIVAGE=_F(PAS_ARCH=1,),);
+                     # ARCHIVAGE=_F(PAS_ARCH=1,),
+                     ARCHIVAGE=_F(LIST_INST=time,),
+                     );
 
 
 resImp=CALC_CHAMP(reuse =resImp,
                   MODELE=model,
                   TOUT ='OUI',
                   CHAM_MATER=fieldmat,
-                  CONTRAINTE =('SIGM_ELGA','SIGM_ELNO','SIGM_NOEU',),
+                  CONTRAINTE =('SIGM_NOEU',),
                   RESULTAT=resImp,);
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(PARTIE='REEL',
+                  NOM_CHAM=('DEPL','VITE', 'SIGM_NOEU'),
+                  NOM_CHAM_MED = ('displacement', 'velocity', 'stress'),
+                  RESULTAT=resImp,),
+          UNITE=81)
 
 
 t2 = POST_RELEVE_T( ACTION = _F (RESULTAT=resImp,
@@ -653,7 +701,12 @@ dispR = RECU_FONCTION(GROUP_NO=('rntsl2_0', ),
                       NOM_CMP='DY',
                       RESULTAT=resImp)
 
-dispS = RECU_FONCTION(GROUP_NO=('sntrle_0', ),
+dispSa = RECU_FONCTION(GROUP_NO=('sntrlea0', ),
+                      NOM_CHAM='DEPL',
+                      NOM_CMP='DY',
+                      RESULTAT=resImp)
+
+dispSb = RECU_FONCTION(GROUP_NO=('sntrleb0', ),
                       NOM_CHAM='DEPL',
                       NOM_CMP='DY',
                       RESULTAT=resImp)
@@ -663,15 +716,14 @@ dispBotS = RECU_FONCTION(GROUP_NO=('botSlp_0', ),
                          NOM_CMP='DY',
                          RESULTAT=resImp)
 
-
+print('Times: ')
 Resdatalines = []
-# time = [x * 0.001 for x in range(0, tsteps)]
-time = np.linspace(0, tFin, tsteps)
-for step in time:
-    val1 = dispR(step)
-    val2 = dispS(step)
-    val3 = dispBotS(step)
-    line = str(step) + "\t" + str(val1) + "\t" + str(val2) + "\t" + str(val3) + "\t" + "\n"
+for t in pyTime:
+    print(t)
+    val1 = dispR(t)
+    val2 = (dispSa(t) + dispSb(t))/2
+    val3 = dispBotS(t)
+    line = str(t) + "\t" + str(val1) + "\t" + str(val2) + "\t" + str(val3) + "\t" + "\n"
     Resdatalines.append(line)
 
 
@@ -681,23 +733,6 @@ fileRES=open('fort.40','a+')
 fileContent='\t'.join(Resdatalines) + '\n'
 fileRES.write(fileContent)
 fileRES.close()
-
-    
-
-
-
-# ------ END OF SOLUTION LOOP --------
-
-
-
-IMPR_RESU(INFO=2, FORMAT='MED',
-          RESU=_F(PARTIE='REEL',
-                  NOM_CHAM=('DEPL','VITE'),
-                  NOM_CHAM_MED = ('displacement', 'velocity'),
-                  RESULTAT=resImp,),
-                  # FREQ=frequency),
-          UNITE=81)
-
 
 
 FIN()

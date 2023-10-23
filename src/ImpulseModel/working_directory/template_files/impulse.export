@@ -1,20 +1,20 @@
 P actions make_etude
 P debug nodebug
 P facmtps 1
-P memjob 30783488
-P memory_limit 30062.0
+P memjob __memJob__
+P memory_limit __memLim__
 P mode interactif
-P mpi_nbcpu 1
+P mpi_nbcpu __nCPU__
 P mpi_nbnoeud 1
-P ncpus 16
+P ncpus 1
 P nomjob Impulse
 P origine AsterStudy 0.11
-P rep_trav /tmp/cae-caesrv1-interactif_0202
+P rep_trav __rep_trav__
 P server localhost
 P time_limit 3600900.0
 P tpsjob 60016
 P version 14.6MUPT
-A memjeveux 3757.75
+A memjeveux __memJV__
 A tpmax 3600900.0
 
 F comm impulse.comm D  1

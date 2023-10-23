@@ -45,40 +45,34 @@ parameters = json.loads(txt)
 USP_on = parameters['USP_on']
 slpSpacing = parameters['slpSpacing']
 
-#slpSpacing = 600
-#slpSpacing = distance or 600
+###################################
+# Define some hard-coded parameters / functions
+###################################
 tiltAngle_rad = -math.atan(1/40.0)
 tiltAngle_deg = tiltAngle_rad*180/math.pi
 padThickness = 7
 halfDistBtwnRails = 757.54
 USPthickness = 8.5
 
-ballastXOffset = slpSpacing 
-ballastYOffset = -90
+scaling = slpSpacing/600.0
 
-sleeper2XOffset = slpSpacing
-sleeper3XOffset = 2*slpSpacing 
-
-padYOffset = 214.0       
-pad3XOffset = slpSpacing   
-pad4XOffset = slpSpacing   
-pad5XOffset = 2*slpSpacing  
-pad6XOffset = 2*slpSpacing  
-
-railXOffset = slpSpacing 
-railYOffset = padYOffset + padThickness*math.cos(tiltAngle_rad)
-
+dplX = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='X*(scaling-1)', scaling=scaling,)
+               
+dplY = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='Y*0',)
+               
+dplZ = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='Z*0',)
 
 ###################################
 # Sleeper1
 ###################################
+sleeper2XOffset = slpSpacing
+sleeper3XOffset = 2*slpSpacing 
 
 slp1 = LIRE_MAILLAGE(UNITE=4)
 
 ###################################
 # Sleeper2
 ###################################
-
 slp2 = LIRE_MAILLAGE(UNITE=4)
 
 slp2 = MODI_MAILLAGE(reuse=slp2,
@@ -93,7 +87,6 @@ comb1 = ASSE_MAILLAGE(MAILLAGE_1=slp1,
 ###################################
 # Sleeper3
 ###################################
-
 slp3 = LIRE_MAILLAGE(UNITE=4)
 
 slp3 = MODI_MAILLAGE(reuse=slp3,
@@ -108,6 +101,11 @@ comb2 = ASSE_MAILLAGE(MAILLAGE_1=comb1,
 ###################################
 # Pad1 (on sleeper1 right)
 ###################################
+padYOffset = 214.0 # 150.0       
+pad3XOffset = slpSpacing   
+pad4XOffset = slpSpacing   
+pad5XOffset = 2*slpSpacing  
+pad6XOffset = 2*slpSpacing  
 
 pad1 = LIRE_MAILLAGE(UNITE=2)
 
@@ -234,8 +232,49 @@ comb8 = ASSE_MAILLAGE(MAILLAGE_1=comb7,
 ###################################
 # Rail1 (right side)
 ###################################
+railXOffset = slpSpacing 
+railYOffset = padYOffset + padThickness*math.cos(tiltAngle_rad)
 
 rail1 = LIRE_MAILLAGE(UNITE=5)
+
+rail1 = DEFI_GROUP(reuse=rail1, MAILLAGE=rail1, 
+                        CREA_GROUP_NO = _F(NOM='rntp', OPTION='PLAN', POINT=(0,0,0), VECT_NORMALE=(0,-1,0), PRECISION=1e-3))
+
+rail1 = DEFI_GROUP(reuse=rail1, MAILLAGE=rail1, 
+                        CREA_GROUP_MA = _F(TYPE_MAILLE='3D', NOM='retp', OPTION='APPUI', TYPE_APPUI='AU_MOINS_UN', GROUP_NO='rntp'))
+
+rail1 = DEFI_GROUP(reuse=rail1, MAILLAGE=rail1, 
+                        DETR_GROUP_NO = _F(NOM='rntp'))
+
+# Expand rail in X direction to adapt to sleeper spacing
+CHdplF = CREA_CHAMP(AFFE=_F(TOUT='OUI',
+                             NOM_CMP=('X1', 'X2', 'X3'),
+                             VALE_F=(dplX, dplY, dplZ)),
+                     OPERATION='AFFE',
+                     MAILLAGE=rail1,
+                     TYPE_CHAM='NOEU_NEUT_F')
+
+CHcoord = CREA_CHAMP(MAILLAGE=rail1,
+                    NOM_CHAM='GEOMETRIE',
+                    OPERATION='EXTR',
+                    TYPE_CHAM='NOEU_GEOM_R')
+
+temp = CREA_CHAMP(CHAM_F=CHdplF,
+                    CHAM_PARA=(CHcoord, ),
+                    OPERATION='EVAL',
+                    TYPE_CHAM='NOEU_NEUT_R')
+
+CHdpl=CREA_CHAMP(OPERATION='ASSE', TYPE_CHAM='NOEU_DEPL_R', MAILLAGE=rail1,
+                  ASSE=_F(TOUT = 'OUI', CHAM_GD = temp,
+                          NOM_CMP = ('X1', 'X2', 'X3',),
+                          NOM_CMP_RESU = ('DX','DY','DZ',)))
+
+
+rail1 = MODI_MAILLAGE(reuse=rail1, MAILLAGE=rail1, 
+                     DEFORME=_F(OPTION='TRAN', DEPL=CHdpl))
+
+DETRUIRE(CONCEPT=_F(NOM=(CHdplF, CHcoord, temp, CHdpl)))
+
 
 rail1 = MODI_MAILLAGE(reuse=rail1,
                       MAILLAGE=rail1,
@@ -251,11 +290,51 @@ comb9 = ASSE_MAILLAGE(MAILLAGE_1=comb8,
                       MAILLAGE_2=rail1,
                       OPERATION='SUPERPOSE')
 
+
+
 ###################################
 # Rail2 (left side)
 ###################################
 
 rail2 = LIRE_MAILLAGE(UNITE=5)
+
+rail2 = DEFI_GROUP(reuse=rail2, MAILLAGE=rail2, 
+                        CREA_GROUP_NO = _F(NOM='rntp', OPTION='PLAN', POINT=(0,0,0), VECT_NORMALE=(0,-1,0), PRECISION=1e-3))
+
+rail2 = DEFI_GROUP(reuse=rail2, MAILLAGE=rail2, 
+                        CREA_GROUP_MA = _F(TYPE_MAILLE='3D', NOM='retp__0', OPTION='APPUI', TYPE_APPUI='AU_MOINS_UN', GROUP_NO='rntp'))
+
+rail2 = DEFI_GROUP(reuse=rail2, MAILLAGE=rail2, 
+                        DETR_GROUP_NO = _F(NOM='rntp'))
+
+# Expand rail in X direction to adapt to sleeper spacing
+CHdplF = CREA_CHAMP(AFFE=_F(TOUT='OUI',
+                             NOM_CMP=('X1', 'X2', 'X3'),
+                             VALE_F=(dplX, dplY, dplZ)),
+                     OPERATION='AFFE',
+                     MAILLAGE=rail2,
+                     TYPE_CHAM='NOEU_NEUT_F')
+
+CHcoord = CREA_CHAMP(MAILLAGE=rail2,
+                    NOM_CHAM='GEOMETRIE',
+                    OPERATION='EXTR',
+                    TYPE_CHAM='NOEU_GEOM_R')
+
+temp = CREA_CHAMP(CHAM_F=CHdplF,
+                    CHAM_PARA=(CHcoord, ),
+                    OPERATION='EVAL',
+                    TYPE_CHAM='NOEU_NEUT_R')
+
+CHdpl=CREA_CHAMP(OPERATION='ASSE', TYPE_CHAM='NOEU_DEPL_R', MAILLAGE=rail2,
+                  ASSE=_F(TOUT = 'OUI', CHAM_GD = temp,
+                          NOM_CMP = ('X1', 'X2', 'X3',),
+                          NOM_CMP_RESU = ('DX','DY','DZ',)))
+
+
+rail2 = MODI_MAILLAGE(reuse=rail2, MAILLAGE=rail2, 
+                     DEFORME=_F(OPTION='TRAN', DEPL=CHdpl))
+
+DETRUIRE(CONCEPT=_F(NOM=(CHdplF, CHcoord, temp, CHdpl)))
 
 rail2 = MODI_MAILLAGE(reuse=rail2,
                       MAILLAGE=rail2,
@@ -299,8 +378,39 @@ if USP_on:
 ###################################
 # ballast
 ###################################
+ballastXOffset = slpSpacing 
+ballastYOffset = -90
 
 ballast = LIRE_MAILLAGE(UNITE=3)
+
+# Expand rail in X direction to adapt to sleeper spacing
+CHdplF = CREA_CHAMP(AFFE=_F(TOUT='OUI',
+                             NOM_CMP=('X1', 'X2', 'X3'),
+                             VALE_F=(dplX, dplY, dplZ)),
+                     OPERATION='AFFE',
+                     MAILLAGE=ballast,
+                     TYPE_CHAM='NOEU_NEUT_F')
+
+CHcoord = CREA_CHAMP(MAILLAGE=ballast,
+                    NOM_CHAM='GEOMETRIE',
+                    OPERATION='EXTR',
+                    TYPE_CHAM='NOEU_GEOM_R')
+
+temp = CREA_CHAMP(CHAM_F=CHdplF,
+                    CHAM_PARA=(CHcoord, ),
+                    OPERATION='EVAL',
+                    TYPE_CHAM='NOEU_NEUT_R')
+
+CHdpl=CREA_CHAMP(OPERATION='ASSE', TYPE_CHAM='NOEU_DEPL_R', MAILLAGE=ballast,
+                  ASSE=_F(TOUT = 'OUI', CHAM_GD = temp,
+                          NOM_CMP = ('X1', 'X2', 'X3',),
+                          NOM_CMP_RESU = ('DX','DY','DZ',)))
+
+
+ballast = MODI_MAILLAGE(reuse=ballast, MAILLAGE=ballast, 
+                     DEFORME=_F(OPTION='TRAN', DEPL=CHdpl))
+
+DETRUIRE(CONCEPT=_F(NOM=(CHdplF, CHcoord, temp, CHdpl)))
 
 ballast = MODI_MAILLAGE(reuse=ballast,
                         MAILLAGE=ballast,

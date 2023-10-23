@@ -8,7 +8,6 @@ import pyperclip as clipboard
 #import clipboard
 import module_run as mod
 import json
-from datetime import datetime
 import multiprocessing
 
 
@@ -21,8 +20,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.setWindowTitle('Multi-sleeper model')
 		
 		self.cb_phase1.stateChanged.connect(self.Phase1StateChanged)
-		self.btn_selPhase1Folder.clicked.connect(self.SelectPhase1Folder)
-		self.btn_phase1SelFreqs.clicked.connect(self.SelectPhase1Frequencies)
+		self.btn_selPhase1Folder.clicked.connect(self.SelectModesFolder)
 		self.btn_railMesh.clicked.connect(self.SelectRailMesh)
 		self.btn_padMesh.clicked.connect(self.SelectPadMesh)
 		self.btn_Emat1.clicked.connect(self.SelectEmat1)
@@ -36,7 +34,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_tanDUSP.clicked.connect(self.SelectTanDUSP)
 		self.btn_USPMesh.clicked.connect(self.SelectUSPMesh)
 		self.cb_USP.stateChanged.connect(self.USPStateChanged)
-		self.btn_freqs.clicked.connect(self.SelectPhase2Frequencies)
+		self.btn_freqs.clicked.connect(self.SelectFrequencies)
 		self.cb_defaultNode.stateChanged.connect(self.DefaultNodeStateChanged)
 		self.rb_10pct.toggled.connect(self.LoadDirChanged)
 		self.btn_selectSubstructures.clicked.connect(self.SelectSubstructures)
@@ -45,21 +43,20 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_addSimu.clicked.connect(self.AddSimuToList)
 		self.btn_simuDir.clicked.connect(self.SelectSimuDir)
 		self.btn_simulate.clicked.connect(self.SimulateAll)
-		self.btn_savePhase1To.clicked.connect(self.SavePhase1To)
+		self.btn_savePhase1To.clicked.connect(self.SelectModesParentFolder)
 		self.actionExit.triggered.connect(self.closeApp)
 		self.btn_deleteSimu.clicked.connect(self.DeleteSimu)
 		self.btn_moveUp.clicked.connect(self.MoveSimuUp)
 		self.btn_moveDown.clicked.connect(self.MoveSimuDown)
 		self.list_simu.currentItemChanged.connect(self.DisplaySimu)
 				
-		self.appPath = appPath
+		self.appPath = appPath # src/MultiSleeperModel/DevFiles/
 		temp = os.path.dirname(appPath)
-		self.cwd = os.path.dirname(temp)
+		self.cwd = os.path.dirname(temp) # src/MultiSleeperModel/
 		self.simuList = []
-		self.phase1Folder = None
-		self.savePhase1To = None
-		self.frequenciesPh1 = [300, 308.3916084, 316.7832168, 325.1748252, 333.5664336, 341.958042, 350.3496503, 358.7412587, 367.1328671, 375.5244755, 383.9160839, 392.3076923, 400.6993007, 409.0909091, 417.4825175, 425.8741259, 434.2657343, 442.6573427, 451.048951, 459.4405594, 467.8321678, 476.2237762, 484.6153846, 493.006993, 501.3986014, 509.7902098, 518.1818182, 526.5734266, 534.965035, 543.3566434, 551.7482517, 560.1398601, 568.5314685, 576.9230769, 585.3146853, 593.7062937, 602.0979021, 610.4895105, 618.8811189, 627.2727273, 635.6643357, 644.0559441, 652.4475524, 660.8391608, 669.2307692, 677.6223776, 686.013986, 694.4055944, 702.7972028, 711.1888112, 719.5804196, 727.972028, 736.3636364, 744.7552448, 753.1468531, 761.5384615, 769.9300699, 778.3216783, 786.7132867, 795.1048951, 803.4965035, 811.8881119, 820.2797203, 828.6713287, 837.0629371, 845.4545455, 853.8461538, 862.2377622, 870.6293706, 879.020979, 887.4125874, 895.8041958, 904.1958042, 912.5874126, 920.979021, 929.3706294, 937.7622378, 946.1538462, 954.5454545, 962.9370629, 971.3286713, 979.7202797, 988.1118881, 996.5034965, 1004.895105, 1013.286713, 1021.678322, 1030.06993, 1038.461538, 1046.853147, 1055.244755, 1063.636364, 1072.027972, 1080.41958, 1088.811189, 1097.202797, 1105.594406, 1113.986014, 1122.377622, 1130.769231, 1139.160839, 1147.552448, 1155.944056, 1164.335664, 1172.727273, 1181.118881, 1189.51049, 1197.902098, 1206.293706, 1214.685315, 1223.076923, 1231.468531, 1239.86014, 1248.251748, 1256.643357, 1265.034965, 1273.426573, 1281.818182, 1290.20979, 1298.601399, 1306.993007, 1315.384615, 1323.776224, 1332.167832, 1340.559441, 1348.951049, 1357.342657, 1365.734266, 1374.125874, 1382.517483, 1390.909091, 1399.300699, 1407.692308, 1416.083916, 1424.475524, 1432.867133, 1441.258741, 1449.65035, 1458.041958, 1466.433566, 1474.825175, 1483.216783, 1491.608392, 1500]
-		self.frequenciesPh2 = self.frequenciesPh1
+		self.modesParentFolder = None
+		self.modesFolder = None
+		self.frequencies = [100.0, 106.9930068, 115.3846152, 123.7762236, 132.167832, 140.5594404, 148.9510488, 157.3426572, 165.7342656, 174.125874, 182.5174824, 190.9090908, 199.3006992, 207.6923076, 216.083916, 224.4755244, 232.8671328, 241.2587412, 249.6503496, 258.041958, 266.4335664, 274.8251748, 283.2167832, 291.6083916, 300, 308.3916084, 316.7832168, 325.1748252, 333.5664336, 341.958042, 350.3496503, 358.7412587, 367.1328671, 375.5244755, 383.9160839, 392.3076923, 400.6993007, 409.0909091, 417.4825175, 425.8741259, 434.2657343, 442.6573427, 451.048951, 459.4405594, 467.8321678, 476.2237762, 484.6153846, 493.006993, 501.3986014, 509.7902098, 518.1818182, 526.5734266, 534.965035, 543.3566434, 551.7482517, 560.1398601, 568.5314685, 576.9230769, 585.3146853, 593.7062937, 602.0979021, 610.4895105, 618.8811189, 627.2727273, 635.6643357, 644.0559441, 652.4475524, 660.8391608, 669.2307692, 677.6223776, 686.013986, 694.4055944, 702.7972028, 711.1888112, 719.5804196, 727.972028, 736.3636364, 744.7552448, 753.1468531, 761.5384615, 769.9300699, 778.3216783, 786.7132867, 795.1048951, 803.4965035, 811.8881119, 820.2797203, 828.6713287, 837.0629371, 845.4545455, 853.8461538, 862.2377622, 870.6293706, 879.020979, 887.4125874, 895.8041958, 904.1958042, 912.5874126, 920.979021, 929.3706294, 937.7622378, 946.1538462, 954.5454545, 962.9370629, 971.3286713, 979.7202797, 988.1118881, 996.5034965, 1004.895105, 1013.286713, 1021.678322, 1030.06993, 1038.461538, 1046.853147, 1055.244755, 1063.636364, 1072.027972, 1080.41958, 1088.811189, 1097.202797, 1105.594406, 1113.986014, 1122.377622, 1130.769231, 1139.160839, 1147.552448, 1155.944056, 1164.335664, 1172.727273, 1181.118881, 1189.51049, 1197.902098, 1206.293706, 1214.685315, 1223.076923, 1231.468531, 1239.86014, 1248.251748, 1256.643357, 1265.034965, 1273.426573, 1281.818182, 1290.20979, 1298.601399, 1306.993007, 1315.384615, 1323.776224, 1332.167832, 1340.559441, 1348.951049, 1357.342657, 1365.734266, 1374.125874, 1382.517483, 1390.909091, 1399.300699, 1407.692308, 1416.083916, 1424.475524, 1432.867133, 1441.258741, 1449.65035, 1458.041958, 1466.433566, 1474.825175, 1483.216783, 1491.608392, 1500]
 		self.railMesh = None
 		self.sleeperMesh = None
 		self.USPMesh = None
@@ -74,7 +71,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.tanDUSP = None
 		self.selectedSubst = None
 		self.acousticMesh = None
-		self.simuDir = None
+		self.simuParentFolder = None
 		
 	def DisplaySimu(self): #called when the index of list_simu is changed
 		dictSimu = self.SelectedSimu()
@@ -84,7 +81,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		# mod.DisplaySimu(self, simu)
 		
 		self.txt_simuName.setText(dictSimu['name'])
-		self.simuDir = dictSimu['simuDir']
+		self.simuParentFolder = dictSimu['simuParentFolder']
 		self.cb_debugPh2.setChecked(dictSimu['debugPh2'])
 		self.cb_writeMED.setChecked(dictSimu['writeMED'])
 		self.txt_nJobs.setText(str(dictSimu['nJobs']))
@@ -93,21 +90,23 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_repTrav.setText(dictSimu['reptrav'])
 		self.txt_memLimit.setText(str(dictSimu['memLimit']))
 		
-		self.cb_phase1.setChecked(dictSimu['runPhase1'])
-		if dictSimu['runPhase1'] == True:
-			self.txt_phase1Name.setText(dictSimu['phase1Name'])
-			self.txt_phase1FreqMax.setText(str(dictSimu['phase1FreqMax']))
+		self.cb_phase1.setChecked(dictSimu['computeModes'])
+
+		if dictSimu['computeModes'] == True:
+
+			modesName = os.path.basename(dictSimu['modesFolder'])
+			self.txt_phase1Name.setText(modesName)
+			modesParentFolder = os.path.dirname(dictSimu['modesFolder'])
+			self.modesParentFolder = modesParentFolder
+
+			self.txt_phase1FreqMax.setText(str(dictSimu['modesMaxFreq']))
+			self.txt_phase1freq.setText(str(dictSimu['phase1Freq']))
 			self.cb_debugPh1.setChecked(dictSimu['debugPh1'])
-			self.txt_phase1RailModes.setText(str(dictSimu['phase1RailModes']))
-			self.txt_phase1SlpModes.setText(str(dictSimu['phase1SlpModes']))
 			self.txt_phase1CPUs.setText(str(dictSimu['phase1CPUs']))
-			self.frequenciesPh1 = dictSimu['phase1Freqs']
-			# default values must be shown if runPhase1 is turned off, instead of previous simu values
-			self.phase1Folder = None
+			# default values must be shown if computeModes is turned off, instead of previous simu values
+			
 		else:
-			self.phase1Folder = dictSimu['phase1Folder']
-			# default values must be shown if runPhase1 is turned on, instead of previous simu values
-			self.frequenciesPh1 = [300, 308.3916084, 316.7832168, 325.1748252, 333.5664336, 341.958042, 350.3496503, 358.7412587, 367.1328671, 375.5244755, 383.9160839, 392.3076923, 400.6993007, 409.0909091, 417.4825175, 425.8741259, 434.2657343, 442.6573427, 451.048951, 459.4405594, 467.8321678, 476.2237762, 484.6153846, 493.006993, 501.3986014, 509.7902098, 518.1818182, 526.5734266, 534.965035, 543.3566434, 551.7482517, 560.1398601, 568.5314685, 576.9230769, 585.3146853, 593.7062937, 602.0979021, 610.4895105, 618.8811189, 627.2727273, 635.6643357, 644.0559441, 652.4475524, 660.8391608, 669.2307692, 677.6223776, 686.013986, 694.4055944, 702.7972028, 711.1888112, 719.5804196, 727.972028, 736.3636364, 744.7552448, 753.1468531, 761.5384615, 769.9300699, 778.3216783, 786.7132867, 795.1048951, 803.4965035, 811.8881119, 820.2797203, 828.6713287, 837.0629371, 845.4545455, 853.8461538, 862.2377622, 870.6293706, 879.020979, 887.4125874, 895.8041958, 904.1958042, 912.5874126, 920.979021, 929.3706294, 937.7622378, 946.1538462, 954.5454545, 962.9370629, 971.3286713, 979.7202797, 988.1118881, 996.5034965, 1004.895105, 1013.286713, 1021.678322, 1030.06993, 1038.461538, 1046.853147, 1055.244755, 1063.636364, 1072.027972, 1080.41958, 1088.811189, 1097.202797, 1105.594406, 1113.986014, 1122.377622, 1130.769231, 1139.160839, 1147.552448, 1155.944056, 1164.335664, 1172.727273, 1181.118881, 1189.51049, 1197.902098, 1206.293706, 1214.685315, 1223.076923, 1231.468531, 1239.86014, 1248.251748, 1256.643357, 1265.034965, 1273.426573, 1281.818182, 1290.20979, 1298.601399, 1306.993007, 1315.384615, 1323.776224, 1332.167832, 1340.559441, 1348.951049, 1357.342657, 1365.734266, 1374.125874, 1382.517483, 1390.909091, 1399.300699, 1407.692308, 1416.083916, 1424.475524, 1432.867133, 1441.258741, 1449.65035, 1458.041958, 1466.433566, 1474.825175, 1483.216783, 1491.608392, 1500]
+			self.modesFolder = dictSimu['modesFolder']
 		
 		self.railMesh = dictSimu['railMesh']
 		self.txt_ERail.setText(str(dictSimu['ERail']))
@@ -135,8 +134,8 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_nuBal.setText(str(dictSimu['nuBal']))
 		self.txt_hBal.setText(str(dictSimu['hBal']))
 		self.txt_balAreaCoef.setText(str(dictSimu['balAreaCoef']))
-		self.cb_USP.setChecked(dictSimu['USPON'])
-		if dictSimu['USPON']:
+		self.cb_USP.setChecked(dictSimu['USP_on'])
+		if dictSimu['USP_on']:
 			self.txt_nuUSP.setText(str(dictSimu['nuUSP']))
 			self.txt_thkUSP.setText(str(dictSimu['thkUSP']))
 			self.USPMesh = dictSimu['USPMesh']
@@ -153,19 +152,23 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_dampY.setText(str(dictSimu['clampDampY']))
 		self.txt_dampZ.setText(str(dictSimu['clampDampZ']))
 
-		self.txt_nModes.setText(str(dictSimu['nModes']))
+		self.txt_nModesRai.setText(str(dictSimu['nModesRai']))
+		self.txt_nModesSlp.setText(str(dictSimu['nModesSlp']))
 		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
 		self.txt_nSlp.setText(str(dictSimu['nSlp']))
 		self.rb_10pct.setChecked(dictSimu['force'] == (0, -100000.0, 10000.0))
 		self.rb_45deg.setChecked(dictSimu['force'] == (0, -100000, -100000))
 		self.txt_forceNode.setText(dictSimu['forceNode'])
 		self.txt_slpForce.setText(str(dictSimu['slpForce']))
-		self.frequenciesPh2 = dictSimu['frequencies']
+		self.frequencies = dictSimu['frequencies']
 		
 		if dictSimu['outputType'] == 'VITE':
 			self.cbb_output.setCurrentText('Velocity')
 		elif dictSimu['outputType'] == 'ACCE':
 			self.cbb_output.setCurrentText('Acceleration')
+		elif dictSimu['outputType'] == 'DEPL':
+			self.cbb_output.setCurrentText('Displacement')
+
 		self.selectedSubst = dictSimu['selectedSubstFRF']
 		self.cb_computeAcoustic.setChecked(dictSimu['computeAcoustic'])
 		self.rb_1D.setChecked(dictSimu['acMeshDim'] == '1D')
@@ -182,45 +185,42 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.label_19.setDisabled(not computePhase1)
 		self.label_10.setDisabled(not computePhase1)
 		self.label_11.setDisabled(not computePhase1)
-		self.label_12.setDisabled(not computePhase1)
 		self.label_13.setDisabled(not computePhase1)
 		self.label_26.setDisabled(not computePhase1)
 		self.btn_savePhase1To.setDisabled(not computePhase1)
 		self.txt_phase1Name.setDisabled(not computePhase1)
 		self.txt_phase1FreqMax.setDisabled(not computePhase1)
-		self.txt_phase1RailModes.setDisabled(not computePhase1)
-		self.txt_phase1SlpModes.setDisabled(not computePhase1)
+		self.txt_phase1freq.setDisabled(not computePhase1)
 		self.txt_phase1CPUs.setDisabled(not computePhase1)
-		self.btn_phase1SelFreqs.setDisabled(not computePhase1)
 		self.cb_debugPh1.setDisabled(not computePhase1)
 		
 	def USPStateChanged(self):
-		USPON = self.cb_USP.isChecked()
-		self.btn_EUSP.setDisabled(not USPON)
-		self.btn_tanDUSP.setDisabled(not USPON)
-		self.txt_nuUSP.setDisabled(not USPON)
-		self.label_18.setDisabled(not USPON)
-		self.btn_USPMesh.setDisabled(not USPON)
-		self.label_35.setDisabled(not USPON)
-		self.txt_thkUSP.setDisabled(not USPON)
+		USP_on = self.cb_USP.isChecked()
+		self.btn_EUSP.setDisabled(not USP_on)
+		self.btn_tanDUSP.setDisabled(not USP_on)
+		self.txt_nuUSP.setDisabled(not USP_on)
+		self.label_18.setDisabled(not USP_on)
+		self.btn_USPMesh.setDisabled(not USP_on)
+		self.label_35.setDisabled(not USP_on)
+		self.txt_thkUSP.setDisabled(not USP_on)
 		
 	def DefaultNodeStateChanged(self):
 		defNodeON = self.cb_defaultNode.isChecked()
 		self.txt_forceNode.setDisabled(defNodeON)
 		if defNodeON == True:
 			if self.rb_10pct.isChecked() == True:
-				self.txt_forceNode.setText('nodeF10')
+				self.txt_forceNode.setText('nodeF')
 			elif self.rb_45deg.isChecked() == True:
-				self.txt_forceNode.setText('nodeF45')
+				self.txt_forceNode.setText('nodeF')
 				
 	def LoadDirChanged(self):
 		if self.cb_defaultNode.isChecked() == False:
 			return
 			
 		if self.rb_10pct.isChecked() == True:
-			txt = 'nodeF10'
+			txt = 'nodeF'
 		elif self.rb_45deg.isChecked() == True:
-			txt = 'nodeF45'
+			txt = 'nodeF'
 			
 		self.txt_forceNode.setText(txt)
 		
@@ -235,7 +235,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['cwd'] = self.cwd
 		dictSimu['appPath'] = self.appPath
 	
-		# Computing parameters ===================================================================================
+		# Execution parameters ===================================================================================
 		#=========================================================================================================
 		simuName = self.txt_simuName.text()
 		
@@ -246,11 +246,11 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['name'] = simuName
 		
 		#
-		if self.simuDir is None or os.path.exists(self.simuDir) == False:
+		if self.simuParentFolder is None or os.path.exists(self.simuParentFolder) == False:
 			QMessageBox.information(self, 'Error', 'Saving directory was not found.', QMessageBox.Ok,)
 			return
 			
-		dictSimu['simuDir'] = self.simuDir
+		dictSimu['simuParentFolder'] = self.simuParentFolder
 		
 		#
 		debugPh2 = self.cb_debugPh2.isChecked()
@@ -315,43 +315,42 @@ class MultiSleeperModelGUI(QMainWindow):
 			
 		dictSimu['memLimit'] = memLimit
 		
-		# Phase 1 parameters =====================================================================================
+		# Phase 1 (modes) parameters =====================================================================================
 		#=========================================================================================================
-		runPhase1 = self.cb_phase1.isChecked()
-		dictSimu['runPhase1'] = runPhase1
+		computeModes = self.cb_phase1.isChecked()
+		dictSimu['computeModes'] = computeModes
 		
-		if runPhase1 == True:
+		if computeModes == True:
 		
-			dictSimu['phase1WorkingDir'] = os.path.join(dictSimu['simuDir'], dictSimu['name'] + '_phase1')
-			dictSimu['nJobsPh1'] = 4
-		
-			#
-			if self.savePhase1To is None or os.path.exists(self.savePhase1To) == False:
-				QMessageBox.information(self, 'Error', 'Phase 1 saving directory was not found.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['savePhase1To'] = self.savePhase1To
-		
-		
-			#
-			phase1Name = self.txt_phase1Name.text()
-			if len(phase1Name) == 0:
-				QMessageBox.information(self, 'Error', 'Please enter a correct name for Phase 1.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['phase1Name'] = phase1Name
+			dictSimu['phase1WorkingDir'] = os.path.join(dictSimu['simuParentFolder'], dictSimu['name'] + '_modes')
 			
-			dirBase = os.path.join(dictSimu['savePhase1To'], dictSimu['phase1Name'])
+			#
+			if self.modesParentFolder is None or os.path.exists(self.modesParentFolder) == False:
+				QMessageBox.information(self, 'Error', 'Modes saving directory was not found.', QMessageBox.Ok,)
+				return
+		
+			modesName = self.txt_phase1Name.text()
+			if len(modesName) == 0:
+				QMessageBox.information(self, 'Error', 'Please enter a correct name for the modes simulation.', QMessageBox.Ok,)
+				return
+			
+			if modesName == dictSimu['name'] + '_modes':
+				QMessageBox.information(self, 'Error', dictSimu['name'] + '_modes (Phase 1: modes) cannot be used, please choose a different name.', QMessageBox.Ok,)
+				return
+			
+			modesFolder = os.path.join(self.modesParentFolder, modesName)
 			try:
-				shutil.rmtree(dirBase)
+				shutil.rmtree(modesFolder)
 			except:
 				pass
 				
 			try:
-				os.makedirs(dirBase)
+				os.makedirs(modesFolder)
 			except:
-				QMessageBox.information(self, 'Error', dirBase + 'could not be created', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', modesFolder + ' could not be created', QMessageBox.Ok,)
 				return
+			
+			dictSimu['modesFolder'] = modesFolder
 			
 
 			#
@@ -361,39 +360,27 @@ class MultiSleeperModelGUI(QMainWindow):
 			
 			#
 			try:
-				phase1FreqMax = float(self.txt_phase1FreqMax.text())
-				if phase1FreqMax < 1.0:
-					QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for Phase 1.', QMessageBox.Ok,)
+				modesMaxFreq = float(self.txt_phase1FreqMax.text())
+				if modesMaxFreq < 1.0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for modes computing.', QMessageBox.Ok,)
 					return
 			except:
-				QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for Phase 1.', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for modes computing.', QMessageBox.Ok,)
 				return
 				
-			dictSimu['phase1FreqMax'] = phase1FreqMax
-				
+			dictSimu['modesMaxFreq'] = modesMaxFreq
+
 			#
 			try:
-				phase1RailModes = int(self.txt_phase1RailModes.text())
-				if phase1RailModes < 1:
-					QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for Phase 1.', QMessageBox.Ok,)
+				phase1Freq = float(self.txt_phase1freq.text())
+				if phase1Freq < 0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
 					return
 			except:
-				QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for Phase 1.', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
 				return
 				
-			dictSimu['phase1RailModes'] = phase1RailModes
-				
-			#
-			try:
-				phase1SlpModes = int(self.txt_phase1SlpModes.text())
-				if phase1SlpModes < 1:
-					QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for Phase 1.', QMessageBox.Ok,)
-					return
-			except:
-				QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for Phase 1.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['phase1SlpModes'] = phase1SlpModes
+			dictSimu['phase1Freq'] = phase1Freq
 				
 			#
 			try:
@@ -401,41 +388,28 @@ class MultiSleeperModelGUI(QMainWindow):
 				if phase1CPUs < 1:
 					QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
 					return
-				if phase1CPUs*dictSimu['nJobsPh1'] > nJobsMax:
-					QMessageBox.information(self, 'Error', 'Phase 1 will be running using 4 jobs (=frequency bands) simultaneously. The total number of CPUs used for Phase 1 (' + str(phase1CPUs*dictSimu['nJobsPh1']) + ') is larger than the number of CPUs available (' + str(nJobsMax) + '). Please use less CPUs per job.', QMessageBox.Ok,)
+				if phase1CPUs > nJobsMax:
+					QMessageBox.information(self, 'Error', 'The total number of CPUs used for modes computing is larger than the number of CPUs available (' + str(nJobsMax) + ').', QMessageBox.Ok,)
 					return
 			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
 				return
 				
 			dictSimu['phase1CPUs'] = phase1CPUs
-			
-			#
-			dictSimu['phase1Freqs'] = self.frequenciesPh1
-			
-			if len(dictSimu['phase1Freqs']) < dictSimu['nJobsPh1']:
-				QMessageBox.information(self, 'Error', 'The number of frequencies (phase1) is smaller than the number of jobs (=' + str(dictSimu['nJobsPh1']) + ').', QMessageBox.Ok,)
-				return
-			
-			dictSimu['phase1Folder'] = dirBase
+
 		else:
 			#
-			if self.phase1Folder is None or os.path.exists(self.phase1Folder) == False:
-				QMessageBox.information(self, 'Error', 'Phase 1 directory was not found.', QMessageBox.Ok,)
+			if self.modesFolder is None or os.path.exists(self.modesFolder) == False:
+				QMessageBox.information(self, 'Error', 'Modes directory was not found.', QMessageBox.Ok,)
 				return
-				
-			dictSimu['phase1Folder'] = self.phase1Folder
+			
+			dictSimu['modesFolder'] = self.modesFolder
 
 			dictSimu['phase1WorkingDir'] = None
-			dictSimu['nJobsPh1'] = None				
-			dictSimu['savePhase1To'] = None
-			dictSimu['phase1Name'] = None
 			dictSimu['debugPh1'] = None
-			dictSimu['phase1FreqMax'] = None				
-			dictSimu['phase1RailModes'] = None				
-			dictSimu['phase1SlpModes'] = None
+			dictSimu['modesMaxFreq'] = None				
 			dictSimu['phase1CPUs'] = None
-			dictSimu['phase1Freqs'] = None
+			dictSimu['phase1Freq'] = None
 				
 				
 		# Materials ==============================================================================================
@@ -606,10 +580,10 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['balAreaCoef'] = balAreaCoef
 			
 		#
-		USPON = self.cb_USP.isChecked()
-		dictSimu['USPON'] = USPON
+		USP_on = self.cb_USP.isChecked()
+		dictSimu['USP_on'] = USP_on
 		
-		if USPON:
+		if USP_on:
 			#
 			if self.USPMesh is None or os.path.exists(self.USPMesh) == False:
 				QMessageBox.information(self, 'Error', 'USP mesh not defined.', QMessageBox.Ok,)
@@ -659,15 +633,27 @@ class MultiSleeperModelGUI(QMainWindow):
 		# Simulation parameters ==================================================================================
 		#=========================================================================================================
 		try:
-			nModes = int(float(self.txt_nModes.text()))
-			if nModes < 1:
-				QMessageBox.information(self, 'Error', 'Please enter a correct number of modes.', QMessageBox.Ok,)
+			nModesRai = int(float(self.txt_nModesRai.text()))
+			if nModesRai < 1:
+				QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
 				return
 		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct number of modes.', QMessageBox.Ok,)
+			QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
 			return
 			
-		dictSimu['nModes'] = nModes
+		dictSimu['nModesRai'] = nModesRai
+
+		#
+		try:
+			nModesSlp = int(float(self.txt_nModesSlp.text()))
+			if nModesSlp < 1:
+				QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
+			return
+			
+		dictSimu['nModesSlp'] = nModesSlp
 
 		#
 		try:
@@ -725,18 +711,18 @@ class MultiSleeperModelGUI(QMainWindow):
 		try:
 			slpForce = int(self.txt_slpForce.text())
 			if slpForce < 1 or slpForce > dictSimu['nSlp']:
-				QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure.', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure (sleeper).', QMessageBox.Ok,)
 				return
 		except:
-			QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure.', QMessageBox.Ok,)
+			QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure (sleeper).', QMessageBox.Ok,)
 			return
 			
 		dictSimu['slpForce'] = slpForce
 		
 		#
-		dictSimu['frequencies'] = self.frequenciesPh2
+		dictSimu['frequencies'] = self.frequencies
 		if len(dictSimu['frequencies']) < dictSimu['nJobs']:
-			QMessageBox.information(self, 'Error', 'The number of frequencies (phase2) is smaller than the number of jobs (=' + str(dictSimu['nJobs']) + ').', QMessageBox.Ok,)
+			QMessageBox.information(self, 'Error', 'The number of frequenciesis smaller than the number of jobs (=' + str(dictSimu['nJobs']) + ').', QMessageBox.Ok,)
 			return
 		
 		# Post-processing ========================================================================================
@@ -747,9 +733,8 @@ class MultiSleeperModelGUI(QMainWindow):
 			dictSimu['outputType'] = 'ACCE'
 		elif outputType == 'Velocity':
 			dictSimu['outputType'] = 'VITE'
-		else:
-			QMessageBox.information(self, 'Error', 'Wrong output type', QMessageBox.Ok,)
-			return
+		elif outputType == 'Displacement':
+			dictSimu['outputType'] = 'DEPL'
 		
 		#
 		if self.selectedSubst == None or len(self.selectedSubst) == 0:
@@ -767,7 +752,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		#
 		try:
 			nSlpAcoustic = int(self.txt_nSlpAcoustic.text())
-			if nSlpAcoustic < -1 or nSlpAcoustic == 0:
+			if nSlpAcoustic < -1:
 				QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
 				return
 		except:
@@ -816,52 +801,49 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.list_simu.setCurrentRow(self.list_simu.count()-1)
 		
 	def SelectSimuDir(self):
-		if self.simuDir is None or os.path.exists(self.simuDir) == False:
+		if self.simuParentFolder is None or os.path.exists(self.simuParentFolder) == False:
 			path = self.cwd
 		else:
-			path = self.simuDir
+			path = self.simuParentFolder
 		
 		folder = str(QFileDialog.getExistingDirectory(self, "Select directory", path))									 
 		if folder == '':
 			return
 			
-		self.simuDir = folder
+		self.simuParentFolder = folder
 		
-	def SelectPhase1Folder(self):
-		if self.phase1Folder is None or os.path.exists(self.phase1Folder) == False:
+	def SelectModesFolder(self):
+		# Used if already computed modes are reused
+		if self.modesFolder is None or os.path.exists(self.modesFolder) == False:
 			path = self.cwd
 		else:
-			path = self.phase1Folder
+			path = self.modesFolder
 		
-		folder = str(QFileDialog.getExistingDirectory(self, "Select base directory", path))
+		folder = str(QFileDialog.getExistingDirectory(self, "Select modes folder", path))
 		if folder == '':
 			return
 			
-		self.phase1Folder = folder
+		self.modesFolder = folder
 		
-	def SavePhase1To(self):
-		if self.savePhase1To is None or os.path.exists(self.savePhase1To) == False:
+	def SelectModesParentFolder(self):
+		# Used if modes are recomputed
+		if self.modesParentFolder is None or os.path.exists(self.modesParentFolder) == False:
 			path = self.cwd
 		else:
-			path = self.savePhase1To
+			path = self.modesParentFolder
 		
-		folder = str(QFileDialog.getExistingDirectory(self, "Select directory", path))									 
+		folder = str(QFileDialog.getExistingDirectory(self, "Select directory where the modes folder will be saved", path))									 
 		if folder == '':
 			return
 			
-		self.savePhase1To = folder
+		self.modesParentFolder = folder
 		
-	def SelectPhase1Frequencies(self):
-		dlg_frequencies = Dialog_Frequencies(self.frequenciesPh1, 'Phase 1 spectrum definition (Hz)')
+		
+	def SelectFrequencies(self):
+		dlg_frequencies = Dialog_Frequencies(self.frequencies, 'Spectrum definition (Hz)')
 		dlg_frequencies.show()
 		dlg_frequencies.exec_()
-		self.frequenciesPh1 = dlg_frequencies.frequencies
-		
-	def SelectPhase2Frequencies(self):
-		dlg_frequencies = Dialog_Frequencies(self.frequenciesPh2, 'Phase 2 spectrum definition (Hz)')
-		dlg_frequencies.show()
-		dlg_frequencies.exec_()
-		self.frequenciesPh2 = dlg_frequencies.frequencies
+		self.frequencies = dlg_frequencies.frequencies
 		
 	def SelectRailMesh(self):
 		defPath = os.path.join(self.cwd, 'Meshes', 'Rails')
@@ -968,10 +950,6 @@ class MultiSleeperModelGUI(QMainWindow):
 	
 	
 		for simu in simulationsOrdered:
-		
-			now = datetime.now()
-			date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-			print('[' + date_time + '] Running simulation: ' + simu['name'] + ' ...')
 			code = mod.RunSimulation(simu)
 			if code != 0:
 				if isinstance(code, str) or isinstance(code, unicode):
@@ -1215,42 +1193,3 @@ if __name__ == '__main__':
 	widget = MultiSleeperModelGUI()
 	widget.show()
 	sys.exit(app.exec_())
-
-
-# workingDir = os.path.dirname(os.path.realpath(__file__))
-# saveDir45 = '/home/cae/scratch/RNA/RailPad/PhaseIII/harmoAcoustic_allPads/load45'
-# saveDir10 = '/home/cae/scratch/RNA/RailPad/PhaseIII/harmoAcoustic_allPads/load10'
-
-# name = 'EVA10'
-# paramFile = os.path.join(workingDir, name + '.py')
-
-# exec("from " + name + " import *")
-# baseDir = os.path.join(workingDir, 'Bases', 'Base_' + padDesign)
-
-# if not os.path.exists(baseDir) or len(os.listdir(baseDir)) == 0:
-	# simFolder1 = os.path.join(workingDir, name + '_modes')
-	# run.RunPhase1(workingDir, simFolder1, paramFile)
-
-# simFolder2 = os.path.join(saveDir10, name)
-# run.RunPhase2(workingDir, simFolder2, paramFile)
-
-
-
-# name = 'EVA45'
-# paramFile = os.path.join(workingDir, name + '.py')
-
-# exec("from " + name + " import *")
-# baseDir = os.path.join(workingDir, 'Bases', 'Base_' + padDesign)
-
-# simFolder2 = os.path.join(saveDir45, name)
-# run.RunPhase2(workingDir, simFolder2, paramFile)
-
-
-
-
-
-
-# # shutil.copytree('/home/cae/Documents/Railpad2/MultiSleeperModel/8_automation/Bases/Base_singleMat', '/home/cae/Documents/Railpad2/MultiSleeperModel/8_automation/Bases/Base_singleMat_RefReal')
-
-
-

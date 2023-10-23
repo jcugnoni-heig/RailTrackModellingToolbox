@@ -1,0 +1,43 @@
+import json
+
+DEBUT(LANG='EN', PAR_LOT='NON')
+
+nodesForDispl = ('n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9', 'n10', 'n11', 'n12', 'n13', 'n14', )
+
+# Load parameters dict
+with open('fort.3', 'r') as f:
+    txt = f.read()
+f.close()
+exp_modes = json.loads(txt)
+
+# Define mesh & model, material, etc
+mesh = LIRE_MAILLAGE(FORMAT='MED',
+                     UNITE=2)
+
+for i in range(len(exp_modes)):
+    key = 'Mode ' + str(i+1)
+    mode = exp_modes[key]
+    freq = mode['freq']
+
+    listeAffe = []
+    for node in nodesForDispl:
+        dx = mode[node + '_X']
+        dy = mode[node + '_Y']
+        dz = mode[node + '_Z']
+        listeAffe.append(_F(GROUP_NO=node, NOM_CMP=('DX', 'DY', 'DZ'), VALE=(dx, dy, dz),))
+
+    field = CREA_CHAMP(OPERATION = 'AFFE', TYPE_CHAM ='NOEU_DEPL_R', MAILLAGE = mesh , AFFE = (listeAffe))
+
+    if i == 0:
+        resu = CREA_RESU(OPERATION='AFFE', TYPE_RESU='DYNA_HARMO', NOM_CHAM='DEPL', AFFE=_F(CHAM_GD=field, FREQ=freq))
+    else:
+        resu = CREA_RESU(reuse=resu, RESULTAT=resu, OPERATION='AFFE', TYPE_RESU='DYNA_HARMO', NOM_CHAM='DEPL', AFFE=_F(CHAM_GD=field, FREQ=freq))
+
+    DETRUIRE(CONCEPT=_F(NOM=(field)))
+
+IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=resu, PARTIE='REEL'), UNITE=80)
+
+for i in range(len(exp_modes)):
+    IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=resu, PARTIE='REEL', NUME_ORDRE=i+1), UNITE=81+i)
+
+FIN()

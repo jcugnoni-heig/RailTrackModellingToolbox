@@ -7,10 +7,13 @@ echo ""
 echo " **** RAILTRACK MODELLING TOOLBOX SETUP **** "
 echo ""
 
-echo "1. setting all subdirs as writable"
+echo "1. correcting all potential problems with .sh line end characters"
+find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} +
+
+echo "2. setting all subdirs as writable"
 chmod -R a+rwX *
 
-echo "2. changing all shell .sh file as executable"
+echo "3. changing all shell .sh file as executable"
 find -iname "*.sh" -exec chmod a+x {} \;
 
 changepathfiles=`find -iname changePath.sh`

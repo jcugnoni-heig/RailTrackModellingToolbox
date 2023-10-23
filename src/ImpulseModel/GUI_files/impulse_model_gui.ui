@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>808</width>
+    <width>811</width>
     <height>737</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>110</y>
+      <y>150</y>
       <width>791</width>
       <height>561</height>
      </rect>
@@ -33,64 +33,6 @@
         <string>Clamps</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_17">
-          <property name="text">
-           <string>Clamps stiffness :</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLabel" name="label_21">
-          <property name="text">
-           <string>X</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLineEdit" name="stiffnessX">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QLabel" name="label_23">
-          <property name="text">
-           <string>Y</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="4">
-         <widget class="QLineEdit" name="stiffnessY">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>9</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="5">
-         <widget class="QLabel" name="label_26">
-          <property name="text">
-           <string>Z</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="6">
-         <widget class="QLineEdit" name="stiffnessZ">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="7">
          <widget class="QLabel" name="label_18">
           <property name="text">
@@ -98,17 +40,17 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_20">
-          <property name="text">
-           <string>Clamps damping :</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="1">
          <widget class="QLabel" name="label_22">
           <property name="text">
            <string>X</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="text">
+           <string>Clamps damping :</string>
           </property>
          </widget>
         </item>
@@ -129,13 +71,10 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
-         <widget class="QLineEdit" name="dampingY">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
+        <item row="1" column="7">
+         <widget class="QLabel" name="label_19">
           <property name="text">
-           <string>0</string>
+           <string>[Ns/mm]</string>
           </property>
          </widget>
         </item>
@@ -143,6 +82,16 @@
          <widget class="QLabel" name="label_25">
           <property name="text">
            <string>Z</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLineEdit" name="dampingY">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>0</string>
           </property>
          </widget>
         </item>
@@ -156,10 +105,68 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="7">
-         <widget class="QLabel" name="label_19">
+        <item row="0" column="3">
+         <widget class="QLabel" name="label_23">
           <property name="text">
-           <string>[Ns/mm]</string>
+           <string>Y</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>X</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLineEdit" name="stiffnessX">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>Clamps stiffness :</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="6">
+         <widget class="QLineEdit" name="stiffnessZ">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QLineEdit" name="stiffnessY">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>0.75</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="QLabel" name="label_26">
+          <property name="text">
+           <string>Z</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="6">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Per CLAMP, not per EDGE. Each rail pad is &lt;/p&gt;&lt;p&gt;compressed by two clamps, and each clamp &lt;/p&gt;&lt;p&gt;is modelled with two edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -459,12 +466,12 @@
      <rect>
       <x>0</x>
       <y>10</y>
-      <width>791</width>
-      <height>101</height>
+      <width>471</width>
+      <height>121</height>
      </rect>
     </property>
     <property name="title">
-     <string>Study details</string>
+     <string>Saving parameters</string>
     </property>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
@@ -473,9 +480,6 @@
         <string>Name of the simulation</string>
        </property>
       </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="nameSimu"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
@@ -487,6 +491,66 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="pathWorkingDirectory"/>
      </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="nameSimu"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="txt_repTrav">
+       <property name="text">
+        <string>/mnt/scratch/tmp/</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Aster running directory (rep_trav)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_10">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>10</y>
+      <width>321</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Execution parameters</string>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_4">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="txt_memLim">
+       <property name="text">
+        <string>15000</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="txt_nCPU">
+       <property name="text">
+        <string>4</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Memory limit per CPU (MB)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>CPUs (MPI parallelization)</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
@@ -495,13 +559,52 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>808</width>
+     <width>811</width>
      <height>23</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>nameSimu</tabstop>
+  <tabstop>pathWorkingDirectory</tabstop>
+  <tabstop>txt_repTrav</tabstop>
+  <tabstop>txt_nCPU</tabstop>
+  <tabstop>txt_memLim</tabstop>
+  <tabstop>slpDist</tabstop>
+  <tabstop>stiffnessX</tabstop>
+  <tabstop>stiffnessY</tabstop>
+  <tabstop>stiffnessZ</tabstop>
+  <tabstop>dampingX</tabstop>
+  <tabstop>dampingY</tabstop>
+  <tabstop>dampingZ</tabstop>
+  <tabstop>railMaterial</tabstop>
+  <tabstop>newRailMaterialButton</tabstop>
+  <tabstop>cb_USP</tabstop>
+  <tabstop>USPMeshes</tabstop>
+  <tabstop>newUSPMeshButton</tabstop>
+  <tabstop>USPMaterial</tabstop>
+  <tabstop>newUSPMaterialButton</tabstop>
+  <tabstop>padMeshes</tabstop>
+  <tabstop>newPadMeshButton</tabstop>
+  <tabstop>padMaterial1</tabstop>
+  <tabstop>padMaterial2</tabstop>
+  <tabstop>newPadMaterialButton</tabstop>
+  <tabstop>sleeperMeshes</tabstop>
+  <tabstop>newSleeperMeshButton</tabstop>
+  <tabstop>sleeperMaterial</tabstop>
+  <tabstop>newSleeperMaterialButton</tabstop>
+  <tabstop>newRailMeshButton</tabstop>
+  <tabstop>btn_clear</tabstop>
+  <tabstop>btn_updateCB</tabstop>
+  <tabstop>runButton</tabstop>
+  <tabstop>ballastMeshes</tabstop>
+  <tabstop>newBallastMeshButton</tabstop>
+  <tabstop>ballastMaterial</tabstop>
+  <tabstop>railMeshes</tabstop>
+  <tabstop>newBallastMaterialButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

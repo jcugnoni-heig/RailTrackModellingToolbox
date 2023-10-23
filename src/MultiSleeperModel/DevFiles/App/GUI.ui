@@ -60,7 +60,7 @@
     </property>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
-      <string>Base</string>
+      <string>Modes definition</string>
      </attribute>
      <widget class="QGroupBox" name="groupBox_2">
       <property name="enabled">
@@ -78,79 +78,13 @@
        <string/>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="4" column="1">
-        <widget class="QLineEdit" name="txt_phase1FreqMax">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>The eigenmodes of the macroelement are computed up to this frequency.</string>
-         </property>
-         <property name="text">
-          <string>15000</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLineEdit" name="txt_phase1CPUs">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band). Note that phase 1 is divided into 4 bands by default.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QLineEdit" name="txt_phase1SlpModes">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>60</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
+       <item row="6" column="0">
         <widget class="QLabel" name="label_13">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
           <string>Number of CPUs</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="QPushButton" name="btn_phase1SelFreqs">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Select frequencies...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_19">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Save results to</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QPushButton" name="btn_savePhase1To">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Select folder...</string>
          </property>
         </widget>
        </item>
@@ -164,13 +98,23 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_26">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_19">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Base name</string>
+          <string>Save modes to</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QPushButton" name="btn_savePhase1To">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Select folder...</string>
          </property>
         </widget>
        </item>
@@ -184,33 +128,13 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QLineEdit" name="txt_phase1RailModes">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_26">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>60</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_11">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Rail interfaces modes</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_12">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Sleeper interface modes</string>
+          <string>Modes name</string>
          </property>
         </widget>
        </item>
@@ -227,6 +151,55 @@
          </property>
         </widget>
        </item>
+       <item row="6" column="1">
+        <widget class="QLineEdit" name="txt_phase1CPUs">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band). Note that phase 1 is divided into 4 bands by default.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>24</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="txt_phase1FreqMax">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>The eigenmodes of the macroelement are computed up to this frequency.</string>
+         </property>
+         <property name="text">
+          <string>15000</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_11">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Frequency for freq-dep materials (Hz)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="txt_phase1freq">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>The eigenmodes of the macroelement are computed up to this frequency.</string>
+         </property>
+         <property name="text">
+          <string>900</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QCheckBox" name="cb_phase1">
@@ -234,7 +207,7 @@
        <rect>
         <x>9</x>
         <y>12</y>
-        <width>141</width>
+        <width>181</width>
         <height>18</height>
        </rect>
       </property>
@@ -242,15 +215,15 @@
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Phase 1 consists in computing the eigen modes of the macroelement and evaluate the importance of their contribution to the response on a 3-sleeper-long model. If it has already been performed for this mesh configuration (i.e. pad mesh and eventual USP mesh), the results can be reused to make the actual simulation (&amp;quot;Phase 2&amp;quot;) much faster.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
-       <string>(Re)run Phase 1  OR </string>
+       <string>Compute eigenmodes, or</string>
       </property>
      </widget>
      <widget class="QPushButton" name="btn_selPhase1Folder">
       <property name="geometry">
        <rect>
-        <x>160</x>
+        <x>180</x>
         <y>10</y>
-        <width>141</width>
+        <width>201</width>
         <height>25</height>
        </rect>
       </property>
@@ -258,13 +231,13 @@
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Phase 1 consists in computing the eigen modes of the macroelement and evaluate the importance of their contribution to the response on a 3-sleeper-long model. If it has already been performed for this mesh configuration (i.e. pad mesh and eventual USP mesh), the results can be reused to make the actual simulation (&amp;quot;Phase 2&amp;quot;) much faster.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
-       <string>Select Base folder...</string>
+       <string>Select folder with existing modes</string>
       </property>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
-      <string>Computing</string>
+      <string>Execution parameters</string>
      </attribute>
      <widget class="QGroupBox" name="groupBox">
       <property name="geometry">
@@ -837,7 +810,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Stiffness X (N/mm)</string>
+           <string>Stiffness X (kN/mm)</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="txt_stiffX">
@@ -845,7 +818,7 @@
            <rect>
             <x>150</x>
             <y>10</y>
-            <width>111</width>
+            <width>71</width>
             <height>20</height>
            </rect>
           </property>
@@ -866,7 +839,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Stiffness Y (N/mm)</string>
+           <string>Stiffness Y (kN/mm)</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="txt_stiffY">
@@ -874,7 +847,7 @@
            <rect>
             <x>150</x>
             <y>40</y>
-            <width>113</width>
+            <width>71</width>
             <height>20</height>
            </rect>
           </property>
@@ -882,7 +855,7 @@
            <string>Vertical clamp stiffness</string>
           </property>
           <property name="text">
-           <string>0.0</string>
+           <string>0.75</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_38">
@@ -895,7 +868,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Stiffness Z (N/mm)</string>
+           <string>Stiffness Z (kN/mm)</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="txt_stiffZ">
@@ -903,7 +876,7 @@
            <rect>
             <x>150</x>
             <y>70</y>
-            <width>113</width>
+            <width>71</width>
             <height>20</height>
            </rect>
           </property>
@@ -924,7 +897,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Damping Z (Ns/mm)</string>
+           <string>Damping Z (kNs/mm)</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_40">
@@ -937,7 +910,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Damping X (Ns/mm)</string>
+           <string>Damping X (kNs/mm)</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_41">
@@ -950,7 +923,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>Damping Y (Ns/mm)</string>
+           <string>Damping Y (kNs/mm)</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="txt_dampZ">
@@ -958,7 +931,7 @@
            <rect>
             <x>150</x>
             <y>160</y>
-            <width>113</width>
+            <width>71</width>
             <height>20</height>
            </rect>
           </property>
@@ -974,7 +947,7 @@
            <rect>
             <x>150</x>
             <y>100</y>
-            <width>111</width>
+            <width>71</width>
             <height>20</height>
            </rect>
           </property>
@@ -990,7 +963,7 @@
            <rect>
             <x>150</x>
             <y>130</y>
-            <width>113</width>
+            <width>71</width>
             <height>20</height>
            </rect>
           </property>
@@ -999,6 +972,19 @@
           </property>
           <property name="text">
            <string>0.0</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_12">
+          <property name="geometry">
+           <rect>
+            <x>270</x>
+            <y>30</y>
+            <width>231</width>
+            <height>111</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Per CLAMP, not per EDGE.&lt;/p&gt;&lt;p&gt;Each rail pad is compressed by two &lt;/p&gt;&lt;p&gt;clamps, and each clamp is modelled &lt;/p&gt;&lt;p&gt;with two edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </widget>
@@ -1028,7 +1014,7 @@
               <bool>false</bool>
              </property>
              <property name="text">
-              <string/>
+              <string>8.5</string>
              </property>
             </widget>
            </item>
@@ -1059,6 +1045,9 @@
             <widget class="QLineEdit" name="txt_nuUSP">
              <property name="enabled">
               <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>0</string>
              </property>
             </widget>
            </item>
@@ -1164,7 +1153,7 @@
               <string>Since the ballast is modelled with 0D discrete elements, its virtual height allows computing their stiffness from the Young's modulus.</string>
              </property>
              <property name="text">
-              <string>0.6</string>
+              <string>0.3</string>
              </property>
             </widget>
            </item>
@@ -1181,7 +1170,7 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Since the discrete elements representing the ballast are only located on the sleepers' bottom face, the effective area coefficient is defined as the ratio between the effective area of ballast sollicitation under a sleeper, and the area of a sleeper's bottom face.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string>2.0</string>
+              <string>1.0</string>
              </property>
             </widget>
            </item>
@@ -1218,7 +1207,7 @@
        <rect>
         <x>9</x>
         <y>9</y>
-        <width>276</width>
+        <width>291</width>
         <height>240</height>
        </rect>
       </property>
@@ -1226,14 +1215,121 @@
        <string>Parameters</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_8">
-       <item row="6" column="0">
+       <item row="9" column="2">
+        <widget class="QLineEdit" name="txt_slpForce">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force will be applied to the group of node indicated above, on the substructure corresponding to the sleeper number entered here. The excited side is always the right side.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>201</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="label_25">
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Number of rail interface modes</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLineEdit" name="txt_nModesRai">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The modes (computed in phase 1) that are going to be used are the union of the N most influent modes to the response computed in phase 1, among the 6 substructures used and the frequency spectrum. This number is an approximation. The total number of modes may be larger. N can be decreased for quicker but perhaps less accurate simulations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2">
+        <widget class="QLineEdit" name="txt_nSlp">
+         <property name="text">
+          <string>400</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QLabel" name="label_44">
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Total effective unit mass</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLineEdit" name="txt_cumulMassEffeUn">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the minimum cumulated effective unit mass requested in each direction (see doc Code_Aster R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value ([0;1]) in each direction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>0.94</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="2">
+        <widget class="QLabel" name="label_36">
+         <property name="text">
+          <string>Sleeper spacing (mm)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="2">
+        <widget class="QLineEdit" name="txt_forceNode">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>nodeF</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="2">
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>Number of sleepers</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
+        <widget class="QCheckBox" name="cb_defaultNode">
+         <property name="text">
+          <string>Default force node group</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QLineEdit" name="txt_slpSpacing">
+         <property name="text">
+          <string>600</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
         <widget class="QLabel" name="label_21">
          <property name="text">
           <string>Load direction</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QRadioButton" name="rb_10pct">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1246,17 +1342,7 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="2">
-        <widget class="QRadioButton" name="rb_45deg">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>45°</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0" colspan="3">
+       <item row="10" column="0" colspan="3">
         <widget class="QPushButton" name="btn_freqs">
          <property name="enabled">
           <bool>true</bool>
@@ -1266,8 +1352,25 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QLineEdit" name="txt_nModes">
+       <item row="7" column="2">
+        <widget class="QRadioButton" name="rb_45deg">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force acts in a plane parallel to the YZ plane, either at 45° inward (turn case), or at 5.7° outward (default case).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>45°</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <widget class="QLabel" name="label_23">
+         <property name="text">
+          <string>Applied at sleeper n°</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLineEdit" name="txt_nModesSlp">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The modes (computed in phase 1) that are going to be used are the union of the N most influent modes to the response computed in phase 1, among the 6 substructures used and the frequency spectrum. This number is an approximation. The total number of modes may be larger. N can be decreased for quicker but perhaps less accurate simulations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1275,108 +1378,17 @@
           <string/>
          </property>
          <property name="text">
-          <string>50</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QLabel" name="label_25">
-         <property name="whatsThis">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Number of interface modes</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLineEdit" name="txt_cumulMassEffeUn">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the minimum cumulated effective unit mass requested in each direction (see doc Code_Aster R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value ([0;1]) in each direction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>0.9</string>
+          <string>10</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="label_44">
+        <widget class="QLabel" name="label_46">
          <property name="whatsThis">
           <string/>
          </property>
          <property name="text">
-          <string>Total effective unit mass</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLineEdit" name="txt_nSlp">
-         <property name="text">
-          <string>400</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="2">
-        <widget class="QLineEdit" name="txt_slpSpacing">
-         <property name="text">
-          <string>600</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="QLabel" name="label_36">
-         <property name="text">
-          <string>Sleeper spacing (mm)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QLabel" name="label_20">
-         <property name="text">
-          <string>Number of sleepers</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="2">
-        <widget class="QLineEdit" name="txt_forceNode">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>nodeF10</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0" colspan="2">
-        <widget class="QCheckBox" name="cb_defaultNode">
-         <property name="text">
-          <string>Default node</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="2">
-        <widget class="QLineEdit" name="txt_slpForce">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The force will be applied to the group of node indicated above, on the substructure corresponding to the sleeper number entered here. The excited side is always the right side.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>200</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="QLabel" name="label_23">
-         <property name="text">
-          <string>Applied on &quot;sleeper&quot; n°</string>
+          <string>Number of sleeper interface modes</string>
          </property>
         </widget>
        </item>
@@ -1385,9 +1397,9 @@
      <widget class="QGroupBox" name="groupBox_8">
       <property name="geometry">
        <rect>
-        <x>291</x>
+        <x>311</x>
         <y>9</y>
-        <width>241</width>
+        <width>221</width>
         <height>240</height>
        </rect>
       </property>
@@ -1399,7 +1411,7 @@
         <rect>
          <x>10</x>
          <y>150</y>
-         <width>121</width>
+         <width>151</width>
          <height>18</height>
         </rect>
        </property>
@@ -1420,7 +1432,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Outpout type</string>
+        <string>FRF type</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_24">
@@ -1433,7 +1445,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>FRFs on &quot;sleepers&quot; n°</string>
+        <string>FRFs on sleepers n°</string>
        </property>
       </widget>
       <widget class="QPushButton" name="btn_selectAcousticMesh">
@@ -1469,12 +1481,17 @@
        </property>
        <item>
         <property name="text">
+         <string>Acceleration</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Velocity</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Acceleration</string>
+         <string>Displacement</string>
         </property>
        </item>
       </widget>
@@ -1488,7 +1505,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRF is extracted at each of the following mesh groups : &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;on each &amp;quot;Sleeper number&amp;quot; that is selected here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;FRFs are extracted at each of the following mesh groups on the excited side of the track : &lt;/p&gt;&lt;p&gt;['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Select...</string>
@@ -1565,12 +1582,12 @@
         <rect>
          <x>170</x>
          <y>100</y>
-         <width>61</width>
+         <width>41</width>
          <height>20</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of sleepers on each side of the load application point, for which the results will be written to a MED file.&lt;/p&gt;&lt;p&gt;Also, these sleepers are considered to contribute to the acoustic pressure on the acoustic grid points, if the acoustic calculation is requested. &lt;/p&gt;&lt;p&gt;Select &amp;quot;-1&amp;quot; for all sleepers.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;/!\&lt;/span&gt; This number has a huge influence on the simulation time if the acoustic calculation is done.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of sleepers on each side of the sleeper on which the load is applied, for which the results will be written to a MED file. if 0, only the sleeper (macroelement) on which the load is applied is used.&lt;/p&gt;&lt;p&gt;Also, these sleepers are considered to contribute to the acoustic pressure on the acoustic grid points, if the acoustic calculation is requested. &lt;/p&gt;&lt;p&gt;Select &amp;quot;-1&amp;quot; for all sleepers.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;/!\&lt;/span&gt; This number has a huge influence on the simulation time if the acoustic calculation is done.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
         <string/>
@@ -1673,10 +1690,7 @@
   <tabstop>btn_savePhase1To</tabstop>
   <tabstop>cb_debugPh1</tabstop>
   <tabstop>txt_phase1FreqMax</tabstop>
-  <tabstop>txt_phase1RailModes</tabstop>
-  <tabstop>txt_phase1SlpModes</tabstop>
   <tabstop>txt_phase1CPUs</tabstop>
-  <tabstop>btn_phase1SelFreqs</tabstop>
   <tabstop>txt_simuName</tabstop>
   <tabstop>btn_simuDir</tabstop>
   <tabstop>cb_debugPh2</tabstop>
@@ -1721,7 +1735,7 @@
   <tabstop>txt_hBal</tabstop>
   <tabstop>txt_balAreaCoef</tabstop>
   <tabstop>btn_moveUp</tabstop>
-  <tabstop>txt_nModes</tabstop>
+  <tabstop>txt_nModesRai</tabstop>
   <tabstop>txt_nSlp</tabstop>
   <tabstop>txt_slpSpacing</tabstop>
   <tabstop>rb_10pct</tabstop>

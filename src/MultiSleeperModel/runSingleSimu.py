@@ -9,7 +9,6 @@ Parameter files completely define a simulation and should first be generated usi
 import json
 import os
 import sys
-from datetime import datetime
 
 sys.path.insert(0, './DevFiles/App')
 import module_run as mod
@@ -36,11 +35,8 @@ except:
     print("The parameters dictionnary could not be defined from the file " + fileName + ".")
     sys.exit()
 
-
-now = datetime.now()
-date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-print('[' + date_time + '] Running simulation: ' + parameters['name'] + ' ...')
 code = mod.RunSimulation(parameters)
+
 if code != 0:
     if isinstance(code, str) or isinstance(code, unicode):
         print(parameters['name'] + " did not run properly. The error message is:\n" + code)
