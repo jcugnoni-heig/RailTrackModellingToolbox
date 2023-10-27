@@ -100,19 +100,19 @@ if USP_on:
    ###################################
    # Sleeper 1
    tieUSP1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('sntb', ),
-                                          GROUP_MA_MAIT=('USP', ),
+                                          GROUP_MA_MAIT=('USPe', ),
                                           TYPE_RACCORD='MASSIF')),
                         MODELE=model)
 
    # Sleeper 2
    tieUSP2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('sntb___0', ),
-                                          GROUP_MA_MAIT=('USP____0', ),
+                                          GROUP_MA_MAIT=('USPe____0', ),
                                           TYPE_RACCORD='MASSIF')),
                         MODELE=model)
 
    # Sleeper 3
    tieUSP3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('sntb___1', ),
-                                          GROUP_MA_MAIT=('USP____1', ),
+                                          GROUP_MA_MAIT=('USPe___1', ),
                                           TYPE_RACCORD='MASSIF')),
                         MODELE=model)
 	
@@ -488,7 +488,7 @@ if USP_on:
                                     MATER=(balMx, )),
                                  _F(GROUP_MA=('sleepere', 'sleeper0', 'sleeper1'),
                                     MATER=(slpMx, )),
-                                 _F(GROUP_MA=('USP', 'USP____0', 'USP____1'),
+                                 _F(GROUP_MA=('USPe', 'USPe___0', 'USPe___1'),
                                     MATER=(USPMx, )),
                                  _F(GROUP_MA=groupsPadHard,
                                     MATER=(padhard, )),

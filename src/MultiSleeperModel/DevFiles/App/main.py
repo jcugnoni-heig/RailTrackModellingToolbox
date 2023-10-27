@@ -35,8 +35,6 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_USPMesh.clicked.connect(self.SelectUSPMesh)
 		self.cb_USP.stateChanged.connect(self.USPStateChanged)
 		self.btn_freqs.clicked.connect(self.SelectFrequencies)
-		self.cb_defaultNode.stateChanged.connect(self.DefaultNodeStateChanged)
-		self.rb_10pct.toggled.connect(self.LoadDirChanged)
 		self.btn_selectSubstructures.clicked.connect(self.SelectSubstructures)
 		self.cb_computeAcoustic.stateChanged.connect(self.ComputeAcousticStateChanged)
 		self.btn_selectAcousticMesh.clicked.connect(self.SelectAcousticMesh)
@@ -115,6 +113,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_rhoRail.setText(str(dictSimu['rhoRail']))
 
 		self.sleeperMesh = dictSimu['sleeperMesh']
+		self.txt_slpHeight.setText(str(dictSimu['slpHeight']))
 		self.txt_E1Sleeper.setText(str(dictSimu['E1Sleeper']))
 		self.txt_E2Sleeper.setText(str(dictSimu['E2Sleeper']))
 		self.txt_E3Sleeper.setText(str(dictSimu['E3Sleeper']))
@@ -156,8 +155,8 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_nModesSlp.setText(str(dictSimu['nModesSlp']))
 		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
 		self.txt_nSlp.setText(str(dictSimu['nSlp']))
-		self.rb_10pct.setChecked(dictSimu['force'] == (0, -100000.0, 10000.0))
-		self.rb_45deg.setChecked(dictSimu['force'] == (0, -100000, -100000))
+		self.txt_fDirVert.setText(str(dictSimu['fDirVert']))
+		self.txt_fDirLat.setText(str(dictSimu['fDirLat']))
 		self.txt_forceNode.setText(dictSimu['forceNode'])
 		self.txt_slpForce.setText(str(dictSimu['slpForce']))
 		self.frequencies = dictSimu['frequencies']
@@ -170,6 +169,8 @@ class MultiSleeperModelGUI(QMainWindow):
 			self.cbb_output.setCurrentText('Displacement')
 
 		self.selectedSubst = dictSimu['selectedSubstFRF']
+		self.txt_nSlpAcoust1.setText(str(dictSimu['nSlpAcoust1']))
+		self.txt_nSlpAcoust2.setText(str(dictSimu['nSlpAcoust2']))
 		self.cb_computeAcoustic.setChecked(dictSimu['computeAcoustic'])
 		self.rb_1D.setChecked(dictSimu['acMeshDim'] == '1D')
 		self.rb_2D.setChecked(dictSimu['acMeshDim'] == '2D')
@@ -200,29 +201,12 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_tanDUSP.setDisabled(not USP_on)
 		self.txt_nuUSP.setDisabled(not USP_on)
 		self.label_18.setDisabled(not USP_on)
+		self.label_53.setDisabled(not USP_on)
 		self.btn_USPMesh.setDisabled(not USP_on)
-		self.label_35.setDisabled(not USP_on)
+		self.label_53.setDisabled(not USP_on)
 		self.txt_thkUSP.setDisabled(not USP_on)
 		
-	def DefaultNodeStateChanged(self):
-		defNodeON = self.cb_defaultNode.isChecked()
-		self.txt_forceNode.setDisabled(defNodeON)
-		if defNodeON == True:
-			if self.rb_10pct.isChecked() == True:
-				self.txt_forceNode.setText('nodeF')
-			elif self.rb_45deg.isChecked() == True:
-				self.txt_forceNode.setText('nodeF')
 				
-	def LoadDirChanged(self):
-		if self.cb_defaultNode.isChecked() == False:
-			return
-			
-		if self.rb_10pct.isChecked() == True:
-			txt = 'nodeF'
-		elif self.rb_45deg.isChecked() == True:
-			txt = 'nodeF'
-			
-		self.txt_forceNode.setText(txt)
 		
 	def ComputeAcousticStateChanged(self):
 		self.btn_selectAcousticMesh.setDisabled(not self.cb_computeAcoustic.isChecked())
@@ -412,7 +396,7 @@ class MultiSleeperModelGUI(QMainWindow):
 			dictSimu['phase1Freq'] = None
 				
 				
-		# Materials ==============================================================================================
+		# Parts & materials ==============================================================================================
 		#=========================================================================================================
 		try:
 			ERail = float(self.txt_ERail.text())
@@ -488,7 +472,8 @@ class MultiSleeperModelGUI(QMainWindow):
 			nuSleeper = float(self.txt_nuSleeper.text())
 			tanDSleeper = float(self.txt_tanDSleeper.text())
 			rhoSleeper = float(self.txt_rhoSleeper.text())
-			if E1Sleeper <= 0 or E2Sleeper <= 0 or E3Sleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0:
+			slpHeight = float(self.txt_slpHeight.text())
+			if E1Sleeper <= 0 or E2Sleeper <= 0 or E3Sleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0 or slpHeight<0:
 				QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
 				return
 		except:
@@ -501,6 +486,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['nuSleeper'] = nuSleeper
 		dictSimu['tanDSleeper'] = tanDSleeper
 		dictSimu['rhoSleeper'] = rhoSleeper
+		dictSimu['slpHeight'] = slpHeight
 
 		#
 		try:
@@ -692,12 +678,18 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['slpSpacing'] = slpSpacing
 		
 		#
-		if self.rb_10pct.isChecked() == True:
-			force = (0, -100000.0, 10000.0)
-		elif self.rb_45deg.isChecked() == True:
-			force = (0, -100000, -100000)
+		try:
+			fDirVert = float(self.txt_fDirVert.text())
+			fDirLat = float(self.txt_fDirLat.text())
+			if fDirVert == 0 and fDirLat == 0:
+				QMessageBox.information(self, 'Error', 'Please enter correct force directions.', QMessageBox.Ok,)
+				return
+		except:
+			QMessageBox.information(self, 'Error', 'Please enter correct force directions.', QMessageBox.Ok,)
+			return
 			
-		dictSimu['force'] = force
+		dictSimu['fDirVert'] = fDirVert
+		dictSimu['fDirLat'] = fDirLat
 		
 		#
 		forceNode = self.txt_forceNode.text()
@@ -751,15 +743,17 @@ class MultiSleeperModelGUI(QMainWindow):
 
 		#
 		try:
-			nSlpAcoustic = int(self.txt_nSlpAcoustic.text())
-			if nSlpAcoustic < -1:
+			nSlpAcoust1 = int(self.txt_nSlpAcoust1.text())
+			nSlpAcoust2 = int(self.txt_nSlpAcoust2.text())
+			if nSlpAcoust2 < nSlpAcoust1 or nSlpAcoust1 < 1 or nSlpAcoust2 > nSlp:
 				QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
 				return
 		except:
 			QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
 			return
 		
-		dictSimu['nSlpAcoustic'] = nSlpAcoustic
+		dictSimu['nSlpAcoust1'] = nSlpAcoust1
+		dictSimu['nSlpAcoust2'] = nSlpAcoust2
 		
 		#
 		computeAcoustic = self.cb_computeAcoustic.isChecked()

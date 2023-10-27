@@ -23,7 +23,7 @@ except:
     scaling_slpY = 1.0
 
 try:
-    sleeperHeight = parameters['sleeperHeight']
+    sleeperHeight = parameters['slpHeight']
 except:
     sleeperHeight = 214.0
 
@@ -67,6 +67,8 @@ if freqBands1[-1] != int(maxFreq):
 ######################################################
 pySlp = partition.MAIL_PY()
 pyRai = partition.MAIL_PY()
+if USP_on:
+    pyUSP = partition.MAIL_PY()
 
 halfDistRails = 757.54
 padVerticalOffset = sleeperHeight*scaling_slpY
@@ -279,9 +281,26 @@ if USP_on:
 
     meshUSP = MODI_MAILLAGE(reuse=meshUSP, MAILLAGE=meshUSP, 
                         DEFORME=_F(OPTION='TRAN', DEPL=CHdpl))
-
-
     
+    
+    # Delete all groups of meshSlp that exist in meshUSP
+    pyUSP.FromAster('meshUSP')
+    pySlp.FromAster('meshSlp')
+    nodeGrpsUSP = meshUSP.LIST_GROUP_NO()
+    nodeGrpsSlp = meshSlp.LIST_GROUP_NO()
+    maGrpsUSP = meshUSP.LIST_GROUP_MA()
+    maGrpsSlp = meshSlp.LIST_GROUP_MA()
+
+    delGpNo = [gp[0] for gp in nodeGrpsUSP if gp in nodeGrpsSlp]
+    delGpMa = [gp[0] for gp in maGrpsUSP if gp in maGrpsSlp]
+
+    if delGpNo != []:
+        meshSlp = DEFI_GROUP(reuse=meshSlp, MAILLAGE=meshSlp, DETR_GROUP_NO=_F(NOM=delGpNo))
+
+    if delGpMa != []:
+        meshSlp = DEFI_GROUP(reuse=meshSlp, MAILLAGE=meshSlp, DETR_GROUP_MA=_F(NOM=delGpMa))
+
+
     # Translate components above USPs of USP's thickness
     meshSlp = MODI_MAILLAGE(reuse=meshSlp, MAILLAGE=meshSlp, TRANSLATION=(0, thkUSP, 0));
     meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(0, thkUSP, 0));
@@ -572,7 +591,7 @@ if USP_on:
                                       MATER=(padMat1, )),
                                    _F(GROUP_MA=('soft'),
                                       MATER=(padMat2, )),
-                                   _F(GROUP_MA=('USP'),
+                                   _F(GROUP_MA=('USPe'),
                                       MATER=(USPmat, )),
                                    _F(GROUP_MA=('raile'),
                                       MATER=(railMat, ))),

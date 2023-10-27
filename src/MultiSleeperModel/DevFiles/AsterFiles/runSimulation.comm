@@ -626,7 +626,7 @@ if USP_on == True:
                                       MATER=(padMat1, )),
                                    _F(GROUP_MA=('soft'),
                                       MATER=(padMat2, )),
-                                   _F(GROUP_MA=('USP'),
+                                   _F(GROUP_MA=('USPe'),
                                       MATER=(USPmat, )),
                                    _F(GROUP_MA=('raile'),
                                       MATER=(railMat, ))),

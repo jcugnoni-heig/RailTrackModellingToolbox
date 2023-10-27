@@ -43,7 +43,8 @@ slpForce = parameters['slpForce']
 nForce = parameters['forceNode']
 nModesRai = int(parameters['nModesRai'])
 nModesSlp = int(parameters['nModesSlp'])
-force = parameters['force']
+fDirVert = parameters['fDirVert']
+fDirLat = parameters['fDirLat']
 computeAcoustic = parameters['computeAcoustic']
 FRFtype = parameters['outputType']
 selectedSubstFRF = parameters['selectedSubstFRF']
@@ -68,7 +69,8 @@ clampDampY = parameters['clampDampY']/2
 clampDampZ = parameters['clampDampZ']/2
 writeMED = parameters['writeMED']
 
-nSlpAcoustic = parameters['nSlpAcoustic']
+nSlpAcoust1 = parameters['nSlpAcoust1']
+nSlpAcoust2 = parameters['nSlpAcoust2']
 cumulX_mini = parameters['cumulMassEffeUn']
 cumulY_mini = cumulX_mini
 cumulZ_mini = cumulX_mini
@@ -397,19 +399,6 @@ if computeAcoustic:
 # Acoustic parameters / functions definition
 # More comments available in the 3-sleeper model command file
 ######################################################
-if nSlpAcoustic == -1:
-    nSlpAcoustRange = range(nSlp)
-else:
-    slpMin = min(max(0, slpForce - nSlpAcoustic-1), nSlp-1)
-    slpMax = min(max(0, slpForce + nSlpAcoustic), nSlp-1)
-    nSlpAcoustRange = range(slpForce-nSlpAcoustic-1, slpForce+nSlpAcoustic)
-
-# nSlpAcoustRange = range(183, 250)
-
-# if nSlpAcoustic != -1:
-#     nSlpAcoustRange = [201]
-
-print('Sleepers considered for acoustic calculation and for MED results: ' + str(nSlpAcoustRange[0] + 1) + ' to ' + str(nSlpAcoustRange[-1] + 1))
 
 if computeAcoustic == True:
     c = 343.0
@@ -494,9 +483,15 @@ if USP_on == True:
 else:
     BCs = (BCinterf, tie2, tie3, tie_clps)
 
-load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force[0],
-                                      FY = force[1],
-                                      FZ = force[2],
+dirNorm = (fDirVert**2 + fDirLat**2)**(1/2)
+fNorm = 100000 # with a too low force value, displacements may be so low that we lose accuracy
+fVert = fDirVert/dirNorm*fNorm
+fLat = fDirLat/dirNorm*fNorm
+
+
+load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0,
+                                      FY = -fVert,
+                                      FZ = fLat,
                                       GROUP_NO=(nForce, )),
                       MODELE=model)
 
@@ -626,7 +621,7 @@ if USP_on == True:
                                       MATER=(padMat1, )),
                                    _F(GROUP_MA=('soft'),
                                       MATER=(padMat2, )),
-                                   _F(GROUP_MA=('USP'),
+                                   _F(GROUP_MA=('USPe'),
                                       MATER=(USPmat, )),
                                    _F(GROUP_MA=('raile'),
                                       MATER=(railMat, ))),
@@ -921,7 +916,7 @@ harmGene = DYNA_VIBRA(BASE_CALCUL='GENE',
 ######################################################
 # COMPUTE ACOUSTIC PART
 ######################################################
-forceMag = (force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+nSlpAcoustRange = range(nSlpAcoust1-1, nSlpAcoust2)
 
 if computeAcoustic == True:
 
@@ -1068,7 +1063,7 @@ if computeAcoustic == True:
                 I_sleepers = (p_sleepers_R**2 + p_sleepers_I**2)/(rho*c)
                 listeAffeI.append(_F(NOEUD=grpName, NOM_CMP=('X1', 'X2', 'X3'), VALE=(I_tot, I_rails, I_sleepers),))
             elif acMeshDim == '1D':
-                pressDataLine += [str((p_tot_R**2+p_tot_I**2)**(1/2)/forceMag), str((p_rails_R**2+p_rails_I**2)**(1/2)/forceMag), str((p_sleepers_R**2+p_sleepers_I**2)**(1/2)/forceMag)]
+                pressDataLine += [str((p_tot_R**2+p_tot_I**2)**(1/2)/fNorm), str((p_rails_R**2+p_rails_I**2)**(1/2)/fNorm), str((p_sleepers_R**2+p_sleepers_I**2)**(1/2)/fNorm)]
 
         if acMeshDim == '2D':
             CH_Iac = CREA_CHAMP(OPERATION = 'AFFE',
@@ -1082,9 +1077,9 @@ if computeAcoustic == True:
                                               TYPE_MAILLE='2D'),
                                  MODELE=gridMod)
                   
-            W_tot = intField['INTE_X1',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2) # in W/N^2
-            W_rails = intField['INTE_X2',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
-            W_sleepers = intField['INTE_X3',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
+            W_tot = intField['INTE_X1',1]/1e6/fNorm**2 # in W/N^2
+            W_rails = intField['INTE_X2',1]/1e6/fNorm**2
+            W_sleepers = intField['INTE_X3',1]/1e6/fNorm**2
        
             dataLine = [str(freq), str(W_tot), str(W_rails), str(W_sleepers)]
             fileContent = '\t'.join(dataLine) + '\n'    #dataLine=["abc", "def", ...]
@@ -1222,13 +1217,13 @@ phase = [None]*len(selectedSubstFRF)*len(FRFgroups)
 
 if FRFtype == 'VITE':
     units = '[m/(s.N)]'
-    normCoef = 1/1000/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+    normCoef = 1/1000/fNorm
 elif FRFtype == 'ACCE':
     units = '[g/N]'
-    normCoef = 1/1000/9.81/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+    normCoef = 1/1000/9.81/fNorm
 elif FRFtype == 'DEPL':
     units = '[mm/N]'
-    normCoef = 1/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+    normCoef = 1/fNorm
 else:
     units = '[?]'
     normCoef = 1
