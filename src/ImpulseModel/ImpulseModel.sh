@@ -4,9 +4,9 @@
 export PATH=$PATH:/opt/aster/public/tfel-3.2.1/bin
 
 SCRIPT=$(realpath "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
 SCRIPTPATH=$(dirname "$SCRIPT")/GUI_files
+PYTHONPATH=python
 
 cd $SCRIPTPATH
 
-python impulse_model_gui.py
+$PYTHONPATH impulse_model_gui.py

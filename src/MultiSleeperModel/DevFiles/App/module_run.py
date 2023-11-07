@@ -57,11 +57,24 @@ def RunSimulation(p_dictSimu):
 	return 0
 		
 
+
+def CreateMesh(p_dictSimu):
+
+	reptravroot = p_dictSimu.get('reptrav')
+	reptrav1 = os.path.join(reptravroot, 'cae-caesrv1-interactif_0100')
+
+	try:
+		shutil.rmtree(reptrav1)
+	except:
+		pass
+
+	code = RunJobModes(p_dictSimu, True)
+	return code
 		
 		
 		
-def RunJobModes(p_dictSimu):
-	code = PrepareFilesPhase1(p_dictSimu)
+def RunJobModes(p_dictSimu, p_createMeshOnly=False):
+	code = PrepareFilesPhase1(p_dictSimu, p_createMeshOnly)
 	if code != 0:
 		return code
 	
@@ -70,8 +83,18 @@ def RunJobModes(p_dictSimu):
 	modesFolder = p_dictSimu['modesFolder']
 	messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_modesSimu.mess')
 	debugMode = p_dictSimu['debugPh1']
-	
+
+	if p_createMeshOnly:
+		debugMode = False
+
 	code = RunMultiJobs(cwd, simFolder, 'computeModes', 1, messageFile, debugMode)
+
+	if p_createMeshOnly:
+		try:
+			shutil.copyfile(os.path.join(simFolder, 'mesh.med'), os.path.join(modesFolder, 'mesh.med'))
+		except:
+			return "Error copying " + os.path.join(simFolder, 'mesh.med') + " to " + os.path.join(modesFolder, 'mesh.med')
+		return code
 
 	try:
 		shutil.copyfile(messageFile, os.path.join(simFolder, 'message_modesSimu.mess'))
@@ -122,7 +145,7 @@ def RunJobHarmo(p_dictSimu):
 
 	return 0
 		
-def PrepareFilesPhase1(p_dictSimu):
+def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	# Create empty simulation folder
 	fullDir = p_dictSimu.get('phase1WorkingDir')
 	
@@ -136,7 +159,10 @@ def PrepareFilesPhase1(p_dictSimu):
 	except:
 		return "The folder " + fullDir + " could not be created (modes simulation)."
 	
-	#
+	# Create JSON parameter file
+	if p_createMeshOnly:
+		p_dictSimu['createMeshOnly'] = True
+
 	try:
 		txt = json.dumps(p_dictSimu, indent = 4, sort_keys=True)
 		jsonPath = os.path.join(fullDir, 'parameters.json')
@@ -181,6 +207,8 @@ def PrepareFilesPhase1(p_dictSimu):
 	exportFiles = os.path.join(fullDir, 'computeModes1.export')	
 	
 	nCPUs = p_dictSimu.get('phase1CPUs')
+	if p_createMeshOnly:
+		nCPUs = 1
 	memlim = p_dictSimu.get('memLimit')
 	reptravroot = p_dictSimu.get('reptrav')
 	server = p_dictSimu.get('host')
@@ -202,7 +230,10 @@ def PrepareFilesPhase1(p_dictSimu):
 			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
 			os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
 	except:
-		return "Modes simulation: string replacements (sed) in export files did not run properly."
+		if p_createMeshOnly:
+			return "Mesh creation: string replacements (sed) in export files did not run properly."
+		else:
+			return "Modes simulation: string replacements (sed) in export files did not run properly."
 		
 	return 0
 		

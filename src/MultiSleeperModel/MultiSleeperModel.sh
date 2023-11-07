@@ -2,7 +2,8 @@
 
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")/DevFiles/App
+PYTHONPATH=python
 
 cd $SCRIPTPATH
 
-python main.py
+$PYTHONPATH main.py

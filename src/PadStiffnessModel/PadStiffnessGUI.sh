@@ -2,7 +2,8 @@
 
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
+PYTHONPATH=python
 
 cd $SCRIPTPATH
 
-python pad_stiffness_model_gui.py
+$PYTHONPATH pad_stiffness_model_gui.py

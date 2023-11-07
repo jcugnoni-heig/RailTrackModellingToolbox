@@ -104,7 +104,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Save modes to</string>
+          <string>Save modes folder to</string>
          </property>
         </widget>
        </item>
@@ -134,7 +134,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Modes name</string>
+          <string>Modes folder name</string>
          </property>
         </widget>
        </item>
@@ -144,7 +144,7 @@
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>Run Phase 1 in debug mode: terminals do not close when processes are finished. The rest runs after the user closes them manually.</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run modal simulation in debug mode: terminals do not close when processes are finished. The rest runs after the user closes them manually.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Debug mode</string>
@@ -157,7 +157,7 @@
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band). Note that phase 1 is divided into 4 bands by default.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used for modal simulation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>24</string>
@@ -193,7 +193,7 @@
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>The eigenmodes of the macroelement are computed up to this frequency.</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The stiffness matrix is evaluated at this frequency to compute modes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>900</string>
@@ -212,7 +212,7 @@
        </rect>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Phase 1 consists in computing the eigen modes of the macroelement and evaluate the importance of their contribution to the response on a 3-sleeper-long model. If it has already been performed for this mesh configuration (i.e. pad mesh and eventual USP mesh), the results can be reused to make the actual simulation (&amp;quot;Phase 2&amp;quot;) much faster.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If selected, the eigenmodes of the macroelement will be computed as a first phase, and the main simulation is run afterwards. If not selected, the user needs to select pre-computed modes. The mesh and the eigenmodes are going to be reused to make the actual harmonic simulation faster. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
        <string>Compute eigenmodes, or</string>
@@ -223,15 +223,15 @@
        <rect>
         <x>180</x>
         <y>10</y>
-        <width>201</width>
+        <width>261</width>
         <height>25</height>
        </rect>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Phase 1 consists in computing the eigen modes of the macroelement and evaluate the importance of their contribution to the response on a 3-sleeper-long model. If it has already been performed for this mesh configuration (i.e. pad mesh and eventual USP mesh), the results can be reused to make the actual simulation (&amp;quot;Phase 2&amp;quot;) much faster.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If selected, the eigenmodes of the macroelement will be computed as a first phase, and the main simulation is run afterwards. If not selected, the user needs to select pre-computed modes. The mesh and the eigenmodes are going to be reused to make the actual harmonic simulation faster. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
-       <string>Select folder with existing modes</string>
+       <string>Select folder with existing modes and mesh</string>
       </property>
      </widget>
     </widget>
@@ -324,7 +324,7 @@
        <item row="4" column="1">
         <widget class="QLineEdit" name="txt_nJobs">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bands dividing the frequency range and running simulateously. It has an impact on Rayleigh's damping approximation. See doc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bands dividing the frequency range and running simulateously. It has an impact on Rayleigh's damping approximation. The more the better. See doc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>24</string>
@@ -351,7 +351,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RAM necessary for the simulation per job (=frequenc band). A typical simulation with 400 modes, 18 sleepers, 6 frequencies per job and 9 acoustic points needs about 5000MB. The default value is 20000MB to make sure the simulation runs properly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>50000</string>
+          <string>20000</string>
          </property>
         </widget>
        </item>
@@ -368,7 +368,7 @@
           <bool>true</bool>
          </property>
          <property name="toolTip">
-          <string>Run Phase 2 in debug mode: terminals do not close when processes are finished. The rest runs after the user closes them manually.</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run Phase 2 in debug mode: terminals do not close when processes are finished. The rest runs after the user has closed them manually.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Debug mode</string>
@@ -381,7 +381,7 @@
           <bool>true</bool>
          </property>
          <property name="toolTip">
-          <string>MED files are useful to visualize results in ParaView. Creating them can take a lot of time for longer tracks, and they may take a lot of memory space.</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;MED files are useful to visualize results in ParaView. Creating them can take a lot of time for large models, and they may take a lot of memory space. The sleepers, whose results are printed to the MED files are selected in the &amp;quot;Simulation setup&amp;quot; tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Write MED files</string>
@@ -472,8 +472,11 @@
            </item>
            <item row="0" column="0" colspan="2">
             <widget class="QPushButton" name="btn_railMesh">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a 600mm long rail mesh, centered on the origin and laying on the XZ plane.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Select rail mesh...</string>
@@ -528,6 +531,9 @@
           <string>Rail pads</string>
          </attribute>
          <widget class="QPushButton" name="btn_padMesh">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>20</x>
@@ -537,7 +543,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Select pad mesh...</string>
@@ -559,7 +565,7 @@
            <item row="0" column="0" colspan="2">
             <widget class="QPushButton" name="btn_Emat1">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Young's modulus...</string>
@@ -569,7 +575,7 @@
            <item row="1" column="0" colspan="2">
             <widget class="QPushButton" name="btn_tanDmat1">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding hysteretic damping ratio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Damping (tanD)...</string>
@@ -584,7 +590,11 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="txt_nuMat1"/>
+            <widget class="QLineEdit" name="txt_nuMat1">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -604,7 +614,7 @@
            <item row="0" column="0" colspan="2">
             <widget class="QPushButton" name="btn_Emat2">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Young's modulus...</string>
@@ -614,7 +624,7 @@
            <item row="1" column="0" colspan="2">
             <widget class="QPushButton" name="btn_tanDmat2">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding hysteretic damping ratio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Damping (tanD)...</string>
@@ -629,7 +639,11 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="txt_nuMat2"/>
+            <widget class="QLineEdit" name="txt_nuMat2">
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -710,7 +724,7 @@
               <bool>true</bool>
              </property>
              <property name="toolTip">
-              <string>Longitudinal = along the steel reinforcement if concrete sleepers</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Longitudinal = Z = along the steel reinforcement if concrete sleepers&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>46300</string>
@@ -798,6 +812,9 @@
            <string>Geometry and mesh</string>
           </property>
           <widget class="QPushButton" name="btn_sleeperMesh">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="geometry">
             <rect>
              <x>10</x>
@@ -807,7 +824,7 @@
             </rect>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Select sleeper mesh...</string>
@@ -815,7 +832,7 @@
           </widget>
           <widget class="QLabel" name="label_50">
            <property name="enabled">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="geometry">
             <rect>
@@ -831,7 +848,7 @@
           </widget>
           <widget class="QLineEdit" name="txt_slpHeight">
            <property name="enabled">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="geometry">
             <rect>
@@ -842,7 +859,7 @@
             </rect>
            </property>
            <property name="toolTip">
-            <string>Longitudinal = along the steel reinforcement if concrete sleepers</string>
+            <string>Height between the bottom of the sleeper, and the middle of the face, which is in contact with the pad.</string>
            </property>
            <property name="text">
             <string>214</string>
@@ -877,7 +894,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>Longitudinal clamp stiffness</string>
+           <string>Longitudinal clamp stiffness. This value is per clamp, not per element ! Each rail pad is compressed by two clamps, and each clamp is modelled with two edge elements.</string>
           </property>
           <property name="text">
            <string>0.0</string>
@@ -906,7 +923,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>Vertical clamp stiffness</string>
+           <string>Vertical clamp stiffness. This value is per clamp, not per element ! Each rail pad is compressed by two clamps, and each clamp is modelled with two edge elements.</string>
           </property>
           <property name="text">
            <string>0.75</string>
@@ -935,7 +952,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>Lateral clamp stiffness</string>
+           <string>Lateral clamp stiffness. This value is per clamp, not per element ! Each rail pad is compressed by two clamps, and each clamp is modelled with two edge elements.</string>
           </property>
           <property name="text">
            <string>0.0</string>
@@ -990,7 +1007,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>Lateral clamp damping</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lateral clamp damping. This value is per clamp, not per element ! Each rail pad is compressed by two clamps, and each clamp is modelled with two edge elements.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>0.0</string>
@@ -1006,7 +1023,7 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>Longitudinal clamp damping</string>
+           <string>Longitudinal clamp damping. This value is per clamp, not per element ! Each rail pad is compressed by two clamps, and each clamp is modelled with two edge elements.</string>
           </property>
           <property name="text">
            <string>0.0</string>
@@ -1022,23 +1039,10 @@
            </rect>
           </property>
           <property name="toolTip">
-           <string>Vertical clamp damping</string>
+           <string>Vertical clamp damping. This value is per clamp, not per element ! Each rail pad is compressed by two clamps, and each clamp is modelled with two edge elements.</string>
           </property>
           <property name="text">
            <string>0.0</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_12">
-          <property name="geometry">
-           <rect>
-            <x>270</x>
-            <y>30</y>
-            <width>231</width>
-            <height>111</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Per CLAMP, not per EDGE.&lt;/p&gt;&lt;p&gt;Each rail pad is compressed by two &lt;/p&gt;&lt;p&gt;clamps, and each clamp is modelled &lt;/p&gt;&lt;p&gt;with two edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </widget>
@@ -1068,7 +1072,7 @@
               <bool>false</bool>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding hysteretic damping ratio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Damping (tanD)...</string>
@@ -1091,7 +1095,7 @@
               <bool>false</bool>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Young's modulus...</string>
@@ -1111,6 +1115,9 @@
           </layout>
          </widget>
          <widget class="QCheckBox" name="cb_USP">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -1145,7 +1152,7 @@
               <bool>false</bool>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a pad mesh of 162 x 7 x 150 mm3 centered on the origin and laying on the XZ plane. It must contain volume groups 'hard' and 'soft' and node groups 'topn' and 'botn'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Select USP mesh...</string>
@@ -1158,7 +1165,7 @@
               <bool>false</bool>
              </property>
              <property name="text">
-              <string>Height (mm)</string>
+              <string>Thickness (mm)</string>
              </property>
             </widget>
            </item>
@@ -1168,7 +1175,7 @@
               <bool>false</bool>
              </property>
              <property name="toolTip">
-              <string>Longitudinal = along the steel reinforcement if concrete sleepers</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;USP thickness (must correspond to the selected mesh).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>8.5</string>
@@ -1198,7 +1205,7 @@
            <item row="1" column="0" colspan="2">
             <widget class="QPushButton" name="btn_tanDbal">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding unitless hysteretic damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding hysteretic damping ratio.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Damping (tanD)...</string>
@@ -1222,7 +1229,7 @@
            <item row="3" column="1">
             <widget class="QLineEdit" name="txt_hBal">
              <property name="toolTip">
-              <string>Since the ballast is modelled with 0D discrete elements, its virtual height allows computing their stiffness from the Young's modulus.</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Since the ballast is modelled with discrete spring-dashpot elements, its virtual height allows computing their properties from the Young's modulus and damping.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>0.3</string>
@@ -1239,10 +1246,10 @@
            <item row="4" column="1">
             <widget class="QLineEdit" name="txt_balAreaCoef">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Since the discrete elements representing the ballast are only located on the sleepers' bottom face, the effective area coefficient is defined as the ratio between the effective area of ballast sollicitation under a sleeper, and the area of a sleeper's bottom face.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Since the discrete elements representing the ballast are only located on the sleepers' bottom face, the effective area coefficient is defined as the ratio between the effective area of ballast loaded under a sleeper, and the area of a sleeper's bottom face.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string>1.0</string>
+              <string>1.5</string>
              </property>
             </widget>
            </item>
@@ -1256,7 +1263,7 @@
            <item row="0" column="0" colspan="2">
             <widget class="QPushButton" name="btn_Ebal">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;.txt or .csv file where at each line, the first value indicates a frequency and the second one indicated the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CSV file where at each line, the first value indicates a frequency and the second one indicates the corresponding storage modulus in MPa.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Young's modulus...</string>
@@ -1327,8 +1334,11 @@
          <height>18</height>
         </rect>
        </property>
+       <property name="cursor">
+        <cursorShape>IBeamCursor</cursorShape>
+       </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The modes (computed in phase 1) that are going to be used are the union of the N most influent modes to the response computed in phase 1, among the 6 substructures used and the frequency spectrum. This number is an approximation. The total number of modes may be larger. N can be decreased for quicker but perhaps less accurate simulations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string/>
        </property>
        <property name="statusTip">
         <string/>
@@ -1376,7 +1386,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the minimum cumulated effective unit mass requested in each direction (see doc Code_Aster R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value ([0;1]) in each direction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimum cumulated effective unit mass requested in each direction (see Code_Aster doc R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value (]0;1]) in each direction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
         <string/>
@@ -1411,7 +1421,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group containing 1 node, which must exist in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A group which contains one node, and exists in the macroelement mesh.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>nodeF</string>
@@ -1440,7 +1450,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>600</string>
+        <string>600.0</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_21">
@@ -1465,8 +1475,11 @@
          <x>10</x>
          <y>212</y>
          <width>271</width>
-         <height>18</height>
+         <height>21</height>
         </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter at least one frequency per job (=frequency band).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Select frequencies...</string>
@@ -1495,7 +1508,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The modes (computed in phase 1) that are going to be used are the union of the N most influent modes to the response computed in phase 1, among the 6 substructures used and the frequency spectrum. This number is an approximation. The total number of modes may be larger. N can be decreased for quicker but perhaps less accurate simulations.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string/>
        </property>
        <property name="statusTip">
         <string/>
@@ -1529,8 +1542,11 @@
          <height>18</height>
         </rect>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Positive = towards the ground. This only indicates the direction; the magnitude of the force applied is normalized to 1N anyways.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
-        <string>1</string>
+        <string>1.0</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_49">
@@ -1554,6 +1570,9 @@
          <width>31</width>
          <height>18</height>
         </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Positive = outward of the track. This only indicates the direction; the magnitude of the force applied is normalized to 1N anyways.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>0.1</string>
@@ -1608,7 +1627,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. If it is 2D, the ouput is the acoustic power integrated over the mesh surface area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Compute acoustic</string>
@@ -1618,7 +1637,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>31</y>
+         <y>23</y>
          <width>76</width>
          <height>16</height>
         </rect>
@@ -1631,7 +1650,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>64</y>
+         <y>80</y>
          <width>131</width>
          <height>16</height>
         </rect>
@@ -1663,13 +1682,13 @@
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>30</y>
+         <y>22</y>
          <width>95</width>
          <height>20</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRFs and the harmonic .med file result are expressed either in terms of velocity or acceleration.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRF file result is expressed in terms of displacement velocity or acceleration transfer funtions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <item>
         <property name="text">
@@ -1691,13 +1710,13 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>60</y>
+         <y>76</y>
          <width>82</width>
          <height>25</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;FRFs are extracted at each of the following mesh groups on the excited side of the track : &lt;/p&gt;&lt;p&gt;['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;FRFs are extracted on the excited side of the track, on each macroelements selected here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Select...</string>
@@ -1754,7 +1773,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>100</y>
+         <y>103</y>
          <width>161</width>
          <height>16</height>
         </rect>
@@ -1763,7 +1782,7 @@
         <string/>
        </property>
        <property name="text">
-        <string>Sleepers for MED / acoustic</string>
+        <string>Sleepers for MED / acoustic:</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="txt_nSlpAcoust1">
@@ -1773,13 +1792,13 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>120</y>
+         <y>124</y>
          <width>31</width>
          <height>20</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of sleepers on each side of the sleeper on which the load is applied, for which the results will be written to a MED file. if 0, only the sleeper (macroelement) on which the load is applied is used.&lt;/p&gt;&lt;p&gt;Also, these sleepers are considered to contribute to the acoustic pressure on the acoustic grid points, if the acoustic calculation is requested. &lt;/p&gt;&lt;p&gt;Select &amp;quot;-1&amp;quot; for all sleepers.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;/!\&lt;/span&gt; This number has a huge influence on the simulation time if the acoustic calculation is done.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of the first macroelement, which is used for acoustic calculation, and whose results are printed to a MED file (if checked in &amp;quot;Execution parameters&amp;quot; tab).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
         <string/>
@@ -1795,7 +1814,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>120</y>
+         <y>124</y>
          <width>31</width>
          <height>16</height>
         </rect>
@@ -1814,7 +1833,7 @@
        <property name="geometry">
         <rect>
          <x>80</x>
-         <y>120</y>
+         <y>124</y>
          <width>21</width>
          <height>16</height>
         </rect>
@@ -1833,19 +1852,35 @@
        <property name="geometry">
         <rect>
          <x>100</x>
-         <y>120</y>
+         <y>124</y>
          <width>31</width>
          <height>20</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of sleepers on each side of the sleeper on which the load is applied, for which the results will be written to a MED file. if 0, only the sleeper (macroelement) on which the load is applied is used.&lt;/p&gt;&lt;p&gt;Also, these sleepers are considered to contribute to the acoustic pressure on the acoustic grid points, if the acoustic calculation is requested. &lt;/p&gt;&lt;p&gt;Select &amp;quot;-1&amp;quot; for all sleepers.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;/!\&lt;/span&gt; This number has a huge influence on the simulation time if the acoustic calculation is done.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of the last macroelement, which is used for acoustic calculation, and whose results are printed to a MED file (if checked in &amp;quot;Execution parameters&amp;quot; tab).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
         <string/>
        </property>
        <property name="text">
         <string>251</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_selectNodesFRF">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>47</y>
+         <width>201</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Groups with multiple nodes will generate one FRF, which is the average among the nodes. Groups, whose name finishes with 'Y' or 'Z', will generate the FRF in the vertical or lateral direction, respectively. Otherwise, the magnitude (lateral, vertical), is calculated.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Select node groups for FRF...</string>
        </property>
       </widget>
      </widget>
@@ -1907,6 +1942,25 @@
     </property>
     <property name="arrowType">
      <enum>Qt::NoArrow</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_showMesh">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>300</y>
+      <width>91</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Opens Salome to shoiw the mesh of the selected simulation in the list on the right.</string>
+    </property>
+    <property name="text">
+     <string>Show mesh</string>
     </property>
    </widget>
   </widget>

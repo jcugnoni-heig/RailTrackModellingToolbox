@@ -1,4 +1,3 @@
-PYTHONPATH=python
 ASRUNPATH=/opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run
 ASRUNJOB=$1
 SIMUDIR=$2

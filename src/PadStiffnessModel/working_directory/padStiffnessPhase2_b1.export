@@ -20,7 +20,6 @@ P noeud localhost
 P nomjob padStiffnessPhase2_b1
 P origine ASTK 2017.0
 P platform Linux64
-P profastk caelinux@caelinux:/home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/harmoPhase2_b1.astk
 P protocol_copyfrom asrun.plugins.server.SCPServer
 P protocol_copyto asrun.plugins.server.SCPServer
 P protocol_exec asrun.plugins.server.SSHServer
@@ -36,18 +35,18 @@ P version stable
 A args 
 A memjeveux 1007.75
 A tpmax 3600900.0
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/tanD_hard.csv D  39
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/E_hard.csv D  38
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/tanD_soft.csv D  29
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/E_soft.csv D  28
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/poisson_hard.csv D  27
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/poisson_soft.csv D  26
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/density_hard.csv D  25
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/density_soft.csv D  24
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/frequencies_b1.txt D  37
-R base /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/base1 DC 0
-F comm /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/padStiffnessPhase2.comm D  1
-F mess /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/messages/messagePadStiffnessPhase2_b1.mess R  6
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/Stiffness_b1.txt R  40
-F libr /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/Static_Stiffness_b1.txt R  41
-F rmed /home/cae/Documents/Railpad3/Toolbox_Work/src/PadStiffnessModel/working_directory/resultPadStiffnessPhase2_b1.res.med R  81
+F libr tanD_hard.csv D  39
+F libr E_hard.csv D  38
+F libr tanD_soft.csv D  29
+F libr E_soft.csv D  28
+F libr poisson_hard.csv D  27
+F libr poisson_soft.csv D  26
+F libr density_hard.csv D  25
+F libr density_soft.csv D  24
+F libr frequencies_b1.txt D  37
+R base base1 DC 0
+F comm padStiffnessPhase2.comm D  1
+F mess messages/messagePadStiffnessPhase2_b1.mess R  6
+F libr Stiffness_b1.txt R  40
+F libr Static_Stiffness_b1.txt R  41
+F rmed resultPadStiffnessPhase2_b1.res.med R  81

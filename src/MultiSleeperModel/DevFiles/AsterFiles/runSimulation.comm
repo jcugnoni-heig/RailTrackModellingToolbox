@@ -22,14 +22,6 @@ with open('fort.2', 'r') as f:
 f.close()
 parameters = json.loads(txt)
 
-try:
-    scaling_slpX = parameters['scaling_slpX']
-    scaling_slpY = parameters['scaling_slpY']
-except:
-    scaling_slpX = 1.0
-    scaling_slpY = 1.0
-
-
 nSlp = parameters['nSlp']
 USP_on = parameters['USP_on']
 freq1 = parameters['frequencies'][0]
@@ -43,10 +35,12 @@ slpForce = parameters['slpForce']
 nForce = parameters['forceNode']
 nModesRai = int(parameters['nModesRai'])
 nModesSlp = int(parameters['nModesSlp'])
-force = parameters['force']
+fDirVert = parameters['fDirVert']
+fDirLat = parameters['fDirLat']
 computeAcoustic = parameters['computeAcoustic']
 FRFtype = parameters['outputType']
 selectedSubstFRF = parameters['selectedSubstFRF']
+nodesFRF = parameters['nodesFRF']
 
 ERail = parameters['ERail']
 nuRail = parameters['nuRail']
@@ -68,7 +62,8 @@ clampDampY = parameters['clampDampY']/2
 clampDampZ = parameters['clampDampZ']/2
 writeMED = parameters['writeMED']
 
-nSlpAcoustic = parameters['nSlpAcoustic']
+nSlpAcoust1 = parameters['nSlpAcoust1']
+nSlpAcoust2 = parameters['nSlpAcoust2']
 cumulX_mini = parameters['cumulMassEffeUn']
 cumulY_mini = cumulX_mini
 cumulZ_mini = cumulX_mini
@@ -79,6 +74,14 @@ if USP_on == True:
 
 if computeAcoustic:
     acMeshDim = parameters['acMeshDim']
+
+# sleeper scaling (not implemented in GUI)
+try:
+    scaling_slpX = parameters['scaling_slpX']
+    scaling_slpY = parameters['scaling_slpY']
+except:
+    scaling_slpX = 1.0
+    scaling_slpY = 1.0
 
 ######################################################
 # Define functions
@@ -368,10 +371,8 @@ except:
 
 if USP_on:
     discreteBalNodes = 'USPbot'
-    slpSym = 'slpSym'
 else:
     discreteBalNodes = 'sntb'
-    slpSym = 'slpSym'
 
 # Acoustic mesh grid
 if computeAcoustic:
@@ -397,19 +398,6 @@ if computeAcoustic:
 # Acoustic parameters / functions definition
 # More comments available in the 3-sleeper model command file
 ######################################################
-if nSlpAcoustic == -1:
-    nSlpAcoustRange = range(nSlp)
-else:
-    slpMin = min(max(0, slpForce - nSlpAcoustic-1), nSlp-1)
-    slpMax = min(max(0, slpForce + nSlpAcoustic), nSlp-1)
-    nSlpAcoustRange = range(slpForce-nSlpAcoustic-1, slpForce+nSlpAcoustic)
-
-# nSlpAcoustRange = range(183, 250)
-
-# if nSlpAcoustic != -1:
-#     nSlpAcoustRange = [201]
-
-print('Sleepers considered for acoustic calculation and for MED results: ' + str(nSlpAcoustRange[0] + 1) + ' to ' + str(nSlpAcoustRange[-1] + 1))
 
 if computeAcoustic == True:
     c = 343.0
@@ -494,9 +482,15 @@ if USP_on == True:
 else:
     BCs = (BCinterf, tie2, tie3, tie_clps)
 
-load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = force[0],
-                                      FY = force[1],
-                                      FZ = force[2],
+dirNorm = (fDirVert**2 + fDirLat**2)**(1/2)
+fNorm = 100000 # with a too low force value, displacements may be so low that we lose accuracy
+fVert = fDirVert/dirNorm*fNorm
+fLat = fDirLat/dirNorm*fNorm
+
+
+load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0,
+                                      FY = -fVert,
+                                      FZ = fLat,
                                       GROUP_NO=(nForce, )),
                       MODELE=model)
 
@@ -599,7 +593,7 @@ railMat = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_railMat[0],
                               E=ERail,
                               NU=nuRail,
                               RHO=rhoRail*1e-12))
-                            
+
 padMat1 = DEFI_MATERIAU(ELAS=_F(AMOR_ALPHA=AB_padMat1[0],
                                 AMOR_BETA=AB_padMat1[1],
                                 E=f_EPad1(meanFreqJob)/scaling_slpX, # scaling_slpX
@@ -793,7 +787,7 @@ modStaR2=MODE_STATIQUE(MATR_RIGI=matAs_K1,
 
 modStaS=MODE_STATIQUE(MATR_RIGI=matAs_K1,
                        MATR_MASS=matAs_M1,
-                       MODE_INTERF=_F(GROUP_NO = slpSym,
+                       MODE_INTERF=_F(GROUP_NO = 'slpSym',
                                       TOUT_CMP='OUI',
                                       NB_MODE=nModesSlp,
                                       SHIFT=100,),);
@@ -808,7 +802,7 @@ Lint=DEFI_INTERF_DYNA(NUME_DDL=num1,
                       INTERFACE=(
                                  _F(NOM = 'I_slpSym',
                                     TYPE = 'CRAIGB',
-                                    GROUP_NO = slpSym),
+                                    GROUP_NO = 'slpSym'),
                                  _F(NOM = 'I_raiRBk',
                                     TYPE = 'CRAIGB',
                                     GROUP_NO = 'railBk'),
@@ -921,7 +915,7 @@ harmGene = DYNA_VIBRA(BASE_CALCUL='GENE',
 ######################################################
 # COMPUTE ACOUSTIC PART
 ######################################################
-forceMag = (force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+nSlpAcoustRange = range(nSlpAcoust1-1, nSlpAcoust2)
 
 if computeAcoustic == True:
 
@@ -1068,7 +1062,7 @@ if computeAcoustic == True:
                 I_sleepers = (p_sleepers_R**2 + p_sleepers_I**2)/(rho*c)
                 listeAffeI.append(_F(NOEUD=grpName, NOM_CMP=('X1', 'X2', 'X3'), VALE=(I_tot, I_rails, I_sleepers),))
             elif acMeshDim == '1D':
-                pressDataLine += [str((p_tot_R**2+p_tot_I**2)**(1/2)/forceMag), str((p_rails_R**2+p_rails_I**2)**(1/2)/forceMag), str((p_sleepers_R**2+p_sleepers_I**2)**(1/2)/forceMag)]
+                pressDataLine += [str((p_tot_R**2+p_tot_I**2)**(1/2)/fNorm), str((p_rails_R**2+p_rails_I**2)**(1/2)/fNorm), str((p_sleepers_R**2+p_sleepers_I**2)**(1/2)/fNorm)]
 
         if acMeshDim == '2D':
             CH_Iac = CREA_CHAMP(OPERATION = 'AFFE',
@@ -1082,9 +1076,9 @@ if computeAcoustic == True:
                                               TYPE_MAILLE='2D'),
                                  MODELE=gridMod)
                   
-            W_tot = intField['INTE_X1',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2) # in W/N^2
-            W_rails = intField['INTE_X2',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
-            W_sleepers = intField['INTE_X3',1]/1e6/(force[0]**2 + force[1]**2 + force[2]**2)
+            W_tot = intField['INTE_X1',1]/1e6/fNorm**2 # in W/N^2
+            W_rails = intField['INTE_X2',1]/1e6/fNorm**2
+            W_sleepers = intField['INTE_X3',1]/1e6/fNorm**2
        
             dataLine = [str(freq), str(W_tot), str(W_rails), str(W_sleepers)]
             fileContent = '\t'.join(dataLine) + '\n'    #dataLine=["abc", "def", ...]
@@ -1201,41 +1195,27 @@ if writeMED:
 ######################################################
 # POST-PROCESSING : Get force-velocity FRF functions
 ######################################################
-# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
-#                   CREA_GROUP_NO = _F(NOM='tmp', OPTION='ENV_CYLINDRE', POINT=(0,0,753), RAYON=25, VECT_NORMALE=(0,1,0), PRECISION=25))
-     
-# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
-#                   CREA_GROUP_NO = _F(NOM='Ba_Y', INTERSEC=(discreteBalNodes, 'tmp')))
-
-# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, 
-#                      DETR_GROUP_NO = _F(NOM='tmp'))
-
-# pyMesh.FromAster('mesh')
-
-# FRFgroups = ['Ra_Y', 'Rb_Y', 'Rf_Y', 'Ra_Z', 'Rb_Z', 'Sc_Y', 'Ss_Y', 'Ba_Y']
-# FRFgroups = ['Ra_Y', 'Ra_Z', 'Rb_Y', 'Rb_Z', 'Ss_Y', ]
-# FRFgroups = ['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z', 'Sc_Y', 'Ss_Y']
-FRFgroups = ['nRai1_Y', 'nRai1_Z', 'nRai2_Y', 'nRai2_Z', 'nRai3_Y', 'nRai3_Z', 'nRai4_Y', 'nRai4_Z', 'nSlp1_Y', 'nSlp2_Y', 'nSlp3_Y', 'nSlp4_Y', 'nSlp5_Y', 'nSlp6_Y', 'nSlp7_Y', 'nSlp8_Y', ]
-# FRFgroups.extend(['RH1_Y', 'RH1_Z', 'RH2_Y', 'RH2_Z', 'RH3_Y', 'RH3_Z', 'RH4_Y', 'RH4_Z'])
-FRFs = [None]*len(selectedSubstFRF)*len(FRFgroups)
+FRFs = [None]*len(selectedSubstFRF)*len(nodesFRF)
+phase = [None]*len(selectedSubstFRF)*len(nodesFRF)
 
 if FRFtype == 'VITE':
     units = '[m/(s.N)]'
-    normCoef = 1/1000/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+    normCoef = 1/1000/fNorm
 elif FRFtype == 'ACCE':
     units = '[g/N]'
-    normCoef = 1/1000/9.81/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+    normCoef = 1/1000/9.81/fNorm
 elif FRFtype == 'DEPL':
     units = '[mm/N]'
-    normCoef = 1/(force[0]**2 + force[1]**2 + force[2]**2)**(1/2)
+    normCoef = 1/fNorm
 else:
     units = '[?]'
     normCoef = 1
 
 fileFRFContent = 'f [Hz]'
 for substr in selectedSubstFRF:   
-    for grp in FRFgroups:
+    for grp in nodesFRF:
         fileFRFContent += '\tE' + str(substr) + '_' + grp + ' ' + units
+        fileFRFContent += '\tE' + str(substr) + '_' + grp + '_phase [°]'
 fileFRFContent += '\n'
 
 # pyGrid.FromAster('mesh')
@@ -1251,48 +1231,82 @@ for substr in selectedSubstFRF:
                             NOM_CHAM=FRFtype,
                             SOUS_STRUC= 'elem' + str(substr - 1) + 'R' )
 
-    for grp in FRFgroups: # grp = 'Ra_Y' for example
+    for grp in nodesFRF: # grp = 'Ra_Y' for example
         gpNode = pyMesh.gno.get(grp)
         
+        # just a test to make sure the group exists
         try:
             for node in gpNode:
                 break 
         except:
-            print('GROUP OF NODE ' + grp + ' NOT FOUND !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            print('GROUP OF NODE ' + grp + ' NOT FOUND !')
             j += 1
             continue
         
-        values = [] # contains an FRF for each node of the group of node
+        valuesMag = [] # contains an FRF for each node of the group of node
+        valuesPh = []
+
+        # for each node of gpNode, get the FRF mag and phase, and append it to valuesMag & valuesPh
         for node in gpNode: # node = 18673 for example
-            values.append([])
+            valuesMag.append([])
+            valuesPh.append([])
             nodeName = 'N' + str(node)
-            f = RECU_FONCTION(NOEUD=nodeName, NOM_CHAM=FRFtype, NOM_CMP='D' + grp[-1], RESULTAT=struR,)
-            fMagn = CALC_FONCTION(EXTRACTION=_F(FONCTION=f, PARTIE='MODULE'))
+            fY = RECU_FONCTION(NOEUD=nodeName, NOM_CHAM=FRFtype, NOM_CMP='DY', RESULTAT=struR,)
+            fZ = RECU_FONCTION(NOEUD=nodeName, NOM_CHAM=FRFtype, NOM_CMP='DZ', RESULTAT=struR,)
+            fMagnY = CALC_FONCTION(EXTRACTION=_F(FONCTION=fY, PARTIE='MODULE'))
+            fMagnZ = CALC_FONCTION(EXTRACTION=_F(FONCTION=fZ, PARTIE='MODULE'))
+            fPhase = CALC_FONCTION(EXTRACTION=_F(FONCTION=fY, PARTIE='PHASE'))
             for freq in allFreqsJob:
-                values[-1].append(fMagn(freq))
+                if grp[-1] == 'Y':
+                    valuesMag[-1].append(fMagnY(freq))
+                elif grp[-1] == 'Z':
+                    valuesMag[-1].append(fMagnZ(freq))
+                else:
+                    fMagn = (fMagnY(freq)**2 + fMagnZ(freq)**2)**(1/2.0)
+                    valuesMag[-1].append(fMagn)
+                valuesPh[-1].append(fPhase(freq))
                 
-            DETRUIRE(CONCEPT=_F(NOM=(f, fMagn)))
+            DETRUIRE(CONCEPT=_F(NOM=(fY, fZ, fMagnY, fMagnZ, fPhase)))
         
-        maxFRF = [0.0]*len(allFreqsJob)
-        for vect in values: # vect is the FRF of one node of the group of node
+        # For group grp, average the FRFs from all nodes
+        meanFRF = np.array([0.0]*len(allFreqsJob))
+        for vect in valuesMag:  # vect is the FRF of one node of the group of node
             for k in range(len(vect)):
-                maxFRF[k] = max(maxFRF[k], vect[k])
+                meanFRF[k] += vect[k]
+        meanFRF /= len(valuesMag)
+
+        # Same for phases
+        mnFRF_ph = np.array([0.0]*len(allFreqsJob))
+        for vect in valuesPh:  # vect is the FRF phase of one node of the group of node
+            for k in range(len(vect)):
+                mnFRF_ph[k] += vect[k]
+        mnFRF_ph /= len(valuesPh)
 
         # FRF function on a group on a macroelement
         FRFs[j] = DEFI_FONCTION(NOM_PARA = 'FREQ', 
                                ABSCISSE = allFreqsJob + [allFreqsJob[-1]+1e-2]*int(len(allFreqsJob)==1),
-                               ORDONNEE = maxFRF + [maxFRF[-1]]*int(len(allFreqsJob)==1))
+                               ORDONNEE = np.append(meanFRF, [meanFRF[-1]]*int(len(allFreqsJob)==1)))
+        
+        phase[j] = DEFI_FONCTION(NOM_PARA = 'FREQ', 
+                               ABSCISSE = allFreqsJob + [allFreqsJob[-1]+1e-2]*int(len(allFreqsJob)==1),
+                               ORDONNEE = np.append(mnFRF_ph, [mnFRF_ph[-1]]*int(len(allFreqsJob)==1)))
                                
         j += 1
       
 for freq in allFreqsJob:
     FRFdataline = [str(freq)]
     
-    for frf in FRFs:
+    for i, frf in enumerate(FRFs):
         if frf is None:
             FRFdataline.append('NaN')
         else:
             FRFdataline.append(str(frf(freq)*normCoef))
+
+        phs = phase[i]
+        if phs is None:
+            FRFdataline.append('NaN')
+        else:
+            FRFdataline.append(str(phs(freq)))
 
     fileFRFContent += '\t'.join(FRFdataline) + '\n'
 

@@ -75,6 +75,9 @@ def GetResidualsVect(p_alpha, *argv):
 		f.close()
 	except:
 		return file_paramInput + ' could not be created.'
+	
+	# Duplicate export file, because the one that is run always end up having absolute paths written
+	shutil.copyfile(os.path.join(workingDir, 'Props_Identification_template.export'), os.path.join(workingDir, 'Props_Identification.export'))
 
 	# RUN SIMULATION
 	os.system('cd ' + workingDir + '\nbash runAsterJob.sh')

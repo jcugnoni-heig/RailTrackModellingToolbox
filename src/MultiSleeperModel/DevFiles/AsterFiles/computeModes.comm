@@ -15,17 +15,7 @@ with open('fort.2', 'r') as f:
 f.close()
 parameters = json.loads(txt)
 
-try:
-    scaling_slpX = parameters['scaling_slpX']
-    scaling_slpY = parameters['scaling_slpY']
-except:
-    scaling_slpX = 1.0
-    scaling_slpY = 1.0
 
-try:
-    sleeperHeight = parameters['slpHeight']
-except:
-    sleeperHeight = 214.0
 
 maxFreq = parameters['modesMaxFreq']
 phase1Freq = parameters['phase1Freq']
@@ -42,20 +32,34 @@ E1Sleeper = parameters['E1Sleeper']
 E2Sleeper = parameters['E2Sleeper']
 E3Sleeper = parameters['E3Sleeper']
 nuSleeper = parameters['nuSleeper']
+sleeperHeight = parameters['slpHeight']
 rhoSleeper = parameters['rhoSleeper']
 slpSpacing = parameters['slpSpacing']
 clampStiffX = parameters['clampStiffX']*1000/2
 clampStiffY = parameters['clampStiffY']*1000/2
 clampStiffZ = parameters['clampStiffZ']*1000/2
 
-
 if USP_on == True:
     nuUSP = parameters['nuUSP']
     thkUSP = parameters['thkUSP'] 
 
+# Create mesh only, or compute modes too
+try:
+    createMeshOnly = parameters['createMeshOnly']
+except:
+    createMeshOnly = False
+
+# sleeper scaling (not implemented in GUI)
+try:
+    scaling_slpX = parameters['scaling_slpX']
+    scaling_slpY = parameters['scaling_slpY']
+except:
+    scaling_slpX = 1.0
+    scaling_slpY = 1.0
+
 
 ######################################################
-# Define frequency bands used for INFO_MODES()
+# Define frequency bands used for INFO_MODES()            3300, 3001, 
 ######################################################
 freqBands1 = [0] + list(range(3300, int(maxFreq) + 1, min(500, int(maxFreq))))
 # freqBands1 = [0] + list(range(4500, int(maxFreq) + 1, min(1000, int(maxFreq))))
@@ -448,6 +452,9 @@ mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes,
                      MAILLAGE=mesh0) 
 
 IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
+
+if createMeshOnly:
+    FIN()
 
 model = AFFE_MODELE(MAILLAGE=mesh,
                     AFFE=(_F(TOUT='OUI',
