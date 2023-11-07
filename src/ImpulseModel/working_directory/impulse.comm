@@ -106,7 +106,7 @@ if USP_on:
 
    # Sleeper 2
    tieUSP2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('sntb___0', ),
-                                          GROUP_MA_MAIT=('USPe____0', ),
+                                          GROUP_MA_MAIT=('USPe___0', ),
                                           TYPE_RACCORD='MASSIF')),
                         MODELE=model)
 

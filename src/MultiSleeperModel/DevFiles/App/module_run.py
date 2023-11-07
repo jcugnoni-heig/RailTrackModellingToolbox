@@ -160,8 +160,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		return "The folder " + fullDir + " could not be created (modes simulation)."
 	
 	# Create JSON parameter file
-	if p_createMeshOnly:
-		p_dictSimu['createMeshOnly'] = True
+	p_dictSimu['createMeshOnly'] = p_createMeshOnly
 
 	try:
 		txt = json.dumps(p_dictSimu, indent = 4, sort_keys=True)

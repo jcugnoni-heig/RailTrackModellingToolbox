@@ -951,7 +951,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.frequencies = dlg_frequencies.values
 
 	def SelectNodesFRF(self):
-		toolTip = 'Groups with multiple nodes will generate one FRF, which is the average among the nodes. Groups, whose name finishes with 'Y' or 'Z', will generate the FRF in the vertical or lateral direction, respectively. Otherwise, the magnitude (lateral, vertical), is calculated.'
+		toolTip = 'Groups with multiple nodes will generate one FRF, which is the average among the nodes. Groups, whose name finishes with ''Y'' or ''Z'', will generate the FRF in the vertical or lateral direction, respectively. Otherwise, the magnitude (lateral, vertical), is calculated.'
 		dlg_grps = Dialog_EnterVals(self.nodesFRF, 'Node groups for FRF', 'string', toolTip)
 		dlg_grps.show()
 		dlg_grps.exec_()
