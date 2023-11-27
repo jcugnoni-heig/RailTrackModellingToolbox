@@ -1,2 +1,2 @@
 pids=$(pgrep aster) && kill -s USR1 $pids
-salome killall
+__path__salome killall

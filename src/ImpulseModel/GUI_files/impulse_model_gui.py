@@ -448,7 +448,7 @@ class ImpulseModelGUI(QMainWindow):
 			return
 		
 		os.system('sed -i -E "s!__workingDir__!' + "'" + self.workingDir + "'" + '!" ' + os.path.join(self.workingDir, edgesScript))
-		os.system('/opt/SalomeMeca/appli_V2019_univ/salome -t ' + os.path.join(self.workingDir, edgesScript))
+		os.system('__path__salome -t ' + os.path.join(self.workingDir, edgesScript))
 
 		# Open the mesh in salome
 		openMeshScript = 'open_mesh.py'

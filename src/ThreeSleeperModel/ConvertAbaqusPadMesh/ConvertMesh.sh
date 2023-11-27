@@ -15,10 +15,8 @@ INPUTFILE="Export_Aster.inp"
 ## SETTINGS
 CGXTEMPLATE="meshConv.tpl"
 CGXINPUT="meshConv.in"
-CGXPATH=/opt/CLCX-caelinux64/bin/cgx2.12
-ASRUNPATH=/opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180/bin/as_run
-# /opt/SalomeMeca/V2018/tools/Code_aster_frontend-20180/bin/as_run
-# /opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run
+CGXPATH=__path__CGX
+ASRUNPATH=__path__asRun
 ASRUNJOB="meshConvert.export"
 
 ## EXECUTION

@@ -4,7 +4,6 @@
 ### This file is generated automatically by SALOME v9.3.0 with dump python functionality
 ###
 
-import sys
 import salome
 import os
 
@@ -18,7 +17,6 @@ workingDir = __workingDir__
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

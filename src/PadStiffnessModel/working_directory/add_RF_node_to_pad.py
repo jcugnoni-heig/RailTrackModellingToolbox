@@ -24,7 +24,6 @@ sys.path.insert(0, r'/home/caelinux/Documents')
 
 import GEOM
 from salome.geom import geomBuilder
-import math
 import SALOMEDS
 
 print('Start of the script.')

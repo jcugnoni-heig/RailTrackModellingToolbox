@@ -2,7 +2,7 @@
 
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
-PYTHONPATH=python
+PYTHONPATH=__path__python
 
 cd $SCRIPTPATH
 

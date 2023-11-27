@@ -4,9 +4,7 @@
 DEBUT(PAR_LOT='NON')
 
 from Utilitai import partition
-# from Utilitai.Table import Table
 import math
-import time
 import numpy as np
 import json
 

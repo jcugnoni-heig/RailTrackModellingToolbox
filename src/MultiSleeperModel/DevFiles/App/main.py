@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt
 import pyperclip as clipboard
-#import clipboard
 import module_run as mod
 import json
 import multiprocessing
@@ -38,6 +37,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_freqs.clicked.connect(self.SelectFrequencies)
 		self.btn_selectSubstructures.clicked.connect(self.SelectSubstructures)
 		self.cb_computeAcoustic.stateChanged.connect(self.ComputeAcousticStateChanged)
+		self.cb_writeMED.stateChanged.connect(self.WriteMedStateChanged)
 		self.btn_selectAcousticMesh.clicked.connect(self.SelectAcousticMesh)
 		self.btn_addSimu.clicked.connect(self.AddSimuToList)
 		self.btn_simuDir.clicked.connect(self.SelectSimuDir)
@@ -235,6 +235,13 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_selectAcousticMesh.setDisabled(not self.cb_computeAcoustic.isChecked())
 		self.rb_1D.setDisabled(not self.cb_computeAcoustic.isChecked())
 		self.rb_2D.setDisabled(not self.cb_computeAcoustic.isChecked())
+
+		self.txt_nSlpAcoust1.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
+		self.txt_nSlpAcoust2.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
+
+	def WriteMedStateChanged(self):
+		self.txt_nSlpAcoust1.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
+		self.txt_nSlpAcoust2.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
 		
 	def AddSimuToList(self):
 		dictSimu = {}

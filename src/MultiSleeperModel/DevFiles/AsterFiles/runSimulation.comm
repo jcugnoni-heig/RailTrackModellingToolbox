@@ -5,11 +5,7 @@ POURSUITE(PAR_LOT='NON')
 
 
 from Utilitai import partition
-# import math
-import time
 import numpy as np
-# import sys
-# import aster
 import pickle
 import json
 

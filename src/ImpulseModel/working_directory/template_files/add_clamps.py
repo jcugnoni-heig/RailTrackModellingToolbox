@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
-import sys
 import os
 import salome
 
 salome.salome_init()
 import salome_notebook
 notebook = salome_notebook.NoteBook()
-# sys.path.insert(0, r'/home/cae/Documents/TrackSystemEvaluation/working_directory')
 
 workingDir = __workingDir__
 
@@ -15,7 +13,7 @@ workingDir = __workingDir__
 ### SMESH component
 ###
 
-import  SMESH, SALOMEDS
+import  SMESH
 from salome.smesh import smeshBuilder
 
 smesh = smeshBuilder.New()

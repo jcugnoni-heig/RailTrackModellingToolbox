@@ -1,5 +1,4 @@
 import os
-import sys
 from scipy.optimize import least_squares
 import shutil
 import json

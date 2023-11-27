@@ -15,7 +15,7 @@ class LauncherGUI(QMainWindow):
 		loadUi(uiFilePath, self)
 		self.srcpath=os.path.abspath(os.path.join(self.filepath, os.pardir))
 		self.termcmd="xterm -hold -e"
-		self.salome_path="/opt/SalomeMeca/appli_V2019_univ/salome"
+		self.salome_path="__path__salome"
   
          # Signals & slots
 		self.PadStiffnessBtn.clicked.connect(self.RunPadStiffness)

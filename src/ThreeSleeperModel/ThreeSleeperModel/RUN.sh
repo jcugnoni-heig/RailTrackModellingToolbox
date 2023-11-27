@@ -8,9 +8,9 @@ materialsDir=./Materials_properties/
 messagesDir=./messages/
 TERMCMD="xterm -e"
 TERMCMDHOLD="xterm -hold  -e"
-ASRUNPATH=/opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run
-PYTHONPATH=python
-SALOMEPATH=/opt/SalomeMeca/appli_V2019_univ/salome
+ASRUNPATH=__path__asRun
+PYTHONPATH=__path__python
+SALOMEPATH=__path__salome
 
 #########################################################################################
 # FUNCTIONS

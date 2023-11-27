@@ -5,8 +5,6 @@ from PyQt5.uic import loadUi
 from PyQt5.QtCore import QTimer, QObject, QThread, pyqtSignal
 import os
 import sys
-import subprocess
-import signal
 import time
 from datetime import datetime
 
