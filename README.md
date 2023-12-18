@@ -82,7 +82,16 @@ The code was developed to run in a CAELinux 2020 Lite (http://www.caelinux.com) 
 The toolbox requires the following software installed on the system to run:
 1. Code_Aster with MFront support (tested version 14.6)
 2. Salome-Meca 2019 
-3. Python 2.7 with PyQT5, pyperclip and numpy libraries
+3. Python 2.7 with the following libraries:
+
+python scripts:
+os, sys, shutil, PyQt5, PyQt5.QtWidgets, PyQt5.uic, PyQt5.QtCore, pyperclip, json, multiprocessing, time, pickle, math, datetime, scipy, scipy.optimize, scipy.linalg, matplotlib, matplotlib.pyplot, csv, 
+
+Salome scripts:
+salome, salome.smesh, salome.geom, salome_notebook, SMESH, GEOM, SALOMEDS
+
+Aster scripts:
+Utilitai, aster_core
 
 ## Getting Started
 
