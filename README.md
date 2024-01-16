@@ -111,10 +111,10 @@ Please note the default username / password is :
 
 *password*: caelinux
 
-If you decide to install "from scratch", you will need to have first a working installation of all the prerequisites (see src/INSTALL, src/dependencies.txt and src/installDependencies.sh) and then run the setup.sh script in the root of the toolbox:
+If you decide to install "from scratch", you will need to have first a working installation of all the prerequisites (see src/INSTALL, src/dependencies.txt and src/installDependencies.sh) and then run the setup0.sh and setup.sh scripts in the root of the toolbox:
 
 > cd PathToToolBox
-> 
+> ./setup0.sh
 > ./setup.sh
 
 
