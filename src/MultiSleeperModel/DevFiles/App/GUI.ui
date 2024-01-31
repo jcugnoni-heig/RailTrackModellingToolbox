@@ -20,9 +20,9 @@
    <widget class="QPushButton" name="btn_addSimu">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>420</x>
       <y>300</y>
-      <width>131</width>
+      <width>161</width>
       <height>25</height>
      </rect>
     </property>
@@ -36,9 +36,9 @@
    <widget class="QPushButton" name="btn_simulate">
     <property name="geometry">
      <rect>
-      <x>550</x>
+      <x>590</x>
       <y>300</y>
-      <width>82</width>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -51,7 +51,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>541</width>
+      <width>581</width>
       <height>285</height>
      </rect>
     </property>
@@ -70,7 +70,7 @@
        <rect>
         <x>9</x>
         <y>40</y>
-        <width>294</width>
+        <width>371</width>
         <height>206</height>
        </rect>
       </property>
@@ -170,7 +170,7 @@
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>The eigenmodes of the macroelement are computed up to this frequency.</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The eigenmodes of the macroelement are computed up to this frequency. With USP, 25kHz is adviced to have enough modes to converge up to 2000Hz. Up to 1500Hz simulations, 15kHz is enough.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>15000</string>
@@ -221,9 +221,9 @@
      <widget class="QPushButton" name="btn_selPhase1Folder">
       <property name="geometry">
        <rect>
-        <x>180</x>
+        <x>210</x>
         <y>10</y>
-        <width>261</width>
+        <width>291</width>
         <height>25</height>
        </rect>
       </property>
@@ -422,7 +422,7 @@
            <rect>
             <x>10</x>
             <y>10</y>
-            <width>221</width>
+            <width>251</width>
             <height>161</height>
            </rect>
           </property>
@@ -660,7 +660,7 @@
            <rect>
             <x>10</x>
             <y>10</y>
-            <width>251</width>
+            <width>271</width>
             <height>201</height>
            </rect>
           </property>
@@ -802,9 +802,9 @@
          <widget class="QGroupBox" name="groupBox_11">
           <property name="geometry">
            <rect>
-            <x>270</x>
+            <x>290</x>
             <y>10</y>
-            <width>173</width>
+            <width>191</width>
             <height>105</height>
            </rect>
           </property>
@@ -819,7 +819,7 @@
             <rect>
              <x>10</x>
              <y>24</y>
-             <width>151</width>
+             <width>171</width>
              <height>25</height>
             </rect>
            </property>
@@ -838,7 +838,7 @@
             <rect>
              <x>10</x>
              <y>55</y>
-             <width>70</width>
+             <width>91</width>
              <height>16</height>
             </rect>
            </property>
@@ -852,7 +852,7 @@
            </property>
            <property name="geometry">
             <rect>
-             <x>90</x>
+             <x>110</x>
              <y>50</y>
              <width>61</width>
              <height>20</height>
@@ -876,7 +876,7 @@
            <rect>
             <x>20</x>
             <y>10</y>
-            <width>111</width>
+            <width>131</width>
             <height>16</height>
            </rect>
           </property>
@@ -887,7 +887,7 @@
          <widget class="QLineEdit" name="txt_stiffX">
           <property name="geometry">
            <rect>
-            <x>150</x>
+            <x>160</x>
             <y>10</y>
             <width>71</width>
             <height>20</height>
@@ -905,7 +905,7 @@
            <rect>
             <x>20</x>
             <y>40</y>
-            <width>111</width>
+            <width>141</width>
             <height>16</height>
            </rect>
           </property>
@@ -916,7 +916,7 @@
          <widget class="QLineEdit" name="txt_stiffY">
           <property name="geometry">
            <rect>
-            <x>150</x>
+            <x>160</x>
             <y>40</y>
             <width>71</width>
             <height>20</height>
@@ -934,7 +934,7 @@
            <rect>
             <x>20</x>
             <y>70</y>
-            <width>111</width>
+            <width>131</width>
             <height>16</height>
            </rect>
           </property>
@@ -945,7 +945,7 @@
          <widget class="QLineEdit" name="txt_stiffZ">
           <property name="geometry">
            <rect>
-            <x>150</x>
+            <x>160</x>
             <y>70</y>
             <width>71</width>
             <height>20</height>
@@ -963,7 +963,7 @@
            <rect>
             <x>20</x>
             <y>160</y>
-            <width>111</width>
+            <width>131</width>
             <height>16</height>
            </rect>
           </property>
@@ -976,7 +976,7 @@
            <rect>
             <x>20</x>
             <y>100</y>
-            <width>111</width>
+            <width>131</width>
             <height>16</height>
            </rect>
           </property>
@@ -989,7 +989,7 @@
            <rect>
             <x>20</x>
             <y>130</y>
-            <width>111</width>
+            <width>131</width>
             <height>16</height>
            </rect>
           </property>
@@ -1000,7 +1000,7 @@
          <widget class="QLineEdit" name="txt_dampZ">
           <property name="geometry">
            <rect>
-            <x>150</x>
+            <x>160</x>
             <y>160</y>
             <width>71</width>
             <height>20</height>
@@ -1016,7 +1016,7 @@
          <widget class="QLineEdit" name="txt_dampX">
           <property name="geometry">
            <rect>
-            <x>150</x>
+            <x>160</x>
             <y>100</y>
             <width>71</width>
             <height>20</height>
@@ -1032,7 +1032,7 @@
          <widget class="QLineEdit" name="txt_dampY">
           <property name="geometry">
            <rect>
-            <x>150</x>
+            <x>160</x>
             <y>130</y>
             <width>71</width>
             <height>20</height>
@@ -1286,7 +1286,7 @@
        <rect>
         <x>9</x>
         <y>9</y>
-        <width>291</width>
+        <width>331</width>
         <height>240</height>
        </rect>
       </property>
@@ -1296,7 +1296,7 @@
       <widget class="QLineEdit" name="txt_slpForce">
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>188</y>
          <width>72</width>
          <height>18</height>
@@ -1314,7 +1314,7 @@
         <rect>
          <x>10</x>
          <y>24</y>
-         <width>168</width>
+         <width>201</width>
          <height>16</height>
         </rect>
        </property>
@@ -1328,7 +1328,7 @@
       <widget class="QLineEdit" name="txt_nModesRai">
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>24</y>
          <width>72</width>
          <height>18</height>
@@ -1344,17 +1344,20 @@
         <string/>
        </property>
        <property name="text">
-        <string>15</string>
+        <string>10</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="txt_nSlp">
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>96</y>
          <width>72</width>
          <height>18</height>
         </rect>
+       </property>
+       <property name="toolTip">
+        <string/>
        </property>
        <property name="text">
         <string>400</string>
@@ -1365,7 +1368,7 @@
         <rect>
          <x>10</x>
          <y>72</y>
-         <width>135</width>
+         <width>191</width>
          <height>16</height>
         </rect>
        </property>
@@ -1379,20 +1382,20 @@
       <widget class="QLineEdit" name="txt_cumulMassEffeUn">
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>72</y>
          <width>72</width>
          <height>18</height>
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimum cumulated effective unit mass requested in each direction (see Code_Aster doc R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value (]0;1]) in each direction.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Minimum cumulated effective unit mass requested in each direction (see Code_Aster doc R5.01.03). It enables selecting the smallest number of eigenmodes such that the cumulated effective unit mass reaches that value (]0;1]) in each direction. With USP, 0.96 is advised for convergence.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="statusTip">
         <string/>
        </property>
        <property name="text">
-        <string>0.95</string>
+        <string>0.94</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_36">
@@ -1400,7 +1403,7 @@
         <rect>
          <x>10</x>
          <y>120</y>
-         <width>119</width>
+         <width>201</width>
          <height>16</height>
         </rect>
        </property>
@@ -1414,7 +1417,7 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>164</y>
          <width>72</width>
          <height>18</height>
@@ -1432,7 +1435,7 @@
         <rect>
          <x>10</x>
          <y>96</y>
-         <width>106</width>
+         <width>181</width>
          <height>16</height>
         </rect>
        </property>
@@ -1443,7 +1446,7 @@
       <widget class="QLineEdit" name="txt_slpSpacing">
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>120</y>
          <width>72</width>
          <height>18</height>
@@ -1458,7 +1461,7 @@
         <rect>
          <x>10</x>
          <y>144</y>
-         <width>101</width>
+         <width>141</width>
          <height>16</height>
         </rect>
        </property>
@@ -1490,7 +1493,7 @@
         <rect>
          <x>10</x>
          <y>188</y>
-         <width>115</width>
+         <width>171</width>
          <height>16</height>
         </rect>
        </property>
@@ -1501,7 +1504,7 @@
       <widget class="QLineEdit" name="txt_nModesSlp">
        <property name="geometry">
         <rect>
-         <x>209</x>
+         <x>240</x>
          <y>48</y>
          <width>72</width>
          <height>18</height>
@@ -1514,7 +1517,7 @@
         <string/>
        </property>
        <property name="text">
-        <string>15</string>
+        <string>10</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_46">
@@ -1522,7 +1525,7 @@
         <rect>
          <x>10</x>
          <y>48</y>
-         <width>193</width>
+         <width>221</width>
          <height>16</height>
         </rect>
        </property>
@@ -1536,7 +1539,7 @@
       <widget class="QLineEdit" name="txt_fDirVert">
        <property name="geometry">
         <rect>
-         <x>176</x>
+         <x>207</x>
          <y>142</y>
          <width>31</width>
          <height>18</height>
@@ -1552,7 +1555,7 @@
       <widget class="QLabel" name="label_49">
        <property name="geometry">
         <rect>
-         <x>220</x>
+         <x>251</x>
          <y>143</y>
          <width>31</width>
          <height>16</height>
@@ -1565,7 +1568,7 @@
       <widget class="QLineEdit" name="txt_fDirLat">
        <property name="geometry">
         <rect>
-         <x>250</x>
+         <x>281</x>
          <y>142</y>
          <width>31</width>
          <height>18</height>
@@ -1581,7 +1584,7 @@
       <widget class="QLabel" name="label_51">
        <property name="geometry">
         <rect>
-         <x>137</x>
+         <x>168</x>
          <y>143</y>
          <width>41</width>
          <height>16</height>
@@ -1608,7 +1611,7 @@
      <widget class="QGroupBox" name="groupBox_8">
       <property name="geometry">
        <rect>
-        <x>311</x>
+        <x>350</x>
         <y>9</y>
         <width>221</width>
         <height>240</height>
@@ -1651,7 +1654,7 @@
         <rect>
          <x>10</x>
          <y>80</y>
-         <width>131</width>
+         <width>141</width>
          <height>16</height>
         </rect>
        </property>
@@ -1667,7 +1670,7 @@
         <rect>
          <x>10</x>
          <y>197</y>
-         <width>135</width>
+         <width>161</width>
          <height>25</height>
         </rect>
        </property>
@@ -1683,7 +1686,7 @@
         <rect>
          <x>90</x>
          <y>22</y>
-         <width>95</width>
+         <width>111</width>
          <height>20</height>
         </rect>
        </property>
@@ -1709,9 +1712,9 @@
       <widget class="QPushButton" name="btn_selectSubstructures">
        <property name="geometry">
         <rect>
-         <x>130</x>
+         <x>151</x>
          <y>76</y>
-         <width>82</width>
+         <width>61</width>
          <height>25</height>
         </rect>
        </property>
@@ -1774,7 +1777,7 @@
         <rect>
          <x>10</x>
          <y>103</y>
-         <width>161</width>
+         <width>191</width>
          <height>16</height>
         </rect>
        </property>
@@ -1791,7 +1794,7 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>40</x>
+         <x>50</x>
          <y>124</y>
          <width>31</width>
          <height>20</height>
@@ -1832,7 +1835,7 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>90</x>
          <y>124</y>
          <width>21</width>
          <height>16</height>
@@ -1851,7 +1854,7 @@
        </property>
        <property name="geometry">
         <rect>
-         <x>100</x>
+         <x>110</x>
          <y>124</y>
          <width>31</width>
          <height>20</height>
@@ -1889,7 +1892,7 @@
    <widget class="QListWidget" name="list_simu">
     <property name="geometry">
      <rect>
-      <x>550</x>
+      <x>590</x>
       <y>20</y>
       <width>131</width>
       <height>271</height>
@@ -1899,7 +1902,7 @@
    <widget class="QToolButton" name="btn_moveUp">
     <property name="geometry">
      <rect>
-      <x>683</x>
+      <x>723</x>
       <y>40</y>
       <width>27</width>
       <height>20</height>
@@ -1915,7 +1918,7 @@
    <widget class="QToolButton" name="btn_moveDown">
     <property name="geometry">
      <rect>
-      <x>683</x>
+      <x>723</x>
       <y>60</y>
       <width>27</width>
       <height>20</height>
@@ -1931,7 +1934,7 @@
    <widget class="QToolButton" name="btn_deleteSimu">
     <property name="geometry">
      <rect>
-      <x>683</x>
+      <x>723</x>
       <y>20</y>
       <width>27</width>
       <height>20</height>
@@ -1950,14 +1953,14 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>320</x>
       <y>300</y>
       <width>91</width>
       <height>25</height>
      </rect>
     </property>
     <property name="toolTip">
-     <string>Opens Salome to shoiw the mesh of the selected simulation in the list on the right.</string>
+     <string>Opens Salome to show the mesh of the selected simulation in the list on the right.</string>
     </property>
     <property name="text">
      <string>Show mesh</string>

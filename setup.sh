@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pythonPath="python"
+pythonPath="python3"
 salomePath="/opt/SalomeMeca/appli_V2019_univ/salome"
 asRunPath="/opt/SalomeMeca/V2019_univ/tools/Code_aster_frontend-20190/bin/as_run"
 asRunImpulsePath="/opt/aster/bin/as_run"

@@ -3,7 +3,6 @@
 ######################################################
 POURSUITE(PAR_LOT='NON')
 
-
 from Utilitai import partition
 import numpy as np
 import pickle
@@ -78,6 +77,16 @@ try:
 except:
     scaling_slpX = 1.0
     scaling_slpY = 1.0
+
+# add the group of node to compute a static compression mode
+# h = 392.945
+# if USP_on:
+#     h += thkUSP
+# try:
+#     mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, DETR_GROUP_NO = _F(NOM='nAbvSlp'))
+# except:
+#     pass
+# mesh = DEFI_GROUP(reuse=mesh, MAILLAGE=mesh, CREA_GROUP_NO=_F(NOM = 'nAbvSlp', OPTION='ENV_SPHERE', POINT=(0, h+2, 753.242), RAYON=2, PRECISION=0.1))
 
 ######################################################
 # Define functions
@@ -829,12 +838,12 @@ bamo1=DEFI_BASE_MODALE(reuse=bamo1,
 
 # Add compression static mode
 # mstat = MODE_STATIQUE (MATR_RIGI = matAs_K1, 
-#                        FORCE_NODALE =_F(GROUP_NO = 'nAbvSlp', AVEC_CMP =('DY'),),)
+                       # FORCE_NODALE =_F(GROUP_NO = 'nAbvSlp', AVEC_CMP =('DY'),),)
 
 # bamo1=DEFI_BASE_MODALE(reuse=bamo1,
-#                        RITZ=(_F(BASE_MODALE=bamo1),
-#                              _F(MODE_INTF = mstat, )),
-#                        NUME_REF=num2)
+                       # RITZ=(_F(BASE_MODALE=bamo1),
+                             # _F(MODE_INTF = mstat, )),
+                       # NUME_REF=num2)
 
 
     
@@ -1315,8 +1324,8 @@ fileFRF.close()
 # Write result files (MED)
 ######################################################
 if writeMED:
-    IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=bamo1,), # mod_trim
-            UNITE=82)
+	IMPR_RESU(FORMAT='MED',
+			RESU=_F(RESULTAT=bamo1,), # mod_trim
+			UNITE=82)
 
 FIN()
