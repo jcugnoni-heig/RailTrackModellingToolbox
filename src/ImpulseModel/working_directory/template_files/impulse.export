@@ -49,9 +49,8 @@ __USP_E__
 __USP_Nu__
 __USP_Rho__
 __USP_AmHyst__
-
 F mess messages/impulse.mess R  6
-F libr Resultats_impulse.txt R  40
+F libr Resultats_impulse.txt R  82
 F libr Resultats_ballast_impulse_INVAR.txt R  8
 F libr Resultats_ballast_impulse_SGIM.txt R  9
 F libr resultImpulse.res.med R  81

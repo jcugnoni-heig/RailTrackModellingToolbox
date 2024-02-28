@@ -8,6 +8,7 @@ import pyperclip as clipboard
 import module_run as mod
 import json
 import multiprocessing
+import psutil
 
 
 class MultiSleeperModelGUI(QMainWindow):
@@ -49,6 +50,10 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_moveDown.clicked.connect(self.MoveSimuDown)
 		self.list_simu.currentItemChanged.connect(self.DisplaySimu)
 		self.btn_showMesh.clicked.connect(self.ShowMesh)
+
+		nJobsMax = multiprocessing.cpu_count()/2
+		self.txt_phase1CPUs.setText(str(nJobsMax))
+		self.txt_nJobs.setText(str(nJobsMax))
 				
 		self.appPath = appPath # src/MultiSleeperModel/DevFiles/
 		temp = os.path.dirname(appPath)
@@ -56,7 +61,8 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.simuList = []
 		self.modesParentFolder = None
 		self.modesFolder = None
-		self.frequencies = [178, 182.5174824, 190.9090908, 199.3006992, 207.6923076, 216.083916, 224.4755244, 232.8671328, 241.2587412, 249.6503496, 258.041958, 266.4335664, 274.8251748, 283.2167832, 291.6083916, 300, 308.3916084, 316.7832168, 325.1748252, 333.5664336, 341.958042, 350.3496503, 358.7412587, 367.1328671, 375.5244755, 383.9160839, 392.3076923, 400.6993007, 409.0909091, 417.4825175, 425.8741259, 434.2657343, 442.6573427, 451.048951, 459.4405594, 467.8321678, 476.2237762, 484.6153846, 493.006993, 501.3986014, 509.7902098, 518.1818182, 526.5734266, 534.965035, 543.3566434, 551.7482517, 560.1398601, 568.5314685, 576.9230769, 585.3146853, 593.7062937, 602.0979021, 610.4895105, 618.8811189, 627.2727273, 635.6643357, 644.0559441, 652.4475524, 660.8391608, 669.2307692, 677.6223776, 686.013986, 694.4055944, 702.7972028, 711.1888112, 719.5804196, 727.972028, 736.3636364, 744.7552448, 753.1468531, 761.5384615, 769.9300699, 778.3216783, 786.7132867, 795.1048951, 803.4965035, 811.8881119, 820.2797203, 828.6713287, 837.0629371, 845.4545455, 853.8461538, 862.2377622, 870.6293706, 879.020979, 887.4125874, 895.8041958, 904.1958042, 912.5874126, 920.979021, 929.3706294, 937.7622378, 946.1538462, 954.5454545, 962.9370629, 971.3286713, 979.7202797, 988.1118881, 996.5034965, 1004.895105, 1013.286713, 1021.678322, 1030.06993, 1038.461538, 1046.853147, 1055.244755, 1063.636364, 1072.027972, 1080.41958, 1088.811189, 1097.202797, 1105.594406, 1113.986014, 1122.377622, 1130.769231, 1139.160839, 1147.552448, 1155.944056, 1164.335664, 1172.727273, 1181.118881, 1189.51049, 1197.902098, 1206.293706, 1214.685315, 1223.076923, 1231.468531, 1239.86014, 1248.251748, 1256.643357, 1265.034965, 1273.426573, 1281.818182, 1290.20979, 1298.601399, 1306.993007, 1315.384615, 1323.776224, 1332.167832, 1340.559441, 1348.951049, 1357.342657, 1365.734266, 1374.125874, 1382.517483, 1390.909091, 1399.300699, 1407.692308, 1416.083916, 1424.475524, 1432.867133, 1441.258741, 1449.65035, 1458.041958, 1466.433566, 1474.825175, 1483.216783, 1491.608392, 1500, 1520, 1540, 1560, 1580, 1600, 1620, 1640, 1660, 1680, 1700, 1720, 1740, 1760, 1778]
+		self.frequencies = [5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 115, 130, 145, 160, 175, 190, 205, 220, 235, 250, 265, 280, 300, 320, 340, 360, 380, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 620, 640, 660, 680, 700, 720, 740, 760, 780, 800, 820, 840, 860, 880, 900, 920, 940, 960, 980, 1000, 1025, 1050, 1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250, 1275, 1300, 1325, 1350, 1375, 1400, 1425, 1450, 1475, 1500, 1525, 1550, 1575, 1600, 1625, 1650, 1675, 1700, 1725, 1750, 1775, 1800, 1825, 1850, 1875, 1900, 1925, 1950, 1975, 2000]
+
 		self.nodesFRF = ['nRai1_Y', 'nRai1_Z', 'nRai2_Y', 'nRai2_Z', 'nRai3_Y', 'nRai3_Z', 'nRai4_Y', 'nRai4_Z', 'nSlp_Y']
 		self.railMesh = None
 		self.sleeperMesh = None
@@ -280,12 +286,12 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['writeMED'] = writeMED
 
 		# 
-		nJobsMax = multiprocessing.cpu_count()
+		nJobsMax = multiprocessing.cpu_count()/2
 		
 		try:
 			nJobs = int(self.txt_nJobs.text())
-			if nJobs < 1 or nJobs > 24:
-				QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs (1-24).', QMessageBox.Ok,)
+			if nJobs < 1 or nJobs > nJobsMax:
+				QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs (1-' + str(nJobsMax) + ').', QMessageBox.Ok,)
 				return
 		except:
 			QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs.', QMessageBox.Ok,)
@@ -323,11 +329,14 @@ class MultiSleeperModelGUI(QMainWindow):
 		dictSimu['reptrav'] = reptrav
 		
 		#
+		totalRAM = psutil.virtual_memory().total/1.0e6
 		try:
 			memLimit = float(self.txt_memLimit.text())
 			if memLimit < 0:
 				QMessageBox.information(self, 'Error', 'Please enter a correct memory limit.', QMessageBox.Ok,)
 				return
+			elif memLimit > totalRAM:
+				QMessageBox.information(self, 'Warning', 'The specified memory limit is larger than the total RAM of this machine.', QMessageBox.Ok,)
 		except:
 			QMessageBox.information(self, 'Error', 'Please enter a correct memory limit.', QMessageBox.Ok,)
 			return
@@ -341,7 +350,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		
 		if computeModes == True:
 		
-			dictSimu['phase1WorkingDir'] = os.path.join(dictSimu['simuParentFolder'], dictSimu['name'] + '_modes')
+			dictSimu['phase1WorkingDir'] = os.path.join(dictSimu['simuParentFolder'], dictSimu['name'] + '_phase1')
 			
 			#
 			if self.modesParentFolder is None or os.path.exists(self.modesParentFolder) == False:
@@ -353,11 +362,11 @@ class MultiSleeperModelGUI(QMainWindow):
 				QMessageBox.information(self, 'Error', 'Please enter a correct name for the modes simulation.', QMessageBox.Ok,)
 				return
 			
-			if modesName == dictSimu['name'] + '_modes':
-				QMessageBox.information(self, 'Error', dictSimu['name'] + '_modes (Phase 1: modes) cannot be used, please choose a different name.', QMessageBox.Ok,)
-				return
-			
 			modesFolder = os.path.join(self.modesParentFolder, modesName)
+			if modesFolder == os.path.join(dictSimu['simuParentFolder'],  dictSimu['name']) or modesFolder == dictSimu['phase1WorkingDir']:
+				QMessageBox.information(self, 'Error', modesFolder + ' is already used. Please select another directory to save the modes.', QMessageBox.Ok,)
+				return
+
 			try:
 				shutil.rmtree(modesFolder)
 			except:

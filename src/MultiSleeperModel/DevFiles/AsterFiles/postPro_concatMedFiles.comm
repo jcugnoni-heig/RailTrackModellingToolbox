@@ -9,7 +9,6 @@ f.close()
 
 parameters = json.loads(txt)
 computeAcoustic = parameters['computeAcoustic']
-FRFtype = parameters['outputType']
 nJobs = parameters['nJobs']
 
 squel = LIRE_MAILLAGE(FORMAT="MED",UNITE=2);
@@ -34,7 +33,7 @@ for i in range(nJobs):
     # Get harmonic result of job i
     resHarm = LIRE_RESU(FORMAT='MED',
                       UNITE=10+i,
-                      FORMAT_MED=(_F(NOM_CHAM=FRFtype,
+                      FORMAT_MED=(_F(NOM_CHAM='DEPL',
                                      NOM_CHAM_MED='resOut',),),
                       TYPE_RESU='DYNA_HARMO',
                       TOUT_ORDRE='OUI',
@@ -43,15 +42,15 @@ for i in range(nJobs):
     # Get fields for each frequency and append them to the final result
     for freq in allFreqs:                              
         field = CREA_CHAMP(FREQ=freq,
-                              NOM_CHAM=FRFtype,
+                              NOM_CHAM='DEPL',
                               OPERATION='EXTR',
                               RESULTAT=resHarm,
                               TYPE_CHAM='NOEU_DEPL_R')
         
         if i == 0 and freq == allFreqs[0]:
-            harmo = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=field, FREQ=freq),);
+            harmo = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=field, FREQ=freq),);
         else:
-            harmo = CREA_RESU(reuse=harmo, RESULTAT=harmo, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM=FRFtype,AFFE=_F(CHAM_GD=field, FREQ=freq),);
+            harmo = CREA_RESU(reuse=harmo, RESULTAT=harmo, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=field, FREQ=freq),);
 
         DETRUIRE(CONCEPT=_F(NOM=(field, )))
         

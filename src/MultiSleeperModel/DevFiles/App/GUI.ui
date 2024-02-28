@@ -196,7 +196,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The stiffness matrix is evaluated at this frequency to compute modes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>900</string>
+          <string>1000</string>
          </property>
         </widget>
        </item>
@@ -293,7 +293,7 @@
        <item row="5" column="1">
         <widget class="QLineEdit" name="txt_nCPUs">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of CPUs used per job (=frequency band).&lt;/p&gt;&lt;p&gt;Recommendation: the acoustic calculation is the most costly. If acoustic is ON, consider using as many jobs as possible and few CPUs. Otherwise, split adequately, eg. 6 jobs x 4 CPUs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>1</string>
@@ -324,7 +324,7 @@
        <item row="4" column="1">
         <widget class="QLineEdit" name="txt_nJobs">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bands dividing the frequency range and running simulateously. It has an impact on Rayleigh's damping approximation. The more the better. See doc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bands dividing the frequency range and running simulateously. It has an impact on Rayleigh's damping approximation. The more the better.&lt;/p&gt;&lt;p&gt;Recommendation: the acoustic calculation is the most costly. If acoustic is ON, consider using as many jobs as possible and few CPUs. Otherwise, split adequately, eg. 6 jobs x 4 CPUs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>24</string>
@@ -348,10 +348,10 @@
        <item row="8" column="1">
         <widget class="QLineEdit" name="txt_memLimit">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RAM necessary for the simulation per job (=frequenc band). A typical simulation with 400 modes, 18 sleepers, 6 frequencies per job and 9 acoustic points needs about 5000MB. The default value is 20000MB to make sure the simulation runs properly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The value recommended here works for a simulation with default parameters. Note that the peak of memory used can reach 15GB or more.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>20000</string>
+          <string>15000</string>
          </property>
         </widget>
        </item>
@@ -859,7 +859,7 @@
             </rect>
            </property>
            <property name="toolTip">
-            <string>Height between the bottom of the sleeper, and the middle of the face, which is in contact with the pad.</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Height between the bottom of the sleeper and the middle of the face, which is in contact with the pad. For RpIV wooden sleeper, the height is 150mm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>214</string>
@@ -1630,7 +1630,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. If it is 2D, the ouput is the acoustic power integrated over the mesh surface area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D: the output is the acoustic pressure transfer function at each node of the mesh, if the mesh has no groups. If the mesh has groups, it is only calculated on the groups, which contain one node.&lt;/p&gt;&lt;p&gt;If the acoustic mesh is 2D: the ouput is the acoustic power transfer function, resulting from the intensity integrated over the mesh surface area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Compute acoustic</string>
@@ -1675,7 +1675,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D: the output is the acoustic pressure transfer function at each node of the mesh, if the mesh has no groups. If the mesh has groups, it is only calculated on the groups, which contain one node.&lt;/p&gt;&lt;p&gt;If the acoustic mesh is 2D: the ouput is the acoustic power transfer function, resulting from the intensity integrated over the mesh surface area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Select acoustic mesh...</string>
@@ -1691,7 +1691,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRF file result is expressed in terms of displacement velocity or acceleration transfer funtions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The FRF result file is expressed in terms of displacement, velocity or acceleration transfer funtions versus input force.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <item>
         <property name="text">
@@ -1738,7 +1738,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D: the output is the acoustic pressure transfer function at each node of the mesh, if the mesh has no groups. If the mesh has groups, it is only calculated on the groups, which contain one node.&lt;/p&gt;&lt;p&gt;If the acoustic mesh is 2D: the ouput is the acoustic power transfer function, resulting from the intensity integrated over the mesh surface area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>2D mesh</string>
@@ -1760,7 +1760,7 @@
         </rect>
        </property>
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D, the output is the acoustic pressure at each node of the mesh. &lt;/p&gt;&lt;p&gt;If it is 2D, the ouput is the acoustic power integrated over the mesh area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the acoustic mesh is 1D: the output is the acoustic pressure transfer function at each node of the mesh, if the mesh has no groups. If the mesh has groups, it is only calculated on the groups, which contain one node.&lt;/p&gt;&lt;p&gt;If the acoustic mesh is 2D: the ouput is the acoustic power transfer function, resulting from the intensity integrated over the mesh surface area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>1D mesh</string>

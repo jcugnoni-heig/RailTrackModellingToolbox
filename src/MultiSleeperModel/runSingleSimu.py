@@ -38,7 +38,7 @@ except:
 code = mod.RunSimulation(parameters)
 
 if code != 0:
-    if isinstance(code, str) or isinstance(code, unicode):
+    if isinstance(code, str):
         print(parameters['name'] + " did not run properly. The error message is:\n" + code)
     elif isinstance(code, int):
         print(parameters['name'] + " did not run properly. Check out Code_Aster message files. Exit code: " + str(code))

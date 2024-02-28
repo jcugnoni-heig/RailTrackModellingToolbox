@@ -55,23 +55,61 @@ except:
     scaling_slpX = 1.0
     scaling_slpY = 1.0
 
+# 2nd and 3rd macroelements implementation (not implemented in GUI)
+# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
+# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
+bool_macroEl2_Ph1 = ('macroEl2' in parameters.keys()) and ((("computeModeShapesPh1" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['slpShift'] !=0)))
+# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
+bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in parameters['macroEl2'].keys() and parameters['macroEl2']['slpShift'] !=0
 
 ######################################################
-# Define frequency bands used for INFO_MODES()            3300, 3001, 
+# Define frequency bands based on INFO_MODES() s.t. ~40 modes per band
 ######################################################
-freqBands1 = [0] + list(range(3300, int(maxFreq) + 1, min(500, int(maxFreq))))
-# freqBands1 = [0] + list(range(4500, int(maxFreq) + 1, min(1000, int(maxFreq))))
-if freqBands1[-1] != int(maxFreq):
-    freqBands1.append(int(maxFreq))
+
+def OptimizedFreqBands(p_infoModes):
+    temp1 = p_infoModes.EXTR_TABLE()
+    temp2 = temp1.values()
+    fMin = temp2['FREQ_MIN']
+    fMax = temp2['FREQ_MAX']
+    nModes = temp2['NB_MODE']
+
+    nEigenModes = sum(nModes)
+
+    table = []
+    for i in range(len(fMin)):
+        table.append([fMin[i], fMax[i], nModes[i]])
+
+    nModesPerBand = 40 # recommended by Code_Aster
+    nTot = 0
+    freqBandsOpt = [table[0][0]]
+    cursor = 0
+
+    i = 0
+    while i < len(table):
+        f1 = table[i][0]
+        f2 = table[i][1]
+        nInBand = table[i][2]
+        nRemaining = table[i][2]*(1-cursor)
+        
+        if nTot + nRemaining < nModesPerBand:
+            nTot += nRemaining
+            i += 1
+            cursor = 0
+            continue
+        else:
+            cursor += (nModesPerBand - nTot)/nInBand
+            fSup = f1 + (f2 - f1)*cursor
+            freqBandsOpt.append(fSup)
+            nTot = 0
+
+    if freqBandsOpt[-1] < table[-1][1]:
+        freqBandsOpt.append(table[-1][1])
+
+    return [freqBandsOpt, nEigenModes]
 
 ######################################################
 # MESHES AND MODEL
 ######################################################
-pySlp = partition.MAIL_PY()
-pyRai = partition.MAIL_PY()
-if USP_on:
-    pyUSP = partition.MAIL_PY()
-
 halfDistRails = 757.54
 padVerticalOffset = sleeperHeight*scaling_slpY
 padThickness = 7.0
@@ -80,7 +118,7 @@ railTiltX = railTiltXrad*180/math.pi
 railVerticalOffset = padVerticalOffset + padThickness*math.cos(railTiltXrad)
 
 # Sleeper
-meshSlp = LIRE_MAILLAGE(FORMAT="MED",UNITE=21);
+meshSlp = LIRE_MAILLAGE(FORMAT="MED",UNITE=21)
 
 dplX_slp = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='X*(scaling-1)', scaling=scaling_slpX,)
                
@@ -170,13 +208,8 @@ CHdpl=CREA_CHAMP(OPERATION='ASSE', TYPE_CHAM='NOEU_DEPL_R', MAILLAGE=meshRaiR,
                           NOM_CMP = ('X1', 'X2', 'X3',),
                           NOM_CMP_RESU = ('DX','DY','DZ',)))
 
-
 meshRaiR = MODI_MAILLAGE(reuse=meshRaiR, MAILLAGE=meshRaiR, 
                      DEFORME=_F(OPTION='TRAN', DEPL=CHdpl))
-
-
-
-
 
 meshRaiR = MODI_MAILLAGE(reuse=meshRaiR,
                        MAILLAGE=meshRaiR,
@@ -280,13 +313,13 @@ if USP_on:
                             NOM_CMP = ('X1', 'X2', 'X3',),
                             NOM_CMP_RESU = ('DX','DY','DZ',)))
 
-
     meshUSP = MODI_MAILLAGE(reuse=meshUSP, MAILLAGE=meshUSP, 
                         DEFORME=_F(OPTION='TRAN', DEPL=CHdpl))
     
-    
-    # Delete all groups of meshSlp that exist in meshUSP
+    # Delete all groups of meshSlp that exist in meshUSP (if USP=on, we query accel under it instead of under sleeper)
+    pyUSP = partition.MAIL_PY()
     pyUSP.FromAster('meshUSP')
+    pySlp = partition.MAIL_PY()
     pySlp.FromAster('meshSlp')
     nodeGrpsUSP = meshUSP.LIST_GROUP_NO()
     nodeGrpsSlp = meshSlp.LIST_GROUP_NO()
@@ -308,141 +341,79 @@ if USP_on:
     meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(0, thkUSP, 0));
     meshRaiR = MODI_MAILLAGE(reuse=meshRaiR, MAILLAGE=meshRaiR, TRANSLATION=(0, thkUSP, 0));
     
-    tmp2 = ASSE_MAILLAGE(MAILLAGE_1=meshUSP, MAILLAGE_2=meshSlp, OPERATION='SUPERPOSE')
-    tmp3 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')
-    tmp4 = ASSE_MAILLAGE(MAILLAGE_1=tmp3, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
-    
-    tmp4 = DEFI_GROUP(reuse=tmp4, MAILLAGE=tmp4, 
-                       CREA_GROUP_NO = _F(NOM='slpSym2', UNION=('slpSym', 'USPsym')))
-    
+# Assemble meshes
+if USP_on:
+    tmp = ASSE_MAILLAGE(MAILLAGE_1=meshUSP, MAILLAGE_2=meshSlp, OPERATION='SUPERPOSE')
+    tmp2 = ASSE_MAILLAGE(MAILLAGE_1=tmp, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')  
+    DETRUIRE(CONCEPT=_F(NOM=(tmp)))  
     discreteBalNodes = 'USPbot'
-    slpSym = 'slpSym' # avant: sym2
 else:
     tmp2 = ASSE_MAILLAGE(MAILLAGE_1=meshSlp, MAILLAGE_2=meshPadR, OPERATION='SUPERPOSE')
-    tmp4 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
     discreteBalNodes = 'sntb'
-    slpSym = 'slpSym'
 
-clampDirIni = np.array([1,0,0])
-pyRai.FromAster('meshRaiR')
-pySlp.FromAster('meshSlp')
+mesh_1 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE') # macroelement 1 (nominal)
 
-# Clamp IA
-clampia = LIRE_MAILLAGE(FORMAT="MED",UNITE=22);
+# Duplicate and translate (USP-)sleeper-pad mesh if another macroelement needs to be defined with a sleeper shift
+if bool_macroEl2_Ph1:
+    slpShift = parameters['macroEl2'].get('slpShift') if parameters['macroEl2'].get('slpShift') is not None else 0
+    tmp2_2 = COPIER(CONCEPT=tmp2 )
+    tmp2_2 = MODI_MAILLAGE(reuse=tmp2_2, MAILLAGE=tmp2_2, TRANSLATION=(slpShift, 0, 0),)
+    mesh_2 = ASSE_MAILLAGE(MAILLAGE_1=tmp2_2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE')
+    DETRUIRE(CONCEPT=_F(NOM=(tmp2_2)))
 
-clampia = DEFI_GROUP(reuse=clampia, MAILLAGE=clampia, CREA_GROUP_NO=(_F(NOM='clmp_ia0', UNION=('n0')), _F(NOM='clmp_ia1', UNION=('n1'))),
-                                                      CREA_GROUP_MA=_F(NOM='clmp_ia', UNION=('clamp')))
+DETRUIRE(CONCEPT=_F(NOM=(tmp2)))
 
-clampia = DEFI_GROUP(reuse=clampia, MAILLAGE=clampia, DETR_GROUP_NO=_F(NOM=('n0', 'n1')), DETR_GROUP_MA=_F(NOM=('clamp')))
+# Add clamps ; use function bc 4 clamps per macroelement mesh
+def ClampMesh(p_cps, p_clampIni, p_pyMesh, p_clampID, p_clampNo):
+    clampDirIni = np.array([1,0,0])
 
-nodeSlp = pySlp.gno.get('sntria')
-sntria = np.array(pySlp.cn[nodeSlp[0]])
-nodeRai = pyRai.gno.get('rntsla')
-rntsla = np.array(pyRai.cn[nodeRai[0]])
+    p_cps[p_clampNo] = COPIER(CONCEPT=p_clampIni ) # DETRUIRE() + recreate clamp object doesnt work within function ... so we create a new one every time
 
-clampVect = rntsla - sntria
-clampLength = np.linalg.norm(clampVect)
-clampDir_u = clampVect/np.linalg.norm(clampLength)
-rotDir = np.cross(clampDirIni, clampDir_u)
-rotAngle = np.arccos(np.clip(np.dot(clampDirIni, clampDir_u), -1.0, 1.0))
+    p_cps[p_clampNo] = DEFI_GROUP(reuse=p_cps[p_clampNo], MAILLAGE=p_cps[p_clampNo], 
+                                  CREA_GROUP_NO=(_F(NOM='clmp_' + p_clampID + '0', UNION=('n0')), _F(NOM='clmp_' + p_clampID + '1', UNION=('n1'))),
+                                  CREA_GROUP_MA=_F(NOM='clmp_' + p_clampID, UNION=('clamp')))
 
-clampia = MODI_MAILLAGE(reuse=clampia, MAILLAGE=clampia, 
-                        ECHELLE=clampLength)
+    p_cps[p_clampNo] = DEFI_GROUP(reuse=p_cps[p_clampNo], MAILLAGE=p_cps[p_clampNo], 
+                                  DETR_GROUP_NO=_F(NOM=('n0', 'n1')), 
+                                  DETR_GROUP_MA=_F(NOM=('clamp')))
 
-clampia = MODI_MAILLAGE(reuse=clampia, MAILLAGE=clampia, 
-                        TRANSLATION=sntria,
-                        ROTATION=_F(ANGLE=rotAngle*180/math.pi, POIN_1=sntria, DIR=rotDir),)
+    nodeSlp = p_pyMesh.gno.get('sntr' + p_clampID)
+    sntr = np.array(p_pyMesh.cn[nodeSlp[0]])
+    leftRight = 'l' if p_clampID[0] == 'i' else 'r'
+    nodeRai = p_pyMesh.gno.get('rnts' + leftRight + p_clampID[-1])
+    rnts = np.array(p_pyMesh.cn[nodeRai[0]])
 
+    clampVect = rnts - sntr
+    clampLength = np.linalg.norm(clampVect)
+    clampDir_u = clampVect/np.linalg.norm(clampLength)
+    rotDir = np.cross(clampDirIni, clampDir_u)
+    rotAngle = np.arccos(np.clip(np.dot(clampDirIni, clampDir_u), -1.0, 1.0))
 
-tmp5 = ASSE_MAILLAGE(MAILLAGE_1=tmp4, MAILLAGE_2=clampia, OPERATION='SUPERPOSE')
+    p_cps[p_clampNo] = MODI_MAILLAGE(reuse=p_cps[p_clampNo], MAILLAGE=p_cps[p_clampNo], ECHELLE=clampLength)
 
-# Clamp IB
-clampib = LIRE_MAILLAGE(FORMAT="MED",UNITE=22);
-
-clampib = DEFI_GROUP(reuse=clampib, MAILLAGE=clampib, CREA_GROUP_NO=(_F(NOM='clmp_ib0', UNION=('n0')), _F(NOM='clmp_ib1', UNION=('n1'))),
-                                                      CREA_GROUP_MA=_F(NOM='clmp_ib', UNION=('clamp')))
-
-clampib = DEFI_GROUP(reuse=clampib, MAILLAGE=clampib, DETR_GROUP_NO=_F(NOM=('n0', 'n1')), DETR_GROUP_MA=_F(NOM=('clamp')))
-
-nodeSlp = pySlp.gno.get('sntrib')
-sntrib = np.array(pySlp.cn[nodeSlp[0]])
-nodeRai = pyRai.gno.get('rntslb')
-rntslb = np.array(pyRai.cn[nodeRai[0]])
-
-clampVect = rntslb - sntrib
-clampLength = np.linalg.norm(clampVect)
-clampDir_u = clampVect/np.linalg.norm(clampLength)
-rotDir = np.cross(clampDirIni, clampDir_u)
-rotAngle = np.arccos(np.clip(np.dot(clampDirIni, clampDir_u), -1.0, 1.0))
-
-clampib = MODI_MAILLAGE(reuse=clampib, MAILLAGE=clampib, 
-                        ECHELLE=clampLength)
-
-clampib = MODI_MAILLAGE(reuse=clampib, MAILLAGE=clampib, 
-                        TRANSLATION=sntrib,
-                        ROTATION=_F(ANGLE=rotAngle*180/math.pi, POIN_1=sntrib, DIR=rotDir),)
+    p_cps[p_clampNo] = MODI_MAILLAGE(reuse=p_cps[p_clampNo], MAILLAGE=p_cps[p_clampNo], 
+                          TRANSLATION=sntr,
+                          ROTATION=_F(ANGLE=rotAngle*180/math.pi, POIN_1=sntr, DIR=rotDir),)
+    
+    return p_cps[p_clampNo]
 
 
-tmp6 = ASSE_MAILLAGE(MAILLAGE_1=tmp5, MAILLAGE_2=clampib, OPERATION='SUPERPOSE')
+clampIni = LIRE_MAILLAGE(FORMAT="MED",UNITE=22)
+allClamps = [None]*4*(1 + int(bool_macroEl2_Ph1))
 
-# Clamp EA
-clampea = LIRE_MAILLAGE(FORMAT="MED",UNITE=22);
+# Main mesh (nominal)
+pyMesh1 = partition.MAIL_PY()
+pyMesh1.FromAster('mesh_1')
 
-clampea = DEFI_GROUP(reuse=clampea, MAILLAGE=clampea, CREA_GROUP_NO=(_F(NOM='clmp_ea0', UNION=('n0')), _F(NOM='clmp_ea1', UNION=('n1'))),
-                                                      CREA_GROUP_MA=_F(NOM='clmp_ea', UNION=('clamp')))
+clampia1 = ClampMesh(allClamps, clampIni, pyMesh1, 'ia', 0)
+clampib1 = ClampMesh(allClamps, clampIni, pyMesh1, 'ib', 1)
+clampea1 = ClampMesh(allClamps, clampIni, pyMesh1, 'ea', 2)
+clampeb1 = ClampMesh(allClamps, clampIni, pyMesh1, 'eb', 3)
 
-clampea = DEFI_GROUP(reuse=clampea, MAILLAGE=clampea, DETR_GROUP_NO=_F(NOM=('n0', 'n1')), DETR_GROUP_MA=_F(NOM=('clamp')))
-
-nodeSlp = pySlp.gno.get('sntrea')
-sntrea = np.array(pySlp.cn[nodeSlp[0]])
-nodeRai = pyRai.gno.get('rntsra')
-rntsra = np.array(pyRai.cn[nodeRai[0]])
-
-clampVect = rntsra - sntrea
-clampLength = np.linalg.norm(clampVect)
-clampDir_u = clampVect/np.linalg.norm(clampLength)
-rotDir = np.cross(clampDirIni, clampDir_u)
-rotAngle = np.arccos(np.clip(np.dot(clampDirIni, clampDir_u), -1.0, 1.0))
-
-clampea = MODI_MAILLAGE(reuse=clampea, MAILLAGE=clampea, 
-                        ECHELLE=clampLength)
-
-clampea = MODI_MAILLAGE(reuse=clampea, MAILLAGE=clampea, 
-                        TRANSLATION=sntrea,
-                        ROTATION=_F(ANGLE=rotAngle*180/math.pi, POIN_1=sntrea, DIR=rotDir),)
-
-
-tmp7 = ASSE_MAILLAGE(MAILLAGE_1=tmp6, MAILLAGE_2=clampea, OPERATION='SUPERPOSE')
-
-# Clamp EB
-clampeb = LIRE_MAILLAGE(FORMAT="MED",UNITE=22);
-
-clampeb = DEFI_GROUP(reuse=clampeb, MAILLAGE=clampeb, CREA_GROUP_NO=(_F(NOM='clmp_eb0', UNION=('n0')), _F(NOM='clmp_eb1', UNION=('n1'))),
-                                                      CREA_GROUP_MA=_F(NOM='clmp_eb', UNION=('clamp')))
-
-clampeb = DEFI_GROUP(reuse=clampeb, MAILLAGE=clampeb, DETR_GROUP_NO=_F(NOM=('n0', 'n1')), DETR_GROUP_MA=_F(NOM=('clamp')))
-
-nodeSlp = pySlp.gno.get('sntreb')
-sntreb = np.array(pySlp.cn[nodeSlp[0]])
-nodeRai = pyRai.gno.get('rntsrb')
-rntsrb = np.array(pyRai.cn[nodeRai[0]])
-
-clampVect = rntsrb - sntreb
-clampLength = np.linalg.norm(clampVect)
-clampDir_u = clampVect/np.linalg.norm(clampLength)
-rotDir = np.cross(clampDirIni, clampDir_u)
-rotAngle = np.arccos(np.clip(np.dot(clampDirIni, clampDir_u), -1.0, 1.0))
-
-clampeb = MODI_MAILLAGE(reuse=clampeb, MAILLAGE=clampeb, 
-                        ECHELLE=clampLength)
-
-clampeb = MODI_MAILLAGE(reuse=clampeb, MAILLAGE=clampeb, 
-                        TRANSLATION=sntreb,
-                        ROTATION=_F(ANGLE=rotAngle*180/math.pi, POIN_1=sntreb, DIR=rotDir),)
-
-
-mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp7, MAILLAGE_2=clampeb, OPERATION='SUPERPOSE')
-
+tmp3 = ASSE_MAILLAGE(MAILLAGE_1=mesh_1, MAILLAGE_2=clampia1, OPERATION='SUPERPOSE')
+tmp4 = ASSE_MAILLAGE(MAILLAGE_1=tmp3, MAILLAGE_2=clampib1, OPERATION='SUPERPOSE')
+tmp5 = ASSE_MAILLAGE(MAILLAGE_1=tmp4, MAILLAGE_2=clampea1, OPERATION='SUPERPOSE')
+mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp5, MAILLAGE_2=clampeb1, OPERATION='SUPERPOSE')
 mesh0 = DEFI_GROUP(reuse=mesh0, MAILLAGE=mesh0, CREA_GROUP_MA=_F(NOM = 'TOUT', TOUT = 'OUI'))
 
 mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes, 
@@ -454,13 +425,60 @@ IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
 if createMeshOnly:
     FIN()
 
+DETRUIRE(CONCEPT=_F(NOM=(tmp3, tmp4, tmp5, mesh_1, mesh0)))
+
+# Mesh macroelement 2
+if bool_macroEl2_Ph1:
+    pyMesh2 = partition.MAIL_PY()
+    pyMesh2.FromAster('mesh_2')
+
+    clampia2 = ClampMesh(allClamps, clampIni, pyMesh2, 'ia', 4)
+    clampib2 = ClampMesh(allClamps, clampIni, pyMesh2, 'ib', 5)
+    clampea2 = ClampMesh(allClamps, clampIni, pyMesh2, 'ea', 6)
+    clampeb2 = ClampMesh(allClamps, clampIni, pyMesh2, 'eb', 7)
+
+    tmp3 = ASSE_MAILLAGE(MAILLAGE_1=mesh_2, MAILLAGE_2=clampia2, OPERATION='SUPERPOSE')
+    tmp4 = ASSE_MAILLAGE(MAILLAGE_1=tmp3, MAILLAGE_2=clampib2, OPERATION='SUPERPOSE')
+    tmp5 = ASSE_MAILLAGE(MAILLAGE_1=tmp4, MAILLAGE_2=clampea2, OPERATION='SUPERPOSE')
+    mesh0 = ASSE_MAILLAGE(MAILLAGE_1=tmp5, MAILLAGE_2=clampeb2, OPERATION='SUPERPOSE')
+    mesh0 = DEFI_GROUP(reuse=mesh0, MAILLAGE=mesh0, CREA_GROUP_MA=_F(NOM = 'TOUT', TOUT = 'OUI'))
+
+    mesh2 = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes, 
+                                    NOM_GROUP_MA=discreteBalNodes + '0D'), 
+                        MAILLAGE=mesh0) 
+
+    DETRUIRE(CONCEPT=_F(NOM=(tmp3, tmp4, tmp5, mesh_2, mesh0)))
+
+# Make symmetrical mesh versions of macroelements that are not symmetrical
+if bool_macroEl2_slpShift:
+    mesh2S = COPIER(CONCEPT=mesh2)
+    mesh2S = MODI_MAILLAGE(reuse=mesh2S, MAILLAGE=mesh2S, SYMETRIE=_F(POINT=(0,0,0), AXE_1=(0,1,0), AXE_2=(0,0,1)))
+
+# Model for each macro-element
 model = AFFE_MODELE(MAILLAGE=mesh,
                     AFFE=(_F(TOUT='OUI',
                             PHENOMENE='MECANIQUE',
                             MODELISATION='3D',),
                           _F(GROUP_MA=(discreteBalNodes + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
                              PHENOMENE='MECANIQUE',
-                             MODELISATION='DIS_T',),));
+                             MODELISATION='DIS_T',),))
+
+if bool_macroEl2_Ph1:
+    model2 = AFFE_MODELE(MAILLAGE=mesh2,
+                        AFFE=(_F(TOUT='OUI',
+                                PHENOMENE='MECANIQUE',
+                                MODELISATION='3D',),
+                            _F(GROUP_MA=(discreteBalNodes + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
+                                PHENOMENE='MECANIQUE',
+                                MODELISATION='DIS_T',),))
+if bool_macroEl2_slpShift:
+    model2S = AFFE_MODELE(MAILLAGE=mesh2S,
+                        AFFE=(_F(TOUT='OUI',
+                                PHENOMENE='MECANIQUE',
+                                MODELISATION='3D',),
+                            _F(GROUP_MA=(discreteBalNodes + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
+                                PHENOMENE='MECANIQUE',
+                                MODELISATION='DIS_T',),))
                           
 # Compute area of a half-sleeper bottom face
 CH_id = CREA_CHAMP(OPERATION = 'AFFE',
@@ -490,266 +508,359 @@ for gp in nodeGrps:
 ######################################################
 # BOUNDARY CONDITIONS AND INTERACTIONS
 ######################################################
-
 if USP_on == True:
-    tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ),
-                                           GROUP_MA_MAIT=('setb', ),
-                                           TYPE_RACCORD='MASSIF',
-                                           DISTANCE_MAX=1.0)),
-                          MODELE=model)
+    tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model)
                           
-tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ),
-                                       GROUP_MA_MAIT=('setp', ),
-                                       TYPE_RACCORD='MASSIF',
-                                       DISTANCE_MAX=1.0)),
-                      MODELE=model)
+tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ), GROUP_MA_MAIT=('setp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model)
                       
-tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr', ),
-                                       GROUP_MA_MAIT=('retp', ),
-                                       TYPE_RACCORD='MASSIF',
-                                       DISTANCE_MAX=1.0)),
-                      MODELE=model)
+tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr', ), GROUP_MA_MAIT=('retp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model)
                                     
-BCinterf=AFFE_CHAR_MECA(MODELE=model,
-                        DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', slpSym), #SANS_GROUP_NO='nope','USPsym'
-                                    DX=0.0,
-                                    DY=0.0,
-                                    DZ=0.0),);
+BCintf = AFFE_CHAR_MECA(MODELE=model, DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', 'slpSym'),  DX=0.0, DY=0.0, DZ=0.0),)
 
+liaisons_clamps = [_F(GROUP_NO=('clmp_ia0', 'sntria')), _F(GROUP_NO=('clmp_ia1', 'rntsla')), _F(GROUP_NO=('clmp_ib0', 'sntrib')), _F(GROUP_NO=('clmp_ib1', 'rntslb')),
+                   _F(GROUP_NO=('clmp_ea0', 'sntrea')), _F(GROUP_NO=('clmp_ea1', 'rntsra')), _F(GROUP_NO=('clmp_eb0', 'sntreb')), _F(GROUP_NO=('clmp_eb1', 'rntsrb'))]
 
-# Clamps
-tie_clps = AFFE_CHAR_MECA(LIAISON_SOLIDE=(_F(GROUP_NO=('clmp_ia0', 'sntria')), 
-                                       _F(GROUP_NO=('clmp_ia1', 'rntsla')),
-                                       _F(GROUP_NO=('clmp_ib0', 'sntrib')), 
-                                       _F(GROUP_NO=('clmp_ib1', 'rntslb')),
-                                       _F(GROUP_NO=('clmp_ea0', 'sntrea')), 
-                                       _F(GROUP_NO=('clmp_ea1', 'rntsra')),
-                                       _F(GROUP_NO=('clmp_eb0', 'sntreb')), 
-                                       _F(GROUP_NO=('clmp_eb1', 'rntsrb')),
-                                       ),
-                          MODELE=model)
-
+tieClp = AFFE_CHAR_MECA(MODELE=model, LIAISON_SOLIDE=liaisons_clamps,)
 
 if USP_on == True:
-    BCs = (BCinterf, tie1, tie2, tie3, tie_clps)
+    BCs = (BCintf, tie1, tie2, tie3, tieClp)
 else:
-    BCs = (BCinterf, tie2, tie3, tie_clps)
-                              
+    BCs = (BCintf, tie2, tie3, tieClp)
+
+# Macroelement 2
+if bool_macroEl2_Ph1:
+    if USP_on == True:
+        tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
+                            
+    tie2_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ), GROUP_MA_MAIT=('setp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
+                        
+    tie3_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr', ), GROUP_MA_MAIT=('retp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
+                                        
+    BCintf2 = AFFE_CHAR_MECA(MODELE=model2, DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', 'slpSym'), DX=0.0, DY=0.0, DZ=0.0),)
+
+    tieClp2 = AFFE_CHAR_MECA(MODELE=model2, LIAISON_SOLIDE=liaisons_clamps)
+
+    if USP_on == True:
+        BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2)
+    else:
+        BCs2 = (BCintf2, tie2_2, tie3_2, tieClp2)
+
+# Macroelement 2S
+if bool_macroEl2_slpShift:
+    if USP_on == True:
+        tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
+                            
+    tie2_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ), GROUP_MA_MAIT=('setp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
+                        
+    tie3_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr', ), GROUP_MA_MAIT=('retp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
+                                        
+    BCintf2S = AFFE_CHAR_MECA(MODELE=model2S, DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', 'slpSym'), DX=0.0, DY=0.0, DZ=0.0),)
+
+    tieClp2S = AFFE_CHAR_MECA(MODELE=model2S, LIAISON_SOLIDE=liaisons_clamps)
+
+    if USP_on == True:
+        BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S)
+    else:
+        BCs2S = (BCintf2S, tie2_2S, tie3_2S, tieClp2S)
+
 
 ######################################################
-# Materials properties
+# Materials properties ; import functions
 ######################################################  
-f_EPad1=LIRE_FONCTION(UNITE = 30,
-                     NOM_PARA = 'FREQ',
-                     PROL_GAUCHE = 'LINEAIRE',
-                     PROL_DROITE = 'LINEAIRE')
-                
-f_EPad2=LIRE_FONCTION(UNITE = 32,
-                     NOM_PARA = 'FREQ',
-                     PROL_GAUCHE = 'LINEAIRE',
-                     PROL_DROITE = 'LINEAIRE')
+# E pad mat 1
+f_EPad1=LIRE_FONCTION(UNITE = 30, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+if bool_macroEl2_Ph1 and 'Emat1' in parameters['macroEl2'].keys():
+    fEpad12 = LIRE_FONCTION(UNITE = 50, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
 
+# E pad mat 2
+f_EPad2=LIRE_FONCTION(UNITE = 32, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+if bool_macroEl2_Ph1 and 'Emat2' in parameters['macroEl2'].keys():
+    fEpad22 = LIRE_FONCTION(UNITE = 52, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+
+# E USP
 if USP_on:
-    f_EUSP=LIRE_FONCTION(UNITE = 34,
-                         NOM_PARA = 'FREQ',
-                         PROL_GAUCHE = 'LINEAIRE',
-                         PROL_DROITE = 'LINEAIRE')
+    f_EUSP=LIRE_FONCTION(UNITE = 34, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    if bool_macroEl2_Ph1 and 'EUSP' in parameters['macroEl2'].keys():
+        f_EUSP2=LIRE_FONCTION(UNITE = 58, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
 
-f_EBal=LIRE_FONCTION(UNITE = 36,
-                     NOM_PARA = 'FREQ',
-                     PROL_GAUCHE = 'LINEAIRE',
-                     PROL_DROITE = 'LINEAIRE')    
+# E bal
+f_EBal=LIRE_FONCTION(UNITE = 36, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+if bool_macroEl2_Ph1 and 'Ebal' in parameters['macroEl2'].keys():
+    f_EBal2=LIRE_FONCTION(UNITE = 62, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE') 
 
-# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL. See R4.01.02
-slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=E1Sleeper,
-                                     E_N=E3Sleeper,
-                                     E_T=E2Sleeper,
-                                     G_LN=E1Sleeper/2/(1+nuSleeper),
-                                     G_LT=E1Sleeper/2/(1+nuSleeper),
-                                     G_TN=E3Sleeper/2/(1+nuSleeper),
-                                     NU_LN=nuSleeper,
-                                     NU_LT=nuSleeper,
-                                     NU_TN=nuSleeper,
+######################################################
+# Materials properties ; define materials
+######################################################  
+# Sleeper material ; Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL. See R4.01.02
+slprMat = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=E1Sleeper, E_N=E3Sleeper, E_T=E2Sleeper,
+                                     G_LN=E1Sleeper/2/(1+nuSleeper), G_LT=E1Sleeper/2/(1+nuSleeper), G_TN=E3Sleeper/2/(1+nuSleeper),
+                                     NU_LN=nuSleeper, NU_LT=nuSleeper, NU_TN=nuSleeper,
                                      RHO=rhoSleeper*1e-12))
-                            
+
+# Sleeper material macroEl2
+if bool_macroEl2_Ph1:
+    E1slp = parameters["macroEl2"].get("E1Sleeper") if parameters["macroEl2"].get("E1Sleeper") is not None else E1Sleeper
+    E2slp = parameters["macroEl2"].get("E2Sleeper") if parameters["macroEl2"].get("E2Sleeper") is not None else E2Sleeper
+    E3slp = parameters["macroEl2"].get("E3Sleeper") if parameters["macroEl2"].get("E3Sleeper") is not None else E3Sleeper
+    nuSlp = parameters["macroEl2"].get("nuSleeper") if parameters["macroEl2"].get("nuSleeper") is not None else nuSleeper
+    rhoSlp = parameters["macroEl2"].get("rhoSleeper") if parameters["macroEl2"].get("rhoSleeper") is not None else rhoSleeper
+
+    slprMat2 = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=E1slp, E_N=E3slp, E_T=E2slp,
+                                         G_LN=E1slp/2/(1+nuSlp), G_LT=E1slp/2/(1+nuSlp), G_TN=E3slp/2/(1+nuSlp),
+                                         NU_LN=nuSlp, NU_LT=nuSlp, NU_TN=nuSlp,
+                                         RHO=rhoSlp*1e-12))
+
+# Rail material    
 railMat = DEFI_MATERIAU(ELAS=_F(E=ERail,
                                 NU=nuRail,
                                 RHO=rhoRail*1e-12))
-                            
-padMat1 = DEFI_MATERIAU(ELAS=_F(E=f_EPad1(phase1Freq)/scaling_slpX,
-                                NU=nuPadMat1,
-                                RHO=1.0e-09))
-                                
-padMat2 = DEFI_MATERIAU(ELAS=_F(E=f_EPad2(phase1Freq)/scaling_slpX,
-                                NU=nuPadMat2,
-                                RHO=1.0e-09))   
+
+# Pad material 1
+padMat1 = DEFI_MATERIAU(ELAS=_F(E=f_EPad1(phase1Freq)/scaling_slpX, NU=nuPadMat1, RHO=1.0e-09))
+
+# Pad material 1 ; macroEl2
+if bool_macroEl2_Ph1:
+    try:
+        Epad = fEpad12(phase1Freq)
+    except:
+        Epad = f_EPad1(phase1Freq)
+
+    nuPad = parameters["macroEl2"].get("nuMat1") if parameters["macroEl2"].get("nuMat1") is not None else nuPadMat1
+
+    padMat12 = DEFI_MATERIAU(ELAS=_F(E=Epad/scaling_slpX, NU=nuPad, RHO=1.0e-09))
+
+# Pad material 2
+padMat2 = DEFI_MATERIAU(ELAS=_F(E=f_EPad2(phase1Freq)/scaling_slpX, NU=nuPadMat2, RHO=1.0e-09))  
+
+# Pad material 2 ; macroEl2
+if bool_macroEl2_Ph1:
+    try:
+        Epad = fEpad22(phase1Freq)
+    except:
+        Epad = f_EPad2(phase1Freq)
+
+    nuPad = parameters["macroEl2"].get("nuMat2") if parameters["macroEl2"].get("nuMat2") is not None else nuPadMat2
+
+    padMat22 = DEFI_MATERIAU(ELAS=_F(E=Epad/scaling_slpX, NU=nuPad, RHO=1.0e-09))
     
+# USP material
+if USP_on:
+    USPmat = DEFI_MATERIAU(ELAS=_F(E=f_EUSP(phase1Freq)/scaling_slpX,  NU=nuUSP, RHO=0.375e-09)) 
+
+    # USP material ; macroEl2
+    if bool_macroEl2_Ph1:
+        try:
+            EUSP = f_EUSP2(phase1Freq)
+        except:
+            EUSP = f_EUSP(phase1Freq)
+
+        nuUSP2 = parameters["macroEl2"].get("nuUSP") if parameters["macroEl2"].get("nuUSP") is not None else nuUSP
+
+        USPmat2 = DEFI_MATERIAU(ELAS=_F(E=EUSP/scaling_slpX,  NU=nuUSP2, RHO=0.375e-09))
+
+######################################################
+# Materials properties affectation
+######################################################  
+# Material affectation macroelement 1
+affeMat = [_F(GROUP_MA=('sleepere'), MATER=(slprMat, )),
+           _F(GROUP_MA=('hard'), MATER=(padMat1, )),
+           _F(GROUP_MA=('soft'), MATER=(padMat2, )),
+           _F(GROUP_MA=('raile'), MATER=(railMat, ))]
 
 if USP_on:
-    USPmat = DEFI_MATERIAU(ELAS=_F(E=f_EUSP(phase1Freq)/scaling_slpX, 
-                                   NU=nuUSP,
-                                   RHO=0.375e-09)) 
+    affeMat.append(_F(GROUP_MA=('USPe'), MATER=(USPmat, )),)
 
-    fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('sleepere'),
-                                      MATER=(slprMat, )),
-                                   _F(GROUP_MA=('hard'),
-                                      MATER=(padMat1, )),
-                                   _F(GROUP_MA=('soft'),
-                                      MATER=(padMat2, )),
-                                   _F(GROUP_MA=('USPe'),
-                                      MATER=(USPmat, )),
-                                   _F(GROUP_MA=('raile'),
-                                      MATER=(railMat, ))),
-                             MAILLAGE=mesh,
-                             MODELE=model,)
-else:
-    fieldmat = AFFE_MATERIAU(AFFE=(_F(GROUP_MA=('sleepere'),
-                                      MATER=(slprMat, )),
-                                   _F(GROUP_MA=('hard'),
-                                      MATER=(padMat1, )),
-                                   _F(GROUP_MA=('soft'),
-                                      MATER=(padMat2, )),
-                                   _F(GROUP_MA=('raile'),
-                                      MATER=(railMat, ))),
-                             MAILLAGE=mesh,
-                             MODELE=model,)
-                    
+fldMat = AFFE_MATERIAU(AFFE=affeMat, MAILLAGE=mesh, MODELE=model,)
+
+# Material affectation macroelement 2
+if bool_macroEl2_Ph1:
+    affeMat = [_F(GROUP_MA=('sleepere'), MATER=(slprMat2, )),
+              _F(GROUP_MA=('hard'), MATER=(padMat12, )),
+              _F(GROUP_MA=('soft'), MATER=(padMat22, )),
+              _F(GROUP_MA=('raile'), MATER=(railMat, ))]
+
+    if USP_on:
+        affeMat.append(_F(GROUP_MA=('USPe'), MATER=(USPmat2, )),)
+
+    fldMat2 = AFFE_MATERIAU(AFFE=affeMat, MAILLAGE=mesh2, MODELE=model2,)
+
+# Material affectation macroelement 2S
+if bool_macroEl2_slpShift:
+    fldMat2S = AFFE_MATERIAU(AFFE=affeMat, MAILLAGE=mesh2S, MODELE=model2S,)
+
 ######################################################
-# Compute elementary matrices & assemble
-######################################################  
+# Ballast properties calculation & affectation (discrete)
+###################################################### 
+# Nominal macroelement 
 nodeStiff_Y = f_EBal(phase1Freq)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
 nodeStiff_XZ = f_EBal(phase1Freq)/2/(1+nuBal)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
 
-elemprop = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N',
-                                      GROUP_MA=(discreteBalNodes+'0D'),
-                                      REPERE='GLOBAL',
-                                      VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),),
-                                   _F(CARA='M_T_D_N',
-                                      GROUP_MA=(discreteBalNodes+'0D'),
-                                      REPERE='GLOBAL',
-                                      VALE=0),
-                                   _F(CARA='K_T_D_L',
-                                      GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
-                                      VALE=(clampStiffX,clampStiffY,clampStiffZ)    # Stiffness of the clamps
-                                     ),),
-                          # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
-                          MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
-                          MODELE=model)
-                              
-matEl_K1=CALC_MATR_ELEM(MODELE=model,
-                        CHAM_MATER=fieldmat,
-                        OPTION='RIGI_MECA',
-                        CHARGE=BCs,
-                        CARA_ELEM=elemprop)
-                        
-num1 = NUME_DDL(MATR_RIGI=matEl_K1)
-matAs_K1 = ASSE_MATRICE(MATR_ELEM=matEl_K1, NUME_DDL=num1)
+# Ballast discrete elements ; macroEl2
+if bool_macroEl2_Ph1:
+    try:
+        Ebal = f_EBal2(phase1Freq)
+    except:
+        Ebal = f_EBal(phase1Freq)
 
-matEl_M1=CALC_MATR_ELEM(MODELE=model,
-                        CHAM_MATER=fieldmat,
-                        OPTION='MASS_MECA',
-                        CHARGE=BCs,
-                        CARA_ELEM=elemprop)
-                        
-matAs_M1 = ASSE_MATRICE(MATR_ELEM=matEl_M1, NUME_DDL=num1)
+    nuBal2 = parameters["macroEl2"].get("nuBal") if parameters["macroEl2"].get("nuBal") is not None else nuBal
+    nodeStiff_Y2 = Ebal*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
+    nodeStiff_XZ2 = Ebal/2/(1+nuBal2)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal
+
+# Ballast & clamps discrete elements affectation
+elProp = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),),
+                                 _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=0),
+                                 _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX,clampStiffY,clampStiffZ)),),
+                          # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                        MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                        MODELE=model)
+
+# Ballast & clamps discrete elements affectation ; macroEl2
+if bool_macroEl2_Ph1:
+    clampStiffX2 = parameters["macroEl2"].get("clampStiffX")*1000/2 if parameters["macroEl2"].get("clampStiffX") is not None else clampStiffX
+    clampStiffY2 = parameters["macroEl2"].get("clampStiffY")*1000/2 if parameters["macroEl2"].get("clampStiffY") is not None else clampStiffY
+    clampStiffZ2 = parameters["macroEl2"].get("clampStiffZ")*1000/2 if parameters["macroEl2"].get("clampStiffZ") is not None else clampStiffZ
+
+    elProp2 = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),),
+                                       _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=0),
+                                       _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2,clampStiffY2,clampStiffZ2)),),
+                              MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                              MODELE=model2)
+
+# Ballast & clamps discrete elements affectation ; macroEl2S
+if bool_macroEl2_slpShift:
+    elProp2S = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),),
+                                       _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=0),
+                                       _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2, clampStiffY2, clampStiffZ2)),),
+                              MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                              MODELE=model2S)
+
+######################################################
+# Compute elementary matrices & assemble
+######################################################  
+# Stiffness matrix (nominal)
+K_el = CALC_MATR_ELEM(MODELE=model, CHAM_MATER=fldMat, OPTION='RIGI_MECA', CHARGE=BCs, CARA_ELEM=elProp)
+num1 = NUME_DDL(MATR_RIGI=K_el)
+K_as = ASSE_MATRICE(MATR_ELEM=K_el, NUME_DDL=num1)
+
+# Stiffness matrix (macroEl2)
+if bool_macroEl2_Ph1:
+    K_el2 = CALC_MATR_ELEM(MODELE=model2, CHAM_MATER=fldMat2, OPTION='RIGI_MECA', CHARGE=BCs2, CARA_ELEM=elProp2)
+    num1_2 = NUME_DDL(MATR_RIGI=K_el2)
+    K_as2 = ASSE_MATRICE(MATR_ELEM=K_el2, NUME_DDL=num1_2)
+
+# Stiffness matrix (macroEl2S)
+if bool_macroEl2_slpShift:
+    K_el2S = CALC_MATR_ELEM(MODELE=model2S, CHAM_MATER=fldMat2S, OPTION='RIGI_MECA', CHARGE=BCs2S, CARA_ELEM=elProp2S)
+    num1_2S = NUME_DDL(MATR_RIGI=K_el2S)
+    K_as2S = ASSE_MATRICE(MATR_ELEM=K_el2S, NUME_DDL=num1_2S)
+
+# Mass matrix (nominal)
+M_el = CALC_MATR_ELEM(MODELE=model, CHAM_MATER=fldMat, OPTION='MASS_MECA', CHARGE=BCs, CARA_ELEM=elProp)
+M_as = ASSE_MATRICE(MATR_ELEM=M_el, NUME_DDL=num1)
+
+# Mass matrix (macroEl2)
+if bool_macroEl2_Ph1:
+    M_el2 = CALC_MATR_ELEM(MODELE=model2, CHAM_MATER=fldMat2, OPTION='MASS_MECA', CHARGE=BCs2, CARA_ELEM=elProp2)
+    M_as2 = ASSE_MATRICE(MATR_ELEM=M_el2, NUME_DDL=num1_2)
+
+# Mass matrix (macroEl2S)
+if bool_macroEl2_slpShift:
+    M_el2S = CALC_MATR_ELEM(MODELE=model2S, CHAM_MATER=fldMat2S, OPTION='MASS_MECA', CHARGE=BCs2S, CARA_ELEM=elProp2S)
+    M_as2S = ASSE_MATRICE(MATR_ELEM=M_el2S, NUME_DDL=num1_2S)
 
 ######################################################
 # Build a list of frequency bands which contain roughly the same desired number of modes (doc recommends 40)
 ######################################################
-tabModes = INFO_MODE( MATR_RIGI = matAs_K1,
-                      MATR_MASS = matAs_M1,
-                      FREQ = freqBands1)                              
+freqBands_ini = [0] + list(range(3300, int(maxFreq) + 1, min(500, int(maxFreq)))) # [0, 3300, 3800, 4300, 4800, ..., maxFreq]
+if freqBands_ini[-1] != int(maxFreq):
+    freqBands_ini.append(int(maxFreq))
 
+infoMode = INFO_MODE(MATR_RIGI = K_as, MATR_MASS = M_as, FREQ = freqBands_ini) 
 
-temp1 = tabModes.EXTR_TABLE()
-temp2 = temp1.values()
-fMin = temp2['FREQ_MIN']
-fMax = temp2['FREQ_MAX']
-nModes = temp2['NB_MODE']
-
-nEigen = sum(nModes)
-
-table = []
-for i in range(len(fMin)):
-    table.append([fMin[i], fMax[i], nModes[i]])
-
-nModesPerBand = 40
-nTot = 0
-freqBandsOpt = [table[0][0]]
-cursor = 0
-
-i = 0
-while i < len(table):
-    f1 = table[i][0]
-    f2 = table[i][1]
-    nInBand = table[i][2]
-    nRemaining = table[i][2]*(1-cursor)
-    
-    if nTot + nRemaining < nModesPerBand:
-        nTot += nRemaining
-        i += 1
-        cursor = 0
-        continue
-    else:
-        cursor += (nModesPerBand - nTot)/nInBand
-        fSup = f1 + (f2 - f1)*cursor
-        freqBandsOpt.append(fSup)
-        nTot = 0
-
-if freqBandsOpt[-1] < table[-1][1]:
-    freqBandsOpt.append(table[-1][1])
-
-print('Optimized frequency bands : ')
+[freqBandsOpt, nEigenModes] = OptimizedFreqBands(infoMode)
+print('Optimized frequency bands (nominal macroelement) : ')
 print(freqBandsOpt)
+
+if bool_macroEl2_Ph1:
+    infMod2 = INFO_MODE(MATR_RIGI = K_as2, MATR_MASS = M_as2, FREQ = freqBands_ini) 
+    [freqBandsOpt2, nEigenModes2] = OptimizedFreqBands(infMod2)
+    print('Optimized frequency bands (macroelement 2) : ')
+    print(freqBandsOpt2)
 
 ######################################################
 # Compute modes
 ######################################################
-modes_1=CALC_MODES(MATR_RIGI=matAs_K1,
-                   CALC_FREQ=_F(FREQ=freqBandsOpt,),
-                   STOP_BANDE_VIDE='NON',
-                   OPTION='BANDE',
-                   NORM_MODE=_F(NORME='TRAN'),
-                   MATR_MASS=matAs_M1,
-                   VERI_MODE=_F(STOP_ERREUR='NON',),)
+mdPh1 = CALC_MODES(MATR_RIGI=K_as, MATR_MASS=M_as, OPTION='BANDE', CALC_FREQ=_F(FREQ=freqBandsOpt,), NORM_MODE=_F(NORME='TRAN'), VERI_MODE=_F(STOP_ERREUR='NON',),)
 
-# extrnor=EXTR_MODE(
-#                 FILTRE_MODE=_F(
-#                             MODE=modes_1,
-#                             CRIT_EXTR='MASS_EFFE_UN',
-#                             SEUIL=0,
-#                                 ),
-#         IMPRESSION=_F(
-#                     CUMUL='OUI',
-#                     CRIT_EXTR='MASS_EFFE_UN',
-#                     ),)
+if bool_macroEl2_Ph1:
+    mdPh1_2 = CALC_MODES(MATR_RIGI=K_as2, MATR_MASS=M_as2, OPTION='BANDE', CALC_FREQ=_F(FREQ=freqBandsOpt2,), NORM_MODE=_F(NORME='TRAN'), VERI_MODE=_F(STOP_ERREUR='NON',),)
 
+if bool_macroEl2_slpShift:
+    mdPh1_2S = CALC_MODES(MATR_RIGI=K_as2S, MATR_MASS=M_as2S, OPTION='BANDE', CALC_FREQ=_F(FREQ=freqBandsOpt2,), NORM_MODE=_F(NORME='TRAN'), VERI_MODE=_F(STOP_ERREUR='NON',),)
 
-IMPR_RESU(MODELE=model, UNITE=83,
-          FORMAT='RESULTAT',
-          RESU=_F(RESULTAT=modes_1,
-                  TOUT_CHAM='NON',
-                  NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ'),
-                  FORM_TABL='OUI'
-                  ))
+# extrnor=EXTR_MODE(FILTRE_MODE=_F(MODE=mdPh1,
+#                                  CRIT_EXTR='MASS_EFFE_UN',
+#                                  SEUIL=0,),
+#                   IMPRESSION=_F(CUMUL='OUI',
+#                                 CRIT_EXTR='MASS_EFFE_UN',),)
 
-eigenModesToPrint = min(300, nEigen)
+IMPR_RESU(MODELE=model, UNITE=83, FORMAT='RESULTAT', RESU=_F(RESULTAT=mdPh1,
+                                                             TOUT_CHAM='NON',
+                                                             NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ'),
+                                                             FORM_TABL='OUI'))
+
+if bool_macroEl2_Ph1:
+    IMPR_RESU(MODELE=model2, UNITE=84, FORMAT='RESULTAT', RESU=_F(RESULTAT=mdPh1_2,
+                                                                TOUT_CHAM='NON',
+                                                                NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ'),
+                                                                FORM_TABL='OUI'))
+
+eigenModesToPrint = min(300, nEigenModes)
 numordre = list(range(1, eigenModesToPrint + 1))
 
-IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=modes_1, NUME_ORDRE=numordre),
-            UNITE=82)
+IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=mdPh1, NUME_ORDRE=numordre), UNITE=80)
+
+# if bool_macroEl2_Ph1:
+#     IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=mdPh1_2), UNITE=81)
 
 
-print('Number of eigenmodes (phase 1): ' + str(nEigen))
 
-DETRUIRE(CONCEPT=_F(NOM=(elemprop, meshSlp, meshRaiR, meshPadR, tmp2, tmp4, tmp5, tmp6, tmp7, mesh0, f_EBal,  f_EPad1, )))
-DETRUIRE(CONCEPT=_F(NOM=(f_EPad2, matAs_K1, matEl_M1, matAs_M1, dplX_slp, dplY_slp, dplZ_slp)))
-DETRUIRE(CONCEPT=_F(NOM=(matEl_K1, slprMat, railMat, padMat1, padMat2, fieldmat, tabModes))) 
-DETRUIRE(CONCEPT=_F(NOM=(dplX_rai, dplY_rai, dplZ_rai, CHdplF, CHcoord, temp, CHdpl)))
-DETRUIRE(CONCEPT=_F(NOM=(CH_id, intCH_id, clampia, clampib, clampea, clampeb)))
+print('Number of eigenmodes (nominal macroelement, phase 1): ' + str(nEigenModes))
+print('Number of eigenmodes (2nd macroelement, phase 1): ' + str(nEigenModes2))
+
+# Destroy concepts to keep, num1, mdPh1 + equivalents for other macroelements
+DETRUIRE(CONCEPT=_F(NOM=(meshSlp, dplX_slp, dplY_slp, dplZ_slp, CHdplF, meshRaiR, CHcoord, temp,  CHdpl, dplX_rai, dplY_rai, dplZ_rai, meshPadR)))
+DETRUIRE(CONCEPT=_F(NOM=(intCH_id, clampIni, tieClp, BCintf, model, mesh, CH_id, f_EPad1, f_EPad2, f_EBal, slprMat, railMat, padMat1, padMat2, fldMat)))
+DETRUIRE(CONCEPT=_F(NOM=(tie2, tie3, elProp, K_el, K_as, M_el, M_as, infoMode)))
+
+del clampia1, clampib1, clampea1, clampeb1
+
+for clamp in allClamps:
+    if clamp is not None:
+        DETRUIRE(CONCEPT=_F(NOM=(clamp)))
+
 if USP_on == True:
-    DETRUIRE(CONCEPT=_F(NOM=(meshUSP, tmp3, f_EUSP, USPmat)))
+    DETRUIRE(CONCEPT=_F(NOM=(meshUSP, f_EUSP, USPmat, tie1)))
 
-# saves only mesh, model, modes_1, num1, tie1, tie2, tie3, tie_clmps, BCinterf to the base
+if bool_macroEl2_Ph1:
+    del clampia2, clampib2, clampea2, clampeb2
+    DETRUIRE(CONCEPT=_F(NOM=(mesh2, tieClp2, tie2_2, model2, BCintf2, tie3_2, slprMat2, padMat12, padMat22, fldMat2, elProp2)))
+    DETRUIRE(CONCEPT=_F(NOM=(K_el2, K_as2, M_el2, M_as2, infMod2)))
+    if 'Emat1' in parameters['macroEl2'].keys():
+        DETRUIRE(CONCEPT=_F(NOM=(fEpad12, )))
+    if 'Emat2' in parameters['macroEl2'].keys():
+        DETRUIRE(CONCEPT=_F(NOM=(fEpad22, )))
+    if 'Ebal' in parameters['macroEl2'].keys():
+        DETRUIRE(CONCEPT=_F(NOM=(f_EBal2, )))
+    if USP_on == True:
+        DETRUIRE(CONCEPT=_F(NOM=(USPmat2, tie1_2)))
+        if 'EUSP' in parameters['macroEl2'].keys():
+            DETRUIRE(CONCEPT=_F(NOM=(f_EUSP2, )))
+
+if bool_macroEl2_slpShift:
+    DETRUIRE(CONCEPT=_F(NOM=(mesh2S, tieClp2S, tie2_2S, model2S, BCintf2S, tie3_2S, fldMat2S, elProp2S)))
+    DETRUIRE(CONCEPT=_F(NOM=(K_el2S, K_as2S, M_el2S, M_as2S)))
+    if USP_on == True:
+        DETRUIRE(CONCEPT=_F(NOM=(tie1_2S)))
+
 FIN(RETASSAGE='OUI')

@@ -1,7 +1,6 @@
 import os
 import shutil
 import time
-import pickle
 import math
 import json
 from datetime import datetime
@@ -39,7 +38,7 @@ def RunSimulation(p_dictSimu):
 		now = datetime.now()
 		date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
 		print('[' + date_time + '] Eigenmodes simulation: "' + modesName + '" over.')
-	
+
 	now = datetime.now()
 	date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
 	simuName = p_dictSimu['name']
@@ -104,7 +103,7 @@ def RunJobModes(p_dictSimu, p_createMeshOnly=False):
 	if code != 0:
 		return code
 		
-	code = SaveBaseFiles(modesFolder, simFolder)
+	code = SaveBaseFiles(p_dictSimu, modesFolder, simFolder)
 	if code != 0:
 		return code
 		
@@ -148,6 +147,10 @@ def RunJobHarmo(p_dictSimu):
 def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	# Create empty simulation folder
 	fullDir = p_dictSimu.get('phase1WorkingDir')
+
+	# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
+	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
+	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
 	
 	try:
 		shutil.rmtree(fullDir)
@@ -173,12 +176,26 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	
 	# Copy materials properties files
 	try:
+		# E pad 1 (nominal macroel, macro2)
 		shutil.copyfile(p_dictSimu.get('Emat1'), os.path.join(fullDir, 'E_mat1.csv'))
-		shutil.copyfile(p_dictSimu.get('Emat2'), os.path.join(fullDir, 'E_mat2.csv'))
-		shutil.copyfile(p_dictSimu.get('Ebal'), os.path.join(fullDir, 'E_bal.csv'))
+		if bool_macroEl2_Ph1 and 'Emat1' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('Emat1'), os.path.join(fullDir, 'E_mat1_2.csv'))
 		
+		# E pad 2 (nominal macroel, macro2)
+		shutil.copyfile(p_dictSimu.get('Emat2'), os.path.join(fullDir, 'E_mat2.csv'))
+		if bool_macroEl2_Ph1 and 'Emat2' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('Emat2'), os.path.join(fullDir, 'E_mat2_2.csv'))
+
+		# E ballast (nominal macroel, macro2)
+		shutil.copyfile(p_dictSimu.get('Ebal'), os.path.join(fullDir, 'E_bal.csv'))
+		if bool_macroEl2_Ph1 and 'Ebal' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('Ebal'), os.path.join(fullDir, 'Ebal_2.csv'))
+		
+		# E USP (nominal macroel, macro2, macro3)
 		if p_dictSimu.get('USP_on') == True:
 			shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDir, 'E_USP.csv'))
+			if bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys():
+				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDir, 'E_USP_2.csv'))
 	except:
 		return "Modes simulation: some materials properties files could not be copied to " + fullDir + "."
 	
@@ -202,7 +219,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	except:
 		return "Modes simulation: export or comm files could not be copied to " + fullDir + "."
 	
-	# Export & comm files string replacements	
+	# Export file string replacements	
 	exportFiles = os.path.join(fullDir, 'computeModes1.export')	
 	
 	nCPUs = p_dictSimu.get('phase1CPUs')
@@ -222,9 +239,34 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
 		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+
+		# E pad 1 files for macroEl 2
+		if bool_macroEl2_Ph1 and 'Emat1' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__Emat1_2__!F libr E_mat1_2.csv D  50!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__Emat1_2__!!" ' + exportFiles)
+
+		# E pad 2 files for macroEl 2
+		if bool_macroEl2_Ph1 and 'Emat2' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__Emat2_2__!F libr E_mat2_2.csv D  52!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__Emat2_2__!!" ' + exportFiles)
+
+		# E ballast files for macroEl 2 + 3
+		if bool_macroEl2_Ph1 and 'Ebal' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__Ebal_2__!F libr Ebal_2.csv D  62!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__Ebal_2__!!" ' + exportFiles)
+
 		if p_dictSimu['USP_on'] == True:
 			os.system('sed -i -E "s!__meshUSP__!F libr USP.med D  26!" ' + exportFiles)
+
+			# E USP files for macroEl 1 + 2 + 3
 			os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
+			if bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__EUSP_2__!F libr E_USP_2.csv D  58!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
 		else:
 			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
 			os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
@@ -243,6 +285,17 @@ def PrepareFilesPhase2(p_dictSimu):
 	fullDir = os.path.join(p_dictSimu.get('simuParentFolder'), p_dictSimu.get('name'))
 	fullDirInput = os.path.join(fullDir, 'Inputs')
 	fullDirOutput = os.path.join(fullDir, 'Outputs')
+
+	# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
+	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
+	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
+
+	# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
+	bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2']['slpShift'] !=0
+
+	# Phase 2: even if mode shapes not computed in Ph1 for macroEl2 or 3, macroEl 2/3 are computed based on nominal mode shapes
+	bool_macroEl2_Ph2 = 'macroEl2' in p_dictSimu.keys()
+
 	
 	try:
 		shutil.rmtree(fullDir)
@@ -262,6 +315,9 @@ def PrepareFilesPhase2(p_dictSimu):
 			
 	try:
 		shutil.copyfile(os.path.join(modesFolder, 'info_modes.txt'), os.path.join(fullDirInput, 'info_modes.txt'))
+		if bool_macroEl2_Ph1:
+			shutil.copyfile(os.path.join(modesFolder, 'info_modes2.txt'), os.path.join(fullDirInput, 'info_modes2.txt'))
+
 		shutil.copytree(os.path.join(modesFolder, 'base_modes'), os.path.join(fullDirInput, 'base_modes'))
 	except:
 		return "Problem while copying files from phase 1."
@@ -278,16 +334,46 @@ def PrepareFilesPhase2(p_dictSimu):
 	
 	# Copy materials properties files
 	try:
+		# E pad 1
 		shutil.copyfile(p_dictSimu.get('Emat1'), os.path.join(fullDirInput, 'E_mat1.csv'))
+		if bool_macroEl2_Ph2 and 'Emat1' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('Emat1'), os.path.join(fullDirInput, 'E_mat1_2.csv'))
+
+		# tanD pad 1
 		shutil.copyfile(p_dictSimu.get('tanDmat1'), os.path.join(fullDirInput, 'tanD_mat1.csv'))
+		if bool_macroEl2_Ph2 and 'tanDmat1' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('tanDmat1'), os.path.join(fullDirInput, 'tanD_mat1_2.csv'))
+
+		# E pad 2
 		shutil.copyfile(p_dictSimu.get('Emat2'), os.path.join(fullDirInput, 'E_mat2.csv'))
+		if bool_macroEl2_Ph2 and 'Emat2' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('Emat2'), os.path.join(fullDirInput, 'E_mat2_2.csv'))
+
+		# tanD pad 2
 		shutil.copyfile(p_dictSimu.get('tanDmat2'), os.path.join(fullDirInput, 'tanD_mat2.csv'))
+		if bool_macroEl2_Ph2 and 'tanDmat2' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('tanDmat2'), os.path.join(fullDirInput, 'tanD_mat2_2.csv'))
+
+		# E ballast
 		shutil.copyfile(p_dictSimu.get('Ebal'), os.path.join(fullDirInput, 'E_bal.csv'))
+		if bool_macroEl2_Ph2 and 'Ebal' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('Ebal'), os.path.join(fullDirInput, 'Ebal_2.csv'))
+
+		# tanD ballast
 		shutil.copyfile(p_dictSimu.get('tanDbal'), os.path.join(fullDirInput, 'tanD_bal.csv'))
+		if bool_macroEl2_Ph2 and 'tanDbal' in p_dictSimu['macroEl2'].keys():
+			shutil.copyfile(p_dictSimu['macroEl2'].get('tanDbal'), os.path.join(fullDirInput, 'tanDbal_2.csv'))
 		
 		if p_dictSimu.get('USP_on') == True:
+			# E USP
 			shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDirInput, 'E_USP.csv'))
+			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
+				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDirInput, 'E_USP_2.csv'))
+
+			# tanD USP
 			shutil.copyfile(p_dictSimu.get('tanDUSP'), os.path.join(fullDirInput, 'tanD_USP.csv'))
+			if bool_macroEl2_Ph2 and 'tanDUSP' in p_dictSimu['macroEl2'].keys():
+				shutil.copyfile(p_dictSimu['macroEl2'].get('tanDUSP'), os.path.join(fullDirInput, 'tanD_USP_2.csv'))
 	except:
 		return "Harmonic simulation: some materials properties files could not be copied to " + fullDirInput + "."
 	
@@ -297,7 +383,6 @@ def PrepareFilesPhase2(p_dictSimu):
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDirInput, 'padR.med'))
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDirInput, 'sleeper.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDirInput, 'Clamp.med'))
-
 		if p_dictSimu.get('USP_on') == True:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDirInput, 'USP.med'))
 		
@@ -324,7 +409,7 @@ def PrepareFilesPhase2(p_dictSimu):
 	except:
 		return "Harmonic simulation: export or comm files could not be copied to " + fullDir + "."
 	
-	# Export & comm files string replacements	
+	# Export files string replacements	
 	exportFiles = os.path.join(fullDir, 'runSimulation_b*.export')	
 	
 	nCPUs = p_dictSimu.get('nCPUs')
@@ -339,10 +424,65 @@ def PrepareFilesPhase2(p_dictSimu):
 		os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+
+		# info modes for macroEl 2
+		if bool_macroEl2_Ph1:
+			os.system('sed -i -E "s!__infoModes2__!F libr Inputs/info_modes2.txt D  8!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__infoModes2__!!" ' + exportFiles)
+
+		# E pad 1 files for macroEl 2
+		if bool_macroEl2_Ph2 and 'Emat1' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__Emat1_2__!F libr Inputs/E_mat1_2.csv D  50!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__Emat1_2__!!" ' + exportFiles)
+
+		# tanD pad 1 files for macroEl 2
+		if bool_macroEl2_Ph2 and 'tanDmat1' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__tanDmat1_2__!F libr Inputs/tanD_mat1_2.csv D  54!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__tanDmat1_2__!!" ' + exportFiles)
+
+		# E pad 2 files for macroEl 2
+		if bool_macroEl2_Ph2 and 'Emat2' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__Emat2_2__!F libr Inputs/E_mat2_2.csv D  52!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__Emat2_2__!!" ' + exportFiles)
+
+		# tanD pad 2 files for macroEl 2
+		if bool_macroEl2_Ph2 and 'tanDmat2' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__tanDmat2_2__!F libr Inputs/tanD_mat2_2.csv D  56!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__tanDmat2_2__!!" ' + exportFiles)
+
+		# E ballast files for macroEl 2
+		if bool_macroEl2_Ph2 and 'Ebal' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__Ebal_2__!F libr Inputs/Ebal_2.csv D  62!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__Ebal_2__!!" ' + exportFiles)
+
+		# tanD ballast files for macroEl 2
+		if bool_macroEl2_Ph2 and 'tanDbal' in p_dictSimu['macroEl2'].keys():
+			os.system('sed -i -E "s!__tanDbal_2__!F libr Inputs/tanDbal_2.csv D  64!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__tanDbal_2__!!" ' + exportFiles)
+
 		if p_dictSimu['USP_on'] == True:
 			os.system('sed -i -E "s!__meshUSP__!F libr Inputs/USP.med D  26!" ' + exportFiles)
+			# E USP files for macroEl 1 + 2 + 3
 			os.system('sed -i -E "s!__EUSP__!F libr Inputs/E_USP.csv D  34!" ' + exportFiles)
+			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__EUSP_2__!F libr Inputs/E_USP_2.csv D  58!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
+
+			# tanD USP files for macroEl 1 + 2 + 3
 			os.system('sed -i -E "s!__tanDUSP__!F libr Inputs/tanD_USP.csv D  35!" ' + exportFiles)
+			if bool_macroEl2_Ph2 and 'tanDUSP' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__tanDUSP_2__!F libr Inputs/tanD_USP_2.csv D  60!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__tanDUSP_2__!!" ' + exportFiles)
+
 		else:
 			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
 			os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
@@ -426,7 +566,11 @@ def RunMultiJobs(p_workingDir, p_simFolder, p_job, p_nJobs, p_messageFile, p_deb
 	time.sleep(1)
 	return code
 
-def SaveBaseFiles(p_saveBaseDir, p_simFolder):
+def SaveBaseFiles(p_dictSimu, p_saveBaseDir, p_simFolder):
+	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
+	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
+	# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
+	bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2']['slpShift'] !=0
 
 	try:
 		shutil.rmtree(p_saveBaseDir)
@@ -455,6 +599,12 @@ def SaveBaseFiles(p_saveBaseDir, p_simFolder):
 	except:
 		return "Impossible to copy " + os.path.join(p_simFolder, 'info_modes.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes.txt') + "."
 	
+	if bool_macroEl2_Ph1:
+		try:
+			shutil.copyfile(os.path.join(p_simFolder, 'info_modes2.txt'), os.path.join(p_saveBaseDir, 'info_modes2.txt'))
+		except:
+			return "Impossible to copy " + os.path.join(p_simFolder, 'info_modes2.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes2.txt') + "."
+		
 	try:
 		shutil.copyfile(os.path.join(p_simFolder, 'mesh.med'), os.path.join(p_saveBaseDir, 'mesh.med'))
 	except:
@@ -566,61 +716,6 @@ def PostProcessResults(p_dictSimu):
 						os.remove(os.path.join(fullDirOutput, 'resuAcou_b' + str(i+1) + '.med'))
 				except:
 					pass
-			
-		
-
-	# Concatenate pickled python files with acoustic data
-	if p_dictSimu['computeAcoustic'] == True:
-		dataBands = []
-		for i in range(nJobs):
-			file = os.path.join(fullDirOutput, 'data_b' + str(i+1))
-			if os.path.exists(file) == False:
-				return "Post-processing: " + file + " does not exist."
-			
-			try: 
-				pickle_in = open(file,"rb")
-				data = pickle.load(pickle_in)
-			except: 
-				data = None
-			dataBands.append(data)
-			try: os.remove(file)
-			except: pass
-
-		allData = None
-		for db in dataBands:
-			if db is not None:
-				allData = db
-				break
-				
-		if allData is None:
-			return "Post-processing: no acoustic results found."
-		
-		for ndi in allData:
-			if ndi == None:
-				continue
-			for dtb in dataBands:
-				if dtb == None:
-					continue
-				for ndj in dtb:
-					if ndi['ID'] == ndj['ID']:
-						ndi['freqs'].extend(ndj['freqs'])
-						ndi['p_tot_R'].extend(ndj['p_tot_R'])
-						ndi['p_tot_I'].extend(ndj['p_tot_I'])
-						ndi['p_rails_R'].extend(ndj['p_rails_R'])
-						ndi['p_rails_I'].extend(ndj['p_rails_I'])
-						ndi['p_sleepers_R'].extend(ndj['p_sleepers_R'])
-						ndi['p_sleepers_I'].extend(ndj['p_sleepers_I'])
-
-		try:
-			allData = sorted(allData, key=lambda k: k['ID'])
-		except:
-			pass
-
-		pickle_out = open(os.path.join(fullDirOutput, 'acPressData_pythonPickle'),"wb")
-		try: pickle.dump(allData, pickle_out, protocol=2)
-		except: pickle.dump(None, pickle_out, protocol=2)
-		pickle_out.close()
-
 
 	# Compute Lw & include it in acousticResults.txt if mesh is 2D
 	if p_dictSimu['computeAcoustic'] == True and p_dictSimu['acMeshDim'] == '2D':

@@ -21,24 +21,33 @@ F comm runSimulation.comm D  1
 F libr parameters.json D  2
 
 F libr Inputs/info_modes.txt D  7
-
-
+__infoModes2__
 
 __acousticMesh__
-
-
-
-
-
+F libr Inputs/sleeper.med D  21
+F libr Inputs/Clamp.med D  22
+F libr Inputs/mesh.med R  27
+F libr Inputs/padR.med D  23
+F libr Inputs/rail.med D  25
+__meshUSP__
 
 F libr Inputs/E_mat1.csv D  30
+__Emat1_2__
 F libr Inputs/tanD_mat1.csv D  31
+__tanDmat1_2__
 F libr Inputs/E_mat2.csv D  32
+__Emat2_2__
 F libr Inputs/tanD_mat2.csv D  33
+__tanDmat2_2__
 __EUSP__
+__EUSP_2__
 __tanDUSP__
+__tanDUSP_2__
 F libr Inputs/E_bal.csv D  36
+__Ebal_2__
 F libr Inputs/tanD_bal.csv D  37
+__tanDbal_2__
+
 F libr Inputs/f9.txt D  40
 F libr Outputs/acousticResults_b9.txt R  41
 

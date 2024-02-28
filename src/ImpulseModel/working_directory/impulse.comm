@@ -392,10 +392,10 @@ if USP_on:
 
 
 
-fileRES=open('fort.40','w')
+fileRES=open('fort.82','w')
 
 
-fileHeader = 'TIME\t'+'Clamp rail side\t'+'Clamp sleeper side\t'+'Bottom sleeper\t'
+fileHeader = 'TIME\t' + 'Rail top\t' + 'Clamp rail side\t' + 'Clamp sleeper side\t' + 'Bottom sleeper\t'
 fileHeader+='\n'
 
 fileHeader += '[s]\t'+'[mm]\t'+'[mm]\t'+'[mm]\t'
@@ -696,6 +696,11 @@ t3 = POST_RELEVE_T( ACTION = _F (RESULTAT=resImp,
 IMPR_TABLE(TABLE=t3,
            UNITE=9)
 
+dispRtop = RECU_FONCTION(GROUP_NO=('nodeF', ),
+                      NOM_CHAM='DEPL',
+                      NOM_CMP='DY',
+                      RESULTAT=resImp)
+
 dispR = RECU_FONCTION(GROUP_NO=('rntsl2_0', ),
                       NOM_CHAM='DEPL',
                       NOM_CMP='DY',
@@ -720,16 +725,17 @@ print('Times: ')
 Resdatalines = []
 for t in pyTime:
     print(t)
+    val0 = dispRtop(t)
     val1 = dispR(t)
     val2 = (dispSa(t) + dispSb(t))/2
     val3 = dispBotS(t)
-    line = str(t) + "\t" + str(val1) + "\t" + str(val2) + "\t" + str(val3) + "\t" + "\n"
+    line = str(t) + "\t" + str(val0) + "\t" + str(val1) + "\t" + str(val2) + "\t" + str(val3) + "\t" + "\n"
     Resdatalines.append(line)
 
 
 #  end extraction loop: write data line to file
 
-fileRES=open('fort.40','a+')
+fileRES=open('fort.82','a+')
 fileContent='\t'.join(Resdatalines) + '\n'
 fileRES.write(fileContent)
 fileRES.close()
