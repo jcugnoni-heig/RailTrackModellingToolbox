@@ -826,7 +826,8 @@ IMPR_RESU(FORMAT='MED', RESU=_F(RESULTAT=mdPh1, NUME_ORDRE=numordre), UNITE=80)
 
 
 print('Number of eigenmodes (nominal macroelement, phase 1): ' + str(nEigenModes))
-print('Number of eigenmodes (2nd macroelement, phase 1): ' + str(nEigenModes2))
+if bool_macroEl2_Ph1:
+    print('Number of eigenmodes (2nd macroelement, phase 1): ' + str(nEigenModes2))
 
 # Destroy concepts to keep, num1, mdPh1 + equivalents for other macroelements
 DETRUIRE(CONCEPT=_F(NOM=(meshSlp, dplX_slp, dplY_slp, dplZ_slp, CHdplF, meshRaiR, CHcoord, temp,  CHdpl, dplX_rai, dplY_rai, dplZ_rai, meshPadR)))
