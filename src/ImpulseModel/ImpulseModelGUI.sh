@@ -5,7 +5,7 @@ export PATH=$PATH:/opt/aster/public/tfel-3.2.1/bin
 
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")/GUI_files
-PYTHONPATH=python
+PYTHONPATH=__path__python
 
 cd $SCRIPTPATH
 

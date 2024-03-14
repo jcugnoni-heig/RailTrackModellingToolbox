@@ -51,7 +51,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.list_simu.currentItemChanged.connect(self.DisplaySimu)
 		self.btn_showMesh.clicked.connect(self.ShowMesh)
 
-		nJobsMax = multiprocessing.cpu_count()/2
+		nJobsMax = int(multiprocessing.cpu_count()/2)
 		self.txt_phase1CPUs.setText(str(nJobsMax))
 		self.txt_nJobs.setText(str(nJobsMax))
 				

@@ -1,7 +1,7 @@
 """
 This script allows running a simulation from a terminal. It requires a .json parameter 
 file in argument (relative path from this script's location). Example:
-python runSingleSimu.py ./ListOfSimulations/myParameters1.json
+python3 runSingleSimu.py ./ListOfSimulations/myParameters1.json
 
 Parameter files completely define a simulation and should first be generated using the GUI.
 """
