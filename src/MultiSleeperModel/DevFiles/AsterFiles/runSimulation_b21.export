@@ -32,6 +32,7 @@ F libr Inputs/mesh.med R  27
 F libr Inputs/padR.med D  23
 F libr Inputs/rail.med D  25
 __meshUSP__
+__meshUSP2__
 
 F libr Inputs/E_mat1.csv D  30
 __Emat1_2__
@@ -49,6 +50,7 @@ F libr Inputs/E_bal.csv D  36
 __Ebal_2__
 F libr Inputs/tanD_bal.csv D  37
 __tanDbal_2__
+F libr Inputs/Damper.med D  65
 
 F libr Inputs/f21.txt D  40
 F libr Outputs/acousticResults_b21.txt R  41
@@ -60,6 +62,7 @@ F libr Outputs/resuHarm_b21.med R  80
 F rmed Outputs/resuAcou_b21.med R  81
 
 F libr Outputs/FRF_b21.txt R  83
+F libr Outputs/nodeDisplacement_b21.txt R  84
 
 
 

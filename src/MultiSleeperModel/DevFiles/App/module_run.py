@@ -30,8 +30,8 @@ def RunSimulation(p_dictSimu):
 		modesFolder = p_dictSimu['modesFolder']
 		modesName = os.path.basename(modesFolder)
 		print('[' + date_time + '] Running eigenmodes simulation: "' + modesName + '" ...')
-
-		code = RunJobModes(p_dictSimu)
+		createMeshOnly = p_dictSimu.get('createMeshOnly')
+		code = RunJobModes(p_dictSimu, createMeshOnly)
 		if code != 0:
 			return code
 		
@@ -80,7 +80,8 @@ def RunJobModes(p_dictSimu, p_createMeshOnly=False):
 	cwd = p_dictSimu['cwd']
 	simFolder = p_dictSimu['phase1WorkingDir']
 	modesFolder = p_dictSimu['modesFolder']
-	messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_modesSimu.mess')
+	# messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_modesSimu.mess')
+	messageFile = os.path.join(simFolder, 'Messages', 'message_modesSimu.mess')
 	debugMode = p_dictSimu['debugPh1']
 
 	if p_createMeshOnly:
@@ -121,12 +122,20 @@ def RunJobHarmo(p_dictSimu):
 	cwd = p_dictSimu['cwd']
 	simFolder = os.path.join(p_dictSimu.get('simuParentFolder'), p_dictSimu.get('name'))
 	nJobs = p_dictSimu['nJobs']
-	messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_harmonicSimu_b1.mess')
+	# messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_harmonicSimu_b1.mess')
+	messageFile = os.path.join(simFolder, 'Messages', 'message_harmonicSimu_b1.mess')
+	# messageFilePath = os.path.join(cwd, 'DevFiles', 'Messages')
+	messageFilePath = os.path.join(simFolder, 'Messages')
+	logFile = os.path.join(simFolder, 'Outputs', 'log.txt')
 	debugMode = p_dictSimu['debugPh2']
 		
 	code = RunMultiJobs(cwd, simFolder, 'runSimulation_b', nJobs, messageFile, debugMode)
-
+	
+	
 	try:
+		runScript = os.path.join(cwd, 'DevFiles', 'App', 'createLogFile.sh')
+		os.system('bash ' + runScript + ' ' + str(nJobs) + ' ' + messageFilePath + ' ' + logFile)
+		# shutil.copyfile(logFile, os.path.join(simFolder, 'Outputs', 'log.txt'))
 		shutil.copyfile(messageFile, os.path.join(simFolder, 'Outputs', 'message_harmonicSimu_b1.mess'))
 	except:
 		return "Could not copy message_harmonicSimu_b1.mess to harmonic simulation outputs directory."
@@ -151,7 +160,8 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
 	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
 	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
-	
+	usp2_on = bool_macroEl2_Ph1 and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
+
 	try:
 		shutil.rmtree(fullDir)
 	except:
@@ -191,11 +201,17 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		if bool_macroEl2_Ph1 and 'Ebal' in p_dictSimu['macroEl2'].keys():
 			shutil.copyfile(p_dictSimu['macroEl2'].get('Ebal'), os.path.join(fullDir, 'Ebal_2.csv'))
 		
-		# E USP (nominal macroel, macro2, macro3)
+		# E USP
 		if p_dictSimu.get('USP_on') == True:
 			shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDir, 'E_USP.csv'))
+		
+		# E USP2
+		if usp2_on:
 			if bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys():
 				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDir, 'E_USP_2.csv'))
+			else:
+				shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDir, 'E_USP.csv'))
+
 	except:
 		return "Modes simulation: some materials properties files could not be copied to " + fullDir + "."
 	
@@ -205,8 +221,10 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDir, 'padR.med'))
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDir, 'sleeper.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDir, 'Clamp.med'))
-		if p_dictSimu.get('USP_on') == True:
+		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Dampers', 'damper.med'), os.path.join(fullDir, 'Damper.med'))
+		if p_dictSimu.get('USP_on') == True or usp2_on:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDir, 'USP.med'))
+
 	except:
 		return "Modes simulation: some mesh files could not be copied to " + fullDir + "."
 
@@ -238,7 +256,8 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		file = os.path.join(fullDir, 'computeModes1.export')
 		os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
 		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
-		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+		# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['phase1WorkingDir'], 'Messages') + '!" ' + exportFiles)
 
 		# E pad 1 files for macroEl 2
 		if bool_macroEl2_Ph1 and 'Emat1' in p_dictSimu['macroEl2'].keys():
@@ -258,18 +277,26 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		else:
 			os.system('sed -i -E "s!__Ebal_2__!!" ' + exportFiles)
 
-		if p_dictSimu['USP_on'] == True:
+		if p_dictSimu['USP_on'] or usp2_on:
 			os.system('sed -i -E "s!__meshUSP__!F libr USP.med D  26!" ' + exportFiles)
-
-			# E USP files for macroEl 1 + 2 + 3
-			os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
-			if bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys():
-				os.system('sed -i -E "s!__EUSP_2__!F libr E_USP_2.csv D  58!" ' + exportFiles)
-			else:
-				os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
 		else:
 			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
-			os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
+		
+		if p_dictSimu['USP_on'] == True:
+			os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
+		
+		if usp2_on:
+			# E USP
+			if (bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys()):
+				os.system('sed -i -E "s!__EUSP_2__!F libr E_USP_2.csv D  58!" ' + exportFiles)
+				if p_dictSimu['USP_on'] == False:
+					os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
+		else:
+			os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
+			
+			
 	except:
 		if p_createMeshOnly:
 			return "Mesh creation: string replacements (sed) in export files did not run properly."
@@ -295,6 +322,7 @@ def PrepareFilesPhase2(p_dictSimu):
 
 	# Phase 2: even if mode shapes not computed in Ph1 for macroEl2 or 3, macroEl 2/3 are computed based on nominal mode shapes
 	bool_macroEl2_Ph2 = 'macroEl2' in p_dictSimu.keys()
+	usp2_on = bool_macroEl2_Ph1 and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
 
 	
 	try:
@@ -367,13 +395,19 @@ def PrepareFilesPhase2(p_dictSimu):
 		if p_dictSimu.get('USP_on') == True:
 			# E USP
 			shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDirInput, 'E_USP.csv'))
-			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
-				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDirInput, 'E_USP_2.csv'))
-
 			# tanD USP
 			shutil.copyfile(p_dictSimu.get('tanDUSP'), os.path.join(fullDirInput, 'tanD_USP.csv'))
+		
+		if usp2_on:
+			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
+				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDirInput, 'E_USP_2.csv'))
+			else:
+				shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDirInput, 'E_USP.csv'))
 			if bool_macroEl2_Ph2 and 'tanDUSP' in p_dictSimu['macroEl2'].keys():
 				shutil.copyfile(p_dictSimu['macroEl2'].get('tanDUSP'), os.path.join(fullDirInput, 'tanD_USP_2.csv'))
+			else:
+				shutil.copyfile(p_dictSimu.get('tanDUSP'), os.path.join(fullDirInput, 'tanD_USP.csv'))
+
 	except:
 		return "Harmonic simulation: some materials properties files could not be copied to " + fullDirInput + "."
 	
@@ -383,7 +417,8 @@ def PrepareFilesPhase2(p_dictSimu):
 		shutil.copyfile(p_dictSimu.get('padMesh'), os.path.join(fullDirInput, 'padR.med'))
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDirInput, 'sleeper.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDirInput, 'Clamp.med'))
-		if p_dictSimu.get('USP_on') == True:
+		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Dampers', 'damper.med'), os.path.join(fullDirInput, 'Damper.med'))
+		if p_dictSimu.get('USP_on') == True or usp2_on:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDirInput, 'USP.med'))
 		
 		if p_dictSimu.get('computeAcoustic') == True:
@@ -423,7 +458,8 @@ def PrepareFilesPhase2(p_dictSimu):
 		os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
-		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+		# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(fullDir, 'Messages') + '!" ' + exportFiles)
 
 		# info modes for macroEl 2
 		if bool_macroEl2_Ph1:
@@ -467,27 +503,37 @@ def PrepareFilesPhase2(p_dictSimu):
 		else:
 			os.system('sed -i -E "s!__tanDbal_2__!!" ' + exportFiles)
 
-		if p_dictSimu['USP_on'] == True:
+		if p_dictSimu['USP_on'] == True or usp2_on:
 			os.system('sed -i -E "s!__meshUSP__!F libr Inputs/USP.med D  26!" ' + exportFiles)
-			# E USP files for macroEl 1 + 2 + 3
-			os.system('sed -i -E "s!__EUSP__!F libr Inputs/E_USP.csv D  34!" ' + exportFiles)
-			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
-				os.system('sed -i -E "s!__EUSP_2__!F libr Inputs/E_USP_2.csv D  58!" ' + exportFiles)
-			else:
-				os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
-
-			# tanD USP files for macroEl 1 + 2 + 3
-			os.system('sed -i -E "s!__tanDUSP__!F libr Inputs/tanD_USP.csv D  35!" ' + exportFiles)
-			if bool_macroEl2_Ph2 and 'tanDUSP' in p_dictSimu['macroEl2'].keys():
-				os.system('sed -i -E "s!__tanDUSP_2__!F libr Inputs/tanD_USP_2.csv D  60!" ' + exportFiles)
-			else:
-				os.system('sed -i -E "s!__tanDUSP_2__!!" ' + exportFiles)
-
 		else:
 			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
-			os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
-			os.system('sed -i -E "s!__tanDUSP__!!" ' + exportFiles)
-	
+
+		if p_dictSimu['USP_on'] == True:
+			# E USP
+			os.system('sed -i -E "s!__EUSP__!F libr Inputs/E_USP.csv D  34!" ' + exportFiles)
+			# tanD USP
+			os.system('sed -i -E "s!__tanDUSP__!F libr Inputs/tanD_USP.csv D  35!" ' + exportFiles)
+
+		if usp2_on:
+			# E USP
+			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__EUSP_2__!F libr Inputs/E_USP_2.csv D  58!" ' + exportFiles)
+				if p_dictSimu['USP_on'] == False:
+					os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__EUSP__!F libr Inputs/E_USP.csv D  34!" ' + exportFiles)
+				os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
+
+			# tanD USP
+			if bool_macroEl2_Ph2 and 'tanDUSP' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__tanDUSP_2__!F libr Inputs/tanD_USP_2.csv D  60!" ' + exportFiles)
+				if p_dictSimu['USP_on'] == False:
+					os.system('sed -i -E "s!__tanDUSP__!!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__tanDUSP__!F libr Inputs/tanD_USP.csv D  35!" ' + exportFiles)
+				os.system('sed -i -E "s!__tanDUSP_2__!!" ' + exportFiles)
+
+
 		if p_dictSimu.get('computeAcoustic') == True:
 			txt = 'F mmed Inputs' + os.sep + 'acousticMesh.med D  19'
 		else:
@@ -668,7 +714,8 @@ def PostProcessResults(p_dictSimu):
 			os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + postProExportFile)
 			os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + postProExportFile)
 			os.system('sed -i -E "s!__server__!' + server + '!" ' + postProExportFile)
-			os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + postProExportFile)
+			# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__messagesDir__!' + os.path.join(fullDir, 'Messages') + '!" ' + postProExportFile)
 			
 			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0103')
 			file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
@@ -698,7 +745,8 @@ def PostProcessResults(p_dictSimu):
 			f.write(fileContent)
 		f.close()
 
-		messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
+		# messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
+		messageFile = os.path.join(fullDir, 'Messages', 'message_concatMedFiles.mess')
 		debugMode = p_dictSimu['debugPh2']
 
 		code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)

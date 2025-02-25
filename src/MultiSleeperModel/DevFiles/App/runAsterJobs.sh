@@ -27,7 +27,13 @@ done
 
 lastLine=$(tail -1 $messFile)
 
+
 if [ "${lastLine: -1}" != "0" ]; then
+ dateAndTime=$(date +"%D %T")
+ last50Lines=$(tail -50 $messFile)
+ echo "[$dateAndTime] Error in module_run.py during job : $ASRUNJOB$i, in the folder : $SIMUDIR"
+ echo "Here are the last 50 lines of the message file :"
+ echo $last50Lines 
  exit 1
 fi
 

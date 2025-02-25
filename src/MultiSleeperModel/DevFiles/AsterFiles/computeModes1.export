@@ -25,6 +25,7 @@ F libr mesh.med R  27
 F libr padR.med D  23
 F libr rail.med D  25
 __meshUSP__
+__meshUSP2__
 
 F libr E_mat1.csv D  30
 __Emat1_2__
@@ -34,6 +35,7 @@ __EUSP__
 __EUSP_2__
 F libr E_bal.csv D  36
 __Ebal_2__
+F libr Damper.med D  65
 
 F libr modes.med R  80
 F libr modes2.med R  81
