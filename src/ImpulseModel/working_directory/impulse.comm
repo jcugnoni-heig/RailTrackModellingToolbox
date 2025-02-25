@@ -42,7 +42,7 @@ model = AFFE_MODELE(AFFE=(_F(MODELISATION=('3D', ),
                              GROUP_MA=('edgeaa','edgeab', 'edgeba', 'edgebb', 'edgeca', 'edgecb', 'edgeda', 'edgedb', 'edgeea', 'edgeeb', 'edgefa', 'edgefb', 'edgega', 'edgegb', 'edgeha', 'edgehb', 'edgeia', 'edgeib', 'edgeja', 'edgejb', 'edgeka', 'edgekb', 'edgela', 'edgelb', )
                             ),),
                     INFO=1,
-                    DISTRIBUTION=_F(METHODE='SOUS_DOMAINE'), # PARTITIONNEUR='SCOTCH'),
+                  #   DISTRIBUTION=_F(METHODE='SOUS_DOMAINE'), # PARTITIONNEUR='SCOTCH'),
                     MAILLAGE=mesh)
 
 ###################################
@@ -632,12 +632,12 @@ for bc in fixedBC:
 excit.append(_F(CHARGE=BCload,FONC_MULT=Mimp,))
 
 # parallel iterative solver with single precision inverse as precond, robust and fast
-SOLVOPT={'METHODE':'PETSC','PRE_COND':'LDLT_SP', 'MATR_DISTRIBUEE':'OUI'}  
+# SOLVOPT={'METHODE':'PETSC','PRE_COND':'LDLT_SP', 'MATR_DISTRIBUEE':'OUI'}  
 
 #alternativement:
  
 # parallel MUMPS, robust and pretty fast
-#SOLVOPT={'ELIM_LAGR':'LAGR2','LOW_RANK_SEUIL':'1e-09', 'MATR_DISTRIBUEE':'OUI','METHODE':'MUMPS','RENUM':'SCOTCH'} 
+SOLVOPT={'ELIM_LAGR':'LAGR2','LOW_RANK_SEUIL':1e-09, 'MATR_DISTRIBUEE':'OUI','METHODE':'MUMPS','RENUM':'SCOTCH'} 
 
 # efficient iterative solver, best when using only one or two load cases
 #SOLVOPT={'METHODE':'PETSC','PRE_COND':'BOOMER','MATR_DISTRIBUEE':'OUI'} 

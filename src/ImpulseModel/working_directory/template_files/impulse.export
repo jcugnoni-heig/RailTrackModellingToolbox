@@ -4,16 +4,16 @@ P facmtps 1
 P memjob __memJob__
 P memory_limit __memLim__
 P mode interactif
-P mpi_nbcpu __nCPU__
+P mpi_nbcpu 1
 P mpi_nbnoeud 1
-P ncpus 1
+P ncpus __nCPU__
 P nomjob Impulse
 P origine AsterStudy 0.11
 P rep_trav __rep_trav__
 P server localhost
 P time_limit 3600900.0
 P tpsjob 60016
-P version 14.6MUPT
+P version 14.6
 A memjeveux __memJV__
 A tpmax 3600900.0
 

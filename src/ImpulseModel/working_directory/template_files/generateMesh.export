@@ -31,7 +31,7 @@ P time_limit 900.0
 P tpsjob 16
 P uclient caelinux
 P username caelinux
-P version 14.6MUPT
+P version 14.6
 A args 
 A memjeveux 625.0
 A tpmax 900.0
