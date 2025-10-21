@@ -4,6 +4,7 @@ import time
 import math
 import json
 from datetime import datetime
+import numpy as np
 
 def RunSimulation(p_dictSimu):
 
@@ -224,7 +225,6 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Dampers', 'damper.med'), os.path.join(fullDir, 'Damper.med'))
 		if p_dictSimu.get('USP_on') == True or usp2_on:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDir, 'USP.med'))
-
 	except:
 		return "Modes simulation: some mesh files could not be copied to " + fullDir + "."
 
@@ -423,7 +423,8 @@ def PrepareFilesPhase2(p_dictSimu):
 		
 		if p_dictSimu.get('computeAcoustic') == True:
 			shutil.copyfile(p_dictSimu.get('acousticMesh'), os.path.join(fullDirInput, 'acousticMesh.med'))
-		
+		if 'BEM_activated' in p_dictSimu.keys() and p_dictSimu.get('BEM_activated'):
+			shutil.copyfile(p_dictSimu.get('projMesh'), os.path.join(fullDirInput, 'railP.med'))
 	except:
 		return "Harmonic simulation: some mesh files could not be copied to " + fullDirInput + "."
 
@@ -540,6 +541,15 @@ def PrepareFilesPhase2(p_dictSimu):
 			txt = ''
 		os.system('sed -i -E "s!__acousticMesh__!' + txt + '!" ' + exportFiles)
 
+		if 'BEM_activated' in p_dictSimu.keys() and p_dictSimu.get('BEM_activated'):
+			txt1 = 'F libr Inputs' + os.sep + 'railP.med D  66'
+			txt2 = 'F libr Outputs' + os.sep + 'meshProjT.med R  67'
+		else:
+			txt1 = ''
+			txt2 = ''
+		os.system('sed -i -E "s!__meshrailP__!' + txt1 + '!" ' + exportFiles)
+		os.system('sed -i -E "s!__meshProjT__!' + txt2 + '!" ' + exportFiles)
+
 		for i in range(nJobs):
 			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0102' + str(i+1))
 			file = os.path.join(fullDir, 'runSimulation_b' + str(i+1) + '.export')	
@@ -549,9 +559,6 @@ def PrepareFilesPhase2(p_dictSimu):
 		return "Harmonic simulation: string replacements (sed) in export & comm files did not run properly."
 		
 	return 0
-
-
-
 
 
 # Divide arbitrary frequency list into N jobs with lengths as close as possible
@@ -720,7 +727,8 @@ def PostProcessResults(p_dictSimu):
 			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0103')
 			file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
 			os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
-			
+			txt = 'F libr Outputs' + os.sep + 'skeleton.med D  2'
+			os.system('sed -i -E "s!__skeleton__!' + txt + '!" ' + postProExportFile)
 			if p_dictSimu.get('computeAcoustic') == True:
 				txt = 'F libr Inputs' + os.sep + 'acousticMesh.med D  7'
 			else:
@@ -745,6 +753,85 @@ def PostProcessResults(p_dictSimu):
 			f.write(fileContent)
 		f.close()
 
+		# # messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
+		# messageFile = os.path.join(fullDir, 'Messages', 'message_concatMedFiles.mess')
+		# debugMode = p_dictSimu['debugPh2']
+
+		# code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)
+
+		# try:
+		# 	shutil.copyfile(messageFile, os.path.join(fullDirOutput, 'message_concatMedFiles.mess'))
+		# except:
+		# 	return "Could not copy message_concatMedFiles.mess to Phase 2 outputs directory."
+
+		# if code == 0:
+		# 	for i in range(nJobs):
+		# 		try:
+		# 			os.remove(os.path.join(fullDirOutput, 'resuHarm_b' + str(i+1) + '.med'))
+		# 			if p_dictSimu['computeAcoustic'] == True:
+		# 				os.remove(os.path.join(fullDirOutput, 'resuAcou_b' + str(i+1) + '.med'))
+		# 		except:
+		# 			pass
+
+	try:
+		BEM_activated = p_dictSimu['BEM_activated']
+	except:
+		BEM_activated = False
+
+	if BEM_activated == True:
+		# Concatenate MED files
+		if os.path.exists(os.path.join(fullDirOutput, 'resuProj_b1.med')) == False:
+			return "Harmonic simulation: " + os.path.join(fullDirOutput, 'resuProj_b1.med') + " does not exist."
+		
+		if p_dictSimu['writeMED'] == False:
+			# Copy .comm & .export files to simu folder
+			try:
+				shutil.copyfile(os.path.join(cwd, 'DevFiles', 'AsterFiles', 'postPro_concatMedFiles.comm'), os.path.join(fullDir, 'postPro_concatMedFiles.comm'))
+				
+				postProExportFile = os.path.join(fullDir, 'postPro_concatMedFiles1.export')
+				shutil.copyfile(os.path.join(cwd, 'DevFiles', 'AsterFiles', 'postPro_concatMedFiles1.export'), postProExportFile)
+			except:
+				return "Harmonic simulation: error copying post-processing export and comm files."
+			
+			
+			# Export & comm files string replacements			
+			try:
+				nCPUs = p_dictSimu.get('nCPUs')*p_dictSimu.get('nJobs')
+				memlim = p_dictSimu.get('memLimit')
+				reptravroot = p_dictSimu.get('reptrav')
+				server = p_dictSimu.get('host')
+				
+				os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + postProExportFile)
+				os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + postProExportFile)
+				os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + postProExportFile)
+				os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + postProExportFile)
+				os.system('sed -i -E "s!__server__!' + server + '!" ' + postProExportFile)
+				# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + postProExportFile)
+				os.system('sed -i -E "s!__messagesDir__!' + os.path.join(fullDir, 'Messages') + '!" ' + postProExportFile)
+				
+				reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0103')
+				file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
+				os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
+				txt = 'F libr Outputs' + os.sep + 'skeletonProj.med D  9'
+				os.system('sed -i -E "s!__skeletonProj__!' + txt + '!" ' + postProExportFile)
+				os.system('sed -i -E "s!__acousticMesh__!' + '' + '!" ' + postProExportFile)
+			except:
+				return "String replacements (sed) in post-processing export & comm files did not run properly."
+			
+		with open(postProExportFile) as f:
+			fileContent = f.read()
+		f.close()
+		
+		for i in range(nJobs):
+			fileContent += '\nF mmed Outputs/resuProj_b' + str(i+1) + '.med D  ' + str(20 + i)
+			if p_dictSimu['writeMED'] == False: 
+				fileContent += '\nF libr Inputs/f' + str(i+1) + '.txt D  ' + str(70 + i)
+			
+		with open(postProExportFile, 'w') as f:
+			f.write(fileContent)
+		f.close()
+
+	if BEM_activated == True or p_dictSimu['writeMED'] == True:
 		# messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
 		messageFile = os.path.join(fullDir, 'Messages', 'message_concatMedFiles.mess')
 		debugMode = p_dictSimu['debugPh2']
@@ -759,9 +846,12 @@ def PostProcessResults(p_dictSimu):
 		if code == 0:
 			for i in range(nJobs):
 				try:
-					os.remove(os.path.join(fullDirOutput, 'resuHarm_b' + str(i+1) + '.med'))
+					if p_dictSimu['writeMED'] == True:
+						os.remove(os.path.join(fullDirOutput, 'resuHarm_b' + str(i+1) + '.med'))
 					if p_dictSimu['computeAcoustic'] == True:
 						os.remove(os.path.join(fullDirOutput, 'resuAcou_b' + str(i+1) + '.med'))
+					if BEM_activated == True:
+						os.remove(os.path.join(fullDirOutput, 'resuProj_b' + str(i+1) + '.med'))
 				except:
 					pass
 

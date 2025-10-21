@@ -8,6 +8,10 @@ import math
 import numpy as np
 import json
 
+######################################################
+# Import parameters dictionnary
+######################################################
+
 with open('fort.2', 'r') as f:
     txt = f.read()
 f.close()
@@ -18,6 +22,8 @@ parameters = json.loads(txt)
 maxFreq = parameters['modesMaxFreq']
 phase1Freq = parameters['phase1Freq']
 USP_on = parameters['USP_on']
+# What happend if USP2 is not present in key words ? For now is set to false but should it be like macro1 ?
+# USP2_on = parameters["macroEl2"].get("USP_on") if parameters["macroEl2"].get("USP_on") is not None else USP_on 
 USP2_on = ('macroEl2' in parameters.keys() and "USP_on" in parameters['macroEl2'].keys() and parameters["macroEl2"].get("USP_on"))
 nuPadMat1 = parameters['nuMat1']
 nuPadMat2 = parameters['nuMat2']
@@ -37,6 +43,40 @@ slpSpacing = parameters['slpSpacing']
 clampStiffX = parameters['clampStiffX']*1000/2
 clampStiffY = parameters['clampStiffY']*1000/2
 clampStiffZ = parameters['clampStiffZ']*1000/2
+
+# Rail dampers
+try:
+    dampers_on = parameters['dampers_on']
+    if dampers_on:
+        mtot = parameters["damper"].get("mtot")
+        m1_ratio = parameters["damper"].get("m1_ratio")
+        k1tot = parameters["damper"].get("k1tot")
+        k2tot = parameters["damper"].get("k2tot")
+        k3tot = parameters["damper"].get("k3tot")
+        c1tot = parameters["damper"].get("c1tot")
+        c2tot = parameters["damper"].get("c2tot")
+        c3tot = parameters["damper"].get("c3tot")
+except:
+    print("Dampers properties not found, no damper applied for the simulation.")
+    dampers_on = False
+
+# Rail dampers macro-element 2
+try:
+    dampers_on2 = parameters["macroEl2"].get("dampers_on") if parameters["macroEl2"].get("dampers_on") is not None else dampers_on
+    if dampers_on2:
+        mtot_2 = parameters["macroEl2"]["damper"].get("mtot") if parameters["macroEl2"]["damper"].get("mtot") is not None else mtot
+        m1_ratio_2 = parameters["macroEl2"]["damper"].get("m1_ratio") if parameters["macroEl2"]["damper"].get("m1_ratio") is not None else m1_ratio
+        k1tot_2 = parameters["macroEl2"]["damper"].get("k1tot") if parameters["macroEl2"]["damper"].get("k1tot") is not None else k1tot
+        k2tot_2 = parameters["macroEl2"]["damper"].get("k2tot") if parameters["macroEl2"]["damper"].get("k2tot") is not None else k2tot
+        k3tot_2 = parameters["macroEl2"]["damper"].get("k3tot") if parameters["macroEl2"]["damper"].get("k3tot") is not None else k3tot
+        c1tot_2 = parameters["macroEl2"]["damper"].get("c1tot") if parameters["macroEl2"]["damper"].get("c1tot") is not None else c1tot
+        c2tot_2 = parameters["macroEl2"]["damper"].get("c2tot") if parameters["macroEl2"]["damper"].get("c2tot") is not None else c2tot
+        c3tot_2 = parameters["macroEl2"]["damper"].get("c3tot") if parameters["macroEl2"]["damper"].get("c3tot") is not None else c3tot
+        
+except:
+    print("Dampers properties not found for the second macro-element, no damper applied for the simulation.")
+    dampers_on2 = False
+
 
 if USP_on == True:
     nuUSP = parameters['nuUSP']
@@ -67,6 +107,7 @@ bool_macroEl2_Ph1 = ('macroEl2' in parameters.keys()) and ((("computeModeShapesP
 # With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
 bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in parameters['macroEl2'].keys() and parameters['macroEl2']['slpShift'] !=0
 bool_macroEl2_usp = ('macroEl2' in parameters.keys()) and (("USP_on" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['USP_on'] is True))
+# bool_macroEl2_usp = USP2_on
 
 
 ######################################################
@@ -289,7 +330,7 @@ if USP_on:
                          
     meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
                          CREA_GROUP_NO = _F(NOM='USPtop', OPTION='PLAN', POINT=(0,thkUSP,0), VECT_NORMALE=(0,1,0), PRECISION=1e-3))
-    ###                     
+                         
     meshUSP = DEFI_GROUP(reuse=meshUSP, MAILLAGE=meshUSP, 
                          CREA_GROUP_NO = _F(NOM='tmp', OPTION='PLAN', POINT=(0,0,0), VECT_NORMALE=(0,0,1), PRECISION=1e-3))
 
@@ -341,7 +382,7 @@ if USP2_on:
                          
     meshUSP2 = DEFI_GROUP(reuse=meshUSP2, MAILLAGE=meshUSP2, 
                          CREA_GROUP_NO = _F(NOM='USPtop', OPTION='PLAN', POINT=(0,thkUSP2,0), VECT_NORMALE=(0,1,0), PRECISION=1e-3))
-    ###                     
+                         
     meshUSP2 = DEFI_GROUP(reuse=meshUSP2, MAILLAGE=meshUSP2, 
                          CREA_GROUP_NO = _F(NOM='tmp', OPTION='PLAN', POINT=(0,0,0), VECT_NORMALE=(0,0,1), PRECISION=1e-3))
 
@@ -515,6 +556,29 @@ def ClampMesh(p_cps, p_clampIni, p_pyMesh, p_clampID, p_clampNo):
     
     return p_cps[p_clampNo]
 
+if dampers_on or dampers_on2:
+    #Dampers mesh
+    def DamperMesh(generic_damper_mesh, fixation_node, damper_ID):
+        # Create a copy of the generic mesh
+        damper = COPIER(CONCEPT=generic_damper_mesh )
+        # modify the name of the groups
+        damper = DEFI_GROUP(reuse=damper, MAILLAGE=damper, 
+                            CREA_GROUP_NO=(_F(NOM='d' + str(damper_ID) + 'n0', UNION=('n0')),
+                                           _F(NOM='d' + str(damper_ID) + 'm1', UNION=('m1')),
+                                           _F(NOM='d' + str(damper_ID) + 'm2', UNION=('m2')),),
+                            CREA_GROUP_MA=(_F(NOM='d' + str(damper_ID) + 'e1', UNION=('e1')),
+                                           _F(NOM='d' + str(damper_ID) + 'e2', UNION=('e2')),
+                                           _F(NOM='d' + str(damper_ID) + 'e3', UNION=('e3'))))
+        # delete old groups
+        damper = DEFI_GROUP(reuse=damper, MAILLAGE=damper, 
+                            DETR_GROUP_NO=_F(NOM=('n0', 'm1', 'm2')), 
+                            DETR_GROUP_MA=_F(NOM=('e1', 'e2', 'e3')))
+        # move damper to fixation point
+        damper = MODI_MAILLAGE(reuse=damper, 
+                            MAILLAGE=damper,
+                            TRANSLATION=fixation_node,)
+
+        return damper
 
 clampIni = LIRE_MAILLAGE(FORMAT="MED",UNITE=22)
 allClamps = [None]*4*(1 + int(bool_macroEl2_Ph1))
@@ -537,6 +601,33 @@ mesh0 = DEFI_GROUP(reuse=mesh0, MAILLAGE=mesh0, CREA_GROUP_MA=_F(NOM = 'TOUT', T
 mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes, 
                                   NOM_GROUP_MA=discreteBalNodes + '0D'), 
                      MAILLAGE=mesh0) 
+if dampers_on:
+    # Add Dampers
+    generMsh = LIRE_MAILLAGE(FORMAT="MED",UNITE=65)
+    fixNodes = pyMesh1.gno.get('damperS')
+    print("fixnodes : ", fixNodes)
+
+    damper_ID=0
+    for node in fixNodes:
+        fixNode = np.array(pyMesh1.cn[node])
+        tmp6 = DamperMesh(generMsh, fixNode, damper_ID)
+        tmp7 = ASSE_MAILLAGE(MAILLAGE_1=mesh, MAILLAGE_2=tmp6, OPERATION='SUPERPOSE') 
+                            
+        tmp7 = DEFI_GROUP(reuse=tmp7, MAILLAGE=tmp7,
+                         DETR_GROUP_MA=_F(NOM = 'TOUT'),
+                        CREA_GROUP_MA=_F(NOM = 'TOUT', TOUT = 'OUI'),
+                        CREA_GROUP_NO=_F(GROUP_NO = 'damperS', NUME_INIT = damper_ID+1, NUME_FIN = damper_ID+1 , NOM = 'rntd' + str(damper_ID)))
+        tmp8 = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO='d' + str(damper_ID) + 'm1', 
+                                    NOM_GROUP_MA='d' + str(damper_ID) + 'm1' + '0D'), 
+                        MAILLAGE=tmp7) 
+        tmp9 = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO='d' + str(damper_ID) + 'm2', 
+                                    NOM_GROUP_MA='d' + str(damper_ID) + 'm2' + '0D'), 
+                        MAILLAGE=tmp8) 
+        DETRUIRE(CONCEPT=_F(NOM=(tmp6, tmp7, tmp8, mesh)))
+        mesh = COPIER(CONCEPT=tmp9 )
+        DETRUIRE(CONCEPT=_F(NOM=(tmp9)))
+        
+        damper_ID += 1
 
 IMPR_RESU(UNITE=27, RESU=_F(MAILLAGE=mesh))
 
@@ -563,7 +654,35 @@ if bool_macroEl2_Ph1:
 
     mesh2 = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO=discreteBalNodes2, 
                                     NOM_GROUP_MA=discreteBalNodes2 + '0D'), 
-                        MAILLAGE=mesh0) 
+                        MAILLAGE=mesh0)
+    
+    if dampers_on2:
+        # Add Dampers
+        geneMsh2 = LIRE_MAILLAGE(FORMAT="MED",UNITE=65)
+        fixNodes2 = pyMesh2.gno.get('damperS')
+        print("fixnodes2 : ", fixNodes2)
+
+        damper_ID=0
+        for node in fixNodes2:
+            fixNode2 = np.array(pyMesh2.cn[node])
+            tmp6 = DamperMesh(geneMsh2, fixNode2, damper_ID)
+            tmp7 = ASSE_MAILLAGE(MAILLAGE_1=mesh2, MAILLAGE_2=tmp6, OPERATION='SUPERPOSE') 
+                                
+            tmp7 = DEFI_GROUP(reuse=tmp7, MAILLAGE=tmp7,
+                            DETR_GROUP_MA=_F(NOM = 'TOUT'),
+                            CREA_GROUP_MA=_F(NOM = 'TOUT', TOUT = 'OUI'),
+                            CREA_GROUP_NO=_F(GROUP_NO = 'damperS', NUME_INIT = damper_ID+1, NUME_FIN = damper_ID+1 , NOM = 'rntd' + str(damper_ID)))
+            tmp8 = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO='d' + str(damper_ID) + 'm1', 
+                                        NOM_GROUP_MA='d' + str(damper_ID) + 'm1' + '0D'), 
+                            MAILLAGE=tmp7) 
+            tmp9 = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO='d' + str(damper_ID) + 'm2', 
+                                        NOM_GROUP_MA='d' + str(damper_ID) + 'm2' + '0D'), 
+                            MAILLAGE=tmp8) 
+            DETRUIRE(CONCEPT=_F(NOM=(tmp6, tmp7, tmp8, mesh2)))
+            mesh2 = COPIER(CONCEPT=tmp9 )
+            DETRUIRE(CONCEPT=_F(NOM=(tmp9)))
+            
+            damper_ID += 1
 
     DETRUIRE(CONCEPT=_F(NOM=(tmp3, tmp4, tmp5, mesh_2, mesh0)))
 
@@ -571,33 +690,88 @@ if bool_macroEl2_Ph1:
 if bool_macroEl2_slpShift:
     mesh2S = COPIER(CONCEPT=mesh2)
     mesh2S = MODI_MAILLAGE(reuse=mesh2S, MAILLAGE=mesh2S, SYMETRIE=_F(POINT=(0,0,0), AXE_1=(0,1,0), AXE_2=(0,0,1)))
+    pyMesh2s = partition.MAIL_PY()
+    pyMesh2s.FromAster('mesh2S')
+
+affe =[]
+affe.append(_F(TOUT='OUI',
+                PHENOMENE='MECANIQUE',
+                MODELISATION='3D',))
+affe.append(_F(GROUP_MA=(discreteBalNodes + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
+                PHENOMENE='MECANIQUE',
+                MODELISATION='DIS_T',))
+
+if dampers_on:
+    fixNodes = pyMesh1.gno.get('damperS')
+
+    damper_ID=0
+    for node in fixNodes:
+        affe.append(_F(GROUP_MA=('d' + str(damper_ID) + 'm1' + '0D',
+                                 'd' + str(damper_ID) + 'm2' + '0D',
+                                 'd' + str(damper_ID) + 'e1', 
+                                 'd' + str(damper_ID) + 'e2', 
+                                 'd' + str(damper_ID) + 'e3'),
+                             PHENOMENE='MECANIQUE',
+                             MODELISATION='DIS_T',))
+        damper_ID += 1
 
 # Model for each macro-element
 model = AFFE_MODELE(MAILLAGE=mesh,
-                    AFFE=(_F(TOUT='OUI',
-                            PHENOMENE='MECANIQUE',
-                            MODELISATION='3D',),
-                          _F(GROUP_MA=(discreteBalNodes + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
-                             PHENOMENE='MECANIQUE',
-                             MODELISATION='DIS_T',),))
+                    AFFE=(affe))
 
 if bool_macroEl2_Ph1:
+    affe2 =[]
+    affe2.append(_F(TOUT='OUI',
+                    PHENOMENE='MECANIQUE',
+                    MODELISATION='3D',))
+    affe2.append(_F(GROUP_MA=(discreteBalNodes2 + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
+                              PHENOMENE='MECANIQUE',
+                              MODELISATION='DIS_T',))
+
+    if dampers_on2:
+        fixNodes2 = pyMesh2.gno.get('damperS')
+
+        damper_ID=0
+        for node in fixNodes2:
+            affe2.append(_F(GROUP_MA=('d' + str(damper_ID) + 'm1' + '0D',
+                                    'd' + str(damper_ID) + 'm2' + '0D',
+                                    'd' + str(damper_ID) + 'e1', 
+                                    'd' + str(damper_ID) + 'e2', 
+                                    'd' + str(damper_ID) + 'e3'),
+                                PHENOMENE='MECANIQUE',
+                                MODELISATION='DIS_T',))
+            damper_ID += 1
+
+    # Model for each macro-element
     model2 = AFFE_MODELE(MAILLAGE=mesh2,
-                        AFFE=(_F(TOUT='OUI',
-                                PHENOMENE='MECANIQUE',
-                                MODELISATION='3D',),
-                            _F(GROUP_MA=(discreteBalNodes2 + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
-                                PHENOMENE='MECANIQUE',
-                                MODELISATION='DIS_T',),))
+                         AFFE=(affe2))
     
 if bool_macroEl2_slpShift:
+    affe2s =[]
+    affe2s.append(_F(TOUT='OUI',
+                    PHENOMENE='MECANIQUE',
+                    MODELISATION='3D',))
+    affe2s.append(_F(GROUP_MA=(discreteBalNodes2 + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
+                              PHENOMENE='MECANIQUE',
+                              MODELISATION='DIS_T',))
+
+    if dampers_on2:
+        fixNodes2s = pyMesh2s.gno.get('damperS')
+
+        damper_ID=0
+        for node in fixNodes2s:
+            affe2s.append(_F(GROUP_MA=('d' + str(damper_ID) + 'm1' + '0D',
+                                    'd' + str(damper_ID) + 'm2' + '0D',
+                                    'd' + str(damper_ID) + 'e1', 
+                                    'd' + str(damper_ID) + 'e2', 
+                                    'd' + str(damper_ID) + 'e3'),
+                                PHENOMENE='MECANIQUE',
+                                MODELISATION='DIS_T',))
+            damper_ID += 1
+
+    # Model for each macro-element
     model2S = AFFE_MODELE(MAILLAGE=mesh2S,
-                        AFFE=(_F(TOUT='OUI',
-                                PHENOMENE='MECANIQUE',
-                                MODELISATION='3D',),
-                            _F(GROUP_MA=(discreteBalNodes2 + '0D', 'clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'),
-                                PHENOMENE='MECANIQUE',
-                                MODELISATION='DIS_T',),))
+                          AFFE=(affe2s))
 
 # Compute area of a half-sleeper bottom face
 CH_id = CREA_CHAMP(OPERATION = 'AFFE',
@@ -652,46 +826,77 @@ liaisons_clamps = [_F(GROUP_NO=('clmp_ia0', 'sntria')), _F(GROUP_NO=('clmp_ia1',
 
 tieClp = AFFE_CHAR_MECA(MODELE=model, LIAISON_SOLIDE=liaisons_clamps,)
 
-if USP_on == True:
-    BCs = (BCintf, tie1, tie2, tie3, tieClp)
+if dampers_on:
+    liaisons_dampers = []
+    a=0
+    for node in fixNodes:
+        liaisons_dampers.append(_F(GROUP_NO=('rntd' + str(a), 'd' + str(a) + 'n0')))
+        a+=1
+    tieDmp = AFFE_CHAR_MECA(MODELE=model, LIAISON_SOLIDE=liaisons_dampers,)
+    
+    if USP_on == True:
+        BCs = (BCintf, tie1, tie2, tie3, tieClp, tieDmp)
+    else:
+        BCs = (BCintf, tie2, tie3, tieClp, tieDmp)
 else:
-    BCs = (BCintf, tie2, tie3, tieClp)
+    if USP_on == True:
+        BCs = (BCintf, tie1, tie2, tie3, tieClp)
+    else:
+        BCs = (BCintf, tie2, tie3, tieClp)
 
 # Macroelement 2
-if bool_macroEl2_Ph1:
-    if bool_macroEl2_usp == True:
-        tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
-                            
+if bool_macroEl2_Ph1:                        
     tie2_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ), GROUP_MA_MAIT=('setp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
-                        
     tie3_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr', ), GROUP_MA_MAIT=('retp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
-                                        
     BCintf2 = AFFE_CHAR_MECA(MODELE=model2, DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', 'slpSym'), DX=0.0, DY=0.0, DZ=0.0),)
-
     tieClp2 = AFFE_CHAR_MECA(MODELE=model2, LIAISON_SOLIDE=liaisons_clamps)
-
-    if bool_macroEl2_usp == True:
-        BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2)
+    
+    if dampers_on2:
+        liaisons_dampers2 = []
+        a=0
+        for node in fixNodes2:
+            liaisons_dampers2.append(_F(GROUP_NO=('rntd' + str(a), 'd' + str(a) + 'n0')))
+            a+=1
+        
+        tieDmp2 = AFFE_CHAR_MECA(MODELE=model2, LIAISON_SOLIDE=liaisons_dampers2,)
+        if bool_macroEl2_usp == True:
+            tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
+            BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2, tieDmp2)
+        else:
+            BCs2 = (BCintf2, tie2_2, tie3_2, tieClp2, tieDmp2)
     else:
-        BCs2 = (BCintf2, tie2_2, tie3_2, tieClp2)
+        if bool_macroEl2_usp == True:
+            tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
+            BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2)
+        else:
+            BCs2 = (BCintf2, tie2_2, tie3_2, tieClp2)
 
 # Macroelement 2S
 if bool_macroEl2_slpShift:
-    if bool_macroEl2_usp == True:
-        tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
-                            
     tie2_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ), GROUP_MA_MAIT=('setp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
-                        
     tie3_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pntr', ), GROUP_MA_MAIT=('retp', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
-                                        
     BCintf2S = AFFE_CHAR_MECA(MODELE=model2S, DDL_IMPO=_F(GROUP_NO=('railFt', 'railBk', 'slpSym'), DX=0.0, DY=0.0, DZ=0.0),)
-
     tieClp2S = AFFE_CHAR_MECA(MODELE=model2S, LIAISON_SOLIDE=liaisons_clamps)
-
-    if bool_macroEl2_usp == True:
-        BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S)
+    
+    if dampers_on2:
+        liaisons_dampers2S = []
+        a=0
+        for node in fixNodes2s:
+            liaisons_dampers2S.append(_F(GROUP_NO=('rntd' + str(a), 'd' + str(a) + 'n0')))
+            a+=1
+        tieDmp2S = AFFE_CHAR_MECA(MODELE=model2S, LIAISON_SOLIDE=liaisons_dampers2S,)
+        
+        if bool_macroEl2_usp == True:
+            tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
+            BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S, tieDmp2S)
+        else:
+            BCs2S = (BCintf2S, tie2_2S, tie3_2S, tieClp2S, tieDmp2S)
     else:
-        BCs2S = (BCintf2S, tie2_2S, tie3_2S, tieClp2S)
+        if bool_macroEl2_usp == True:
+            tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
+            BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S)
+        else:
+            BCs2S = (BCintf2S, tie2_2S, tie3_2S, tieClp2S)
 
 
 ######################################################
@@ -837,13 +1042,55 @@ if bool_macroEl2_Ph1:
     nodeStiff_Y2 = Ebal*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal2
     nodeStiff_XZ2 = Ebal/2/(1+nuBal2)*(coefSlpBotArea*A_slpBot)/(1000*hBal)/nNodesBal2
 
-# Ballast & clamps discrete elements affectation
-elProp = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),),
-                                 _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=0),
-                                 _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX,clampStiffY,clampStiffZ)),),
-                          # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
-                        MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
-                        MODELE=model)
+if dampers_on:
+    fixNodes = pyMesh1.gno.get('damperS')
+    number_of_dampers = len(fixNodes)
+    
+    m1 = (mtot/number_of_dampers)*m1_ratio
+    m2 = (mtot/number_of_dampers)*(1-m1_ratio)
+    k1 = (k1tot[0]/number_of_dampers, k1tot[1]/number_of_dampers, k1tot[2]/number_of_dampers)
+    k2 = (k2tot[0]/number_of_dampers, k2tot[1]/number_of_dampers, k2tot[2]/number_of_dampers)
+    k3 = (k3tot[0]/number_of_dampers, k3tot[1]/number_of_dampers, k3tot[2]/number_of_dampers)
+    c1 = (c1tot[0]/number_of_dampers, c1tot[1]/number_of_dampers, c1tot[2]/number_of_dampers)
+    c2 = (c2tot[0]/number_of_dampers, c2tot[1]/number_of_dampers, c2tot[2]/number_of_dampers)
+    c3 = (c3tot[0]/number_of_dampers, c3tot[1]/number_of_dampers, c3tot[2]/number_of_dampers)
+
+    damper_ID=0
+    prop =[]
+    for node in fixNodes:
+        prop1 = _F(CARA='M_T_D_N', GROUP_MA=('d' + str(damper_ID) + 'm1' + '0D'), VALE=m1)
+        prop.append(prop1)
+        prop2 = _F(CARA='M_T_D_N', GROUP_MA=('d' + str(damper_ID) + 'm2' + '0D'), VALE=m2)
+        prop.append(prop2)
+        prop3 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e1'), VALE=k1)
+        prop.append(prop3)
+        prop4 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e2'), VALE=k2)
+        prop.append(prop4)
+        prop5 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e3'), VALE=k3)
+        prop.append(prop5)
+
+        damper_ID += 1
+
+    # Ballast & clamps discrete elements affectation
+    prop9 = _F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),)
+    prop.append(prop9)
+    prop10 = _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=0)
+    prop.append(prop10)
+    prop11 = _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX,clampStiffY,clampStiffZ))
+    prop.append(prop11)
+    elProp = AFFE_CARA_ELEM(DISCRET=(prop),
+                            # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                            MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                            MODELE=model)
+
+else:
+    # Ballast & clamps discrete elements affectation
+    elProp = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=(nodeStiff_XZ, nodeStiff_Y, nodeStiff_XZ),),
+                                    _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes+'0D'), VALE=0),
+                                    _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX,clampStiffY,clampStiffZ)),),
+                            # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                            MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                            MODELE=model)
 
 # Ballast & clamps discrete elements affectation ; macroEl2
 if bool_macroEl2_Ph1:
@@ -851,19 +1098,92 @@ if bool_macroEl2_Ph1:
     clampStiffY2 = parameters["macroEl2"].get("clampStiffY")*1000/2 if parameters["macroEl2"].get("clampStiffY") is not None else clampStiffY
     clampStiffZ2 = parameters["macroEl2"].get("clampStiffZ")*1000/2 if parameters["macroEl2"].get("clampStiffZ") is not None else clampStiffZ
 
-    elProp2 = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),),
-                                       _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=0),
-                                       _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2,clampStiffY2,clampStiffZ2)),),
-                              MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
-                              MODELE=model2)
+    if dampers_on2:
+        fixNodes2 = pyMesh2.gno.get('damperS')
+        number_of_dampers2 = len(fixNodes2)
 
+        m1_2 = (mtot_2/number_of_dampers2)*m1_ratio_2
+        m2_2 = (mtot_2/number_of_dampers2)*(1-m1_ratio_2)
+        k1_2 = (k1tot_2[0]/number_of_dampers2, k1tot_2[1]/number_of_dampers2, k1tot_2[2]/number_of_dampers2)
+        k2_2 = (k2tot_2[0]/number_of_dampers2, k2tot_2[1]/number_of_dampers2, k2tot_2[2]/number_of_dampers2)
+        k3_2 = (k3tot_2[0]/number_of_dampers2, k3tot_2[1]/number_of_dampers2, k3tot_2[2]/number_of_dampers2)
+
+        damper_ID=0
+        prop2 =[]
+        for node in fixNodes2:
+            prop2_1 = _F(CARA='M_T_D_N', GROUP_MA=('d' + str(damper_ID) + 'm1' + '0D'), VALE=m1_2)
+            prop2.append(prop2_1)
+            prop2_2 = _F(CARA='M_T_D_N', GROUP_MA=('d' + str(damper_ID) + 'm2' + '0D'), VALE=m2_2)
+            prop2.append(prop2_2)
+            prop2_3 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e1'), VALE=k1_2)
+            prop2.append(prop2_3)
+            prop2_4 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e2'), VALE=k2_2)
+            prop2.append(prop2_4)
+            prop2_5 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e3'), VALE=k3_2)
+            prop2.append(prop2_5)
+            damper_ID += 1
+
+        # Ballast & clamps discrete elements affectation
+        prop2_9 = _F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),)
+        prop2.append(prop2_9)
+        prop2_10 = _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=0)
+        prop2.append(prop2_10)
+        prop2_12 = _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2,clampStiffY2,clampStiffZ2))
+        prop2.append(prop2_12)
+        elProp2 = AFFE_CARA_ELEM(DISCRET=(prop2),
+                                # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                                MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                                MODELE=model2)
+
+    else:
+        # Ballast & clamps discrete elements affectation
+        elProp2 = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),),
+                                          _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=0),
+                                          _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2,clampStiffY2,clampStiffZ2)),
+                                        ),
+                                MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                                MODELE=model2)
+    
 # Ballast & clamps discrete elements affectation ; macroEl2S
 if bool_macroEl2_slpShift:
-    elProp2S = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),),
-                                       _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=0),
-                                       _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2, clampStiffY2, clampStiffZ2)),),
-                              MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
-                              MODELE=model2S)
+    if dampers_on2:
+        fixNodes2s = pyMesh2s.gno.get('damperS')
+
+        damper_ID=0
+        prop2s =[]
+        for node in fixNodes2s:
+            prop2s_1 = _F(CARA='M_T_D_N', GROUP_MA=('d' + str(damper_ID) + 'm1' + '0D'), VALE=m1_2)
+            prop2s.append(prop2s_1)
+            prop2s_2 = _F(CARA='M_T_D_N', GROUP_MA=('d' + str(damper_ID) + 'm2' + '0D'), VALE=m2_2)
+            prop2s.append(prop2s_2)
+            prop2s_3 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e1'), VALE=k1_2)
+            prop2s.append(prop2s_3)
+            prop2s_4 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e2'), VALE=k2_2)
+            prop2s.append(prop2s_4)
+            prop2s_5 = _F(CARA='K_T_D_L', GROUP_MA=('d' + str(damper_ID) + 'e3'), VALE=k3_2)
+            prop2s.append(prop2s_5)
+            damper_ID += 1
+
+        # Ballast & clamps discrete elements affectation
+        prop2s_9 = _F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),)
+        prop2s.append(prop2s_9)
+        prop2s_10 = _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=0)
+        prop2s.append(prop2s_10)
+        prop2s_12 = _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2,clampStiffY2,clampStiffZ2))
+        prop2s.append(prop2s_12)
+        elProp2S = AFFE_CARA_ELEM(DISCRET=(prop2s),
+                                # Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL.
+                                MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                                MODELE=model2S)
+
+    else:
+        # Ballast & clamps discrete elements affectation
+        elProp2S = AFFE_CARA_ELEM(DISCRET=(_F(CARA='K_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=(nodeStiff_XZ2, nodeStiff_Y2, nodeStiff_XZ2),),
+                                          _F(CARA='M_T_D_N', GROUP_MA=(discreteBalNodes2+'0D'), VALE=0),
+                                          _F(CARA='K_T_D_L', GROUP_MA=('clmp_ia', 'clmp_ib', 'clmp_ea', 'clmp_eb'), VALE=(clampStiffX2, clampStiffY2, clampStiffZ2)),),
+                                MASSIF=_F(ANGL_REP=(0.0, 90.0, 0.0), GROUP_MA=('sleepere', )),
+                                MODELE=model2S)
+
 
 ######################################################
 # Compute elementary matrices & assemble
@@ -910,6 +1230,8 @@ infoMode = INFO_MODE(MATR_RIGI = K_as, MATR_MASS = M_as, FREQ = freqBands_ini)
 
 [freqBandsOpt, nEigenModes] = OptimizedFreqBands(infoMode)
 print('Optimized frequency bands (nominal macroelement) : ')
+print(freqBandsOpt)
+freqBandsOpt[-1] = freqBandsOpt[-1]+100
 print(freqBandsOpt)
 
 if bool_macroEl2_Ph1:
@@ -964,6 +1286,12 @@ if bool_macroEl2_Ph1:
 DETRUIRE(CONCEPT=_F(NOM=(meshSlp, meshSlp2, dplX_slp, dplY_slp, dplZ_slp, CHdplF, meshRaiR, mshRaiR2, CHcoord, temp,  CHdpl, dplX_rai, dplY_rai, dplZ_rai, meshPadR, mshPadR2)))
 DETRUIRE(CONCEPT=_F(NOM=(intCH_id, clampIni, tieClp, BCintf, model, mesh, CH_id, f_EPad1, f_EPad2, f_EBal, slprMat, railMat, padMat1, padMat2, fldMat)))
 DETRUIRE(CONCEPT=_F(NOM=(tie2, tie3, elProp, K_el, K_as, M_el, M_as, infoMode)))
+if dampers_on:
+    DETRUIRE(CONCEPT=_F(NOM=(tieDmp, generMsh)))
+if dampers_on2:
+    DETRUIRE(CONCEPT=_F(NOM=(tieDmp2, geneMsh2)))
+    if bool_macroEl2_slpShift:
+        DETRUIRE(CONCEPT=_F(NOM=(tieDmp2S)))
 
 
 del clampia1, clampib1, clampea1, clampeb1

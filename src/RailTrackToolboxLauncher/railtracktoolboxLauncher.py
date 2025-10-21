@@ -22,6 +22,7 @@ class LauncherGUI(QMainWindow):
 		self.ThreeSleeperBtn.clicked.connect(self.RunThreeSleeper)
 		self.ImpulseModelBtn.clicked.connect(self.RunImpulseModel)
 		self.MultiSleeperBtn.clicked.connect(self.RunMultiSleeperModel)
+		self.MultiSleeperPostproBtn.clicked.connect(self.RunMultiSleeperPostPro)
 		self.SemiAnalyticalTrackBtn.clicked.connect(self.RunSemiAnalyticalTrack)
 		self.SalomeBtn.clicked.connect(self.RunSalome)
 
@@ -47,6 +48,12 @@ class LauncherGUI(QMainWindow):
 	def RunMultiSleeperModel(self):
 		"""Launch the MultiSleeper model"""
 		exe=os.path.join(self.srcpath,'MultiSleeperModel/MultiSleeperModel.sh')
+		cmd=self.termcmd + " " + exe + " &"		
+		os.system(cmd)
+
+	def RunMultiSleeperPostPro(self):
+		"""Launch the MultiSleeper Post-Processing GUI"""
+		exe=os.path.join(self.srcpath,'MultiSleeperModel/MultiSleeperPostPro.sh')
 		cmd=self.termcmd + " " + exe + " &"		
 		os.system(cmd)
 

@@ -34,12 +34,15 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_tanDUSP.clicked.connect(self.SelectTanDUSP)
 		self.btn_USPMesh.clicked.connect(self.SelectUSPMesh)
 		self.cb_USP.stateChanged.connect(self.USPStateChanged)
+		self.cb_railDamper.stateChanged.connect(self.railDamperstateChanged)
 		self.btn_selectNodesFRF.clicked.connect(self.SelectNodesFRF)
 		self.btn_freqs.clicked.connect(self.SelectFrequencies)
 		self.btn_selectSubstructures.clicked.connect(self.SelectSubstructures)
 		self.cb_computeAcoustic.stateChanged.connect(self.ComputeAcousticStateChanged)
+		self.BEM_activated.stateChanged.connect(self.ComputeAcousticBEMStateChanged)
 		self.cb_writeMED.stateChanged.connect(self.WriteMedStateChanged)
 		self.btn_selectAcousticMesh.clicked.connect(self.SelectAcousticMesh)
+		self.select_proj_mesh_BEM.clicked.connect(self.SelectAcousticBEMProjMesh)
 		self.btn_addSimu.clicked.connect(self.AddSimuToList)
 		self.btn_simuDir.clicked.connect(self.SelectSimuDir)
 		self.btn_simulate.clicked.connect(self.SimulateAll)
@@ -50,6 +53,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_moveDown.clicked.connect(self.MoveSimuDown)
 		self.list_simu.currentItemChanged.connect(self.DisplaySimu)
 		self.btn_showMesh.clicked.connect(self.ShowMesh)
+		self.btn_postpro.clicked.connect(self.LaunchPostPro)
 
 		nJobsMax = int(multiprocessing.cpu_count()/2)
 		self.txt_phase1CPUs.setText(str(nJobsMax))
@@ -78,6 +82,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.tanDUSP = None
 		self.selectedSubst = None
 		self.acousticMesh = None
+		self.projMesh = None
 		self.simuParentFolder = None
 		
 	def DisplaySimu(self): #called when the index of list_simu is changed
@@ -161,6 +166,17 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_dampY.setText(str(dictSimu['clampDampY']))
 		self.txt_dampZ.setText(str(dictSimu['clampDampZ']))
 
+		self.cb_railDamper.setChecked(dictSimu['dampers_on'])
+		if dictSimu['dampers_on']:
+			self.txt_totMass.setText(str(dictSimu["damper"]['mtot']))
+			self.txt_m1Ratio.setText(str(dictSimu["damper"]['m1_ratio']))
+			self.txt_k1.setText(str(dictSimu["damper"]['k1tot']))
+			self.txt_k2.setText(str(dictSimu["damper"]['k2tot']))
+			self.txt_k3.setText(str(dictSimu["damper"]['k3tot']))
+			self.txt_c1.setText(str(dictSimu["damper"]['c1tot']))
+			self.txt_c2.setText(str(dictSimu["damper"]['c2tot']))
+			self.txt_c3.setText(str(dictSimu["damper"]['c3tot']))
+
 		self.txt_nModesRai.setText(str(dictSimu['nModesRai']))
 		self.txt_nModesSlp.setText(str(dictSimu['nModesSlp']))
 		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
@@ -183,14 +199,19 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_nSlpAcoust1.setText(str(dictSimu['nSlpAcoust1']))
 		self.txt_nSlpAcoust2.setText(str(dictSimu['nSlpAcoust2']))
 		self.cb_computeAcoustic.setChecked(dictSimu['computeAcoustic'])
+		self.BEM_activated.setChecked(dictSimu['BEM_activated'])
 		self.rb_1D.setChecked(dictSimu['acMeshDim'] == '1D')
 		self.rb_2D.setChecked(dictSimu['acMeshDim'] == '2D')
 		if dictSimu['computeAcoustic'] == True:
 			self.acousticMesh = dictSimu['acousticMesh']
 		else:
 			self.acousticMesh = None
-		
-		
+		if dictSimu['BEM_activated'] == True:
+			self.projMesh = dictSimu['projMesh']
+		else:
+			self.projMesh = None
+
+
 	def Phase1StateChanged(self):
 		computePhase1 = self.cb_phase1.isChecked()
 		self.btn_selPhase1Folder.setDisabled(computePhase1)
@@ -215,6 +236,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.label_50.setDisabled(not computePhase1)
 
 		self.cb_USP.setDisabled(not (computePhase1))
+		self.cb_railDamper.setDisabled(not (computePhase1))
 		self.btn_USPMesh.setDisabled(not (computePhase1 and USPon))
 		self.label_53.setDisabled(not (computePhase1 and USPon))
 		self.txt_thkUSP.setDisabled(not (computePhase1 and USPon))
@@ -234,8 +256,27 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_thkUSP.setDisabled(not (USP_on and computeModes))
 		if USP_on and (self.txt_thkUSP.text() == '' or self.txt_thkUSP.text() == 'None'):
 			self.txt_thkUSP.setText('8.5')
-		
-				
+
+	def railDamperstateChanged(self):
+		railDamper_on = self.cb_railDamper.isChecked()
+		self.txt_totMass.setDisabled(not railDamper_on)
+		self.label_mass_tot_damper.setDisabled(not railDamper_on)
+		self.txt_m1Ratio.setDisabled(not railDamper_on)
+		self.label_m1_ratio_damper.setDisabled(not railDamper_on)
+		self.txt_k1.setDisabled(not railDamper_on)
+		self.label_k1_damper.setDisabled(not railDamper_on)
+		self.txt_k2.setDisabled(not railDamper_on)
+		self.label_k2_damper.setDisabled(not railDamper_on)
+		self.txt_k3.setDisabled(not railDamper_on)
+		self.label_k3_damper.setDisabled(not railDamper_on)
+		self.txt_c1.setDisabled(not railDamper_on)
+		self.label_c1_damper.setDisabled(not railDamper_on)
+		self.txt_c2.setDisabled(not railDamper_on)
+		self.label_c2_damper.setDisabled(not railDamper_on)
+		self.txt_c3.setDisabled(not railDamper_on)
+		self.label_c3_damper.setDisabled(not railDamper_on)
+
+		computeModes = self.cb_phase1.isChecked()		
 		
 	def ComputeAcousticStateChanged(self):
 		self.btn_selectAcousticMesh.setDisabled(not self.cb_computeAcoustic.isChecked())
@@ -245,659 +286,744 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_nSlpAcoust1.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
 		self.txt_nSlpAcoust2.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
 
+	def ComputeAcousticBEMStateChanged(self):
+		self.select_proj_mesh_BEM.setDisabled(not self.BEM_activated.isChecked())
+
 	def WriteMedStateChanged(self):
 		self.txt_nSlpAcoust1.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
 		self.txt_nSlpAcoust2.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
 		
 	def AddSimuToList(self):
-		dictSimu = {}
-		
-		dictSimu['cwd'] = self.cwd
-		dictSimu['appPath'] = self.appPath
-	
-		# Execution parameters ===================================================================================
-		#=========================================================================================================
-		simuName = self.txt_simuName.text()
-
-		for simu in self.simuList:
-			if simuName == simu['name']:
-				QMessageBox.information(self, 'Error', simuName + ' already exists.', QMessageBox.Ok,)
-				return
-		
-		if len(simuName) == 0 or '/' in simuName or '\\' in simuName or os.sep in simuName:
-			QMessageBox.information(self, 'Error', 'Please enter a correct simulation name.', QMessageBox.Ok,)
-			return
-		
-		dictSimu['name'] = simuName
-		
-		#
-		if self.simuParentFolder is None or os.path.exists(self.simuParentFolder) == False:
-			QMessageBox.information(self, 'Error', 'Saving directory was not found.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['simuParentFolder'] = self.simuParentFolder
-		
-		#
-		debugPh2 = self.cb_debugPh2.isChecked()
-		dictSimu['debugPh2'] = debugPh2
-
-		#
-		writeMED = self.cb_writeMED.isChecked()
-		dictSimu['writeMED'] = writeMED
-
-		# 
-		nJobsMax = multiprocessing.cpu_count()/2
-		
 		try:
-			nJobs = int(self.txt_nJobs.text())
-			if nJobs < 1 or nJobs > nJobsMax:
-				QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs (1-' + str(nJobsMax) + ').', QMessageBox.Ok,)
+			dictSimu = {}
+			
+			dictSimu['cwd'] = self.cwd
+			dictSimu['appPath'] = self.appPath
+		
+			# Execution parameters ===================================================================================
+			#=========================================================================================================
+			simuName = self.txt_simuName.text()
+
+			for simu in self.simuList:
+				if simuName == simu['name']:
+					QMessageBox.information(self, 'Error', simuName + ' already exists.', QMessageBox.Ok,)
+					return
+			
+			if len(simuName) == 0 or '/' in simuName or '\\' in simuName or os.sep in simuName:
+				QMessageBox.information(self, 'Error', 'Please enter a correct simulation name.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs.', QMessageBox.Ok,)
-			return
 			
-		dictSimu['nJobs'] = nJobs
-		
-		#
-		try:
-			nCPUs = int(self.txt_nCPUs.text())
-			if nCPUs < 1:
-				QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs (1-' + str(nJobsMax) + ').', QMessageBox.Ok,)
-				return
-			if nCPUs*nJobs > nJobsMax:
-				QMessageBox.information(self, 'Error', 'The total number of CPUs used (' + str(nCPUs*nJobs) + ') is larger than the number of CPUs available (' + str(nJobsMax) + ')', QMessageBox.Ok,)
-				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['nCPUs'] = nCPUs
-			
-		#
-		host = self.txt_host.text()
-		dictSimu['host'] = host
-		
-		#
-		reptrav = self.txt_repTrav.text()
-		reptrav = reptrav.replace('/', os.sep)
-		reptrav = reptrav.replace('\\', os.sep)
-		if os.path.exists(reptrav) == False:
-			QMessageBox.information(self, 'Error', 'Please enter a correct working directory (reptrav).', QMessageBox.Ok,)
-			return
-			
-		dictSimu['reptrav'] = reptrav
-		
-		#
-		totalRAM = psutil.virtual_memory().total/1.0e6
-		try:
-			memLimit = float(self.txt_memLimit.text())
-			if memLimit < 0:
-				QMessageBox.information(self, 'Error', 'Please enter a correct memory limit.', QMessageBox.Ok,)
-				return
-			elif memLimit > totalRAM:
-				QMessageBox.information(self, 'Warning', 'The specified memory limit is larger than the total RAM of this machine.', QMessageBox.Ok,)
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct memory limit.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['memLimit'] = memLimit
-		
-		# Phase 1 (modes) parameters =====================================================================================
-		#=========================================================================================================
-		computeModes = self.cb_phase1.isChecked()
-		dictSimu['computeModes'] = computeModes
-		
-		if computeModes == True:
-		
-			dictSimu['phase1WorkingDir'] = os.path.join(dictSimu['simuParentFolder'], dictSimu['name'] + '_phase1')
+			dictSimu['name'] = simuName
 			
 			#
-			if self.modesParentFolder is None or os.path.exists(self.modesParentFolder) == False:
-				QMessageBox.information(self, 'Error', 'Modes saving directory was not found.', QMessageBox.Ok,)
+			if self.simuParentFolder is None or os.path.exists(self.simuParentFolder) == False:
+				QMessageBox.information(self, 'Error', 'Saving directory was not found.', QMessageBox.Ok,)
 				return
-		
-			modesName = self.txt_phase1Name.text()
-			if len(modesName) == 0:
-				QMessageBox.information(self, 'Error', 'Please enter a correct name for the modes simulation.', QMessageBox.Ok,)
-				return
-			
-			modesFolder = os.path.join(self.modesParentFolder, modesName)
-			if modesFolder == os.path.join(dictSimu['simuParentFolder'],  dictSimu['name']) or modesFolder == dictSimu['phase1WorkingDir']:
-				QMessageBox.information(self, 'Error', modesFolder + ' is already used. Please select another directory to save the modes.', QMessageBox.Ok,)
-				return
-
-			try:
-				shutil.rmtree(modesFolder)
-			except:
-				pass
 				
-			try:
-				os.makedirs(modesFolder)
-			except:
-				QMessageBox.information(self, 'Error', modesFolder + ' could not be created', QMessageBox.Ok,)
-				return
-			
-			dictSimu['modesFolder'] = modesFolder
-			
-
-			#
-			debugPh1 = self.cb_debugPh1.isChecked()
-			dictSimu['debugPh1'] = debugPh1
-
+			dictSimu['simuParentFolder'] = self.simuParentFolder
 			
 			#
+			debugPh2 = self.cb_debugPh2.isChecked()
+			dictSimu['debugPh2'] = debugPh2
+
+			#
+			writeMED = self.cb_writeMED.isChecked()
+			dictSimu['writeMED'] = writeMED
+
+			# 
+			nJobsMax = multiprocessing.cpu_count()/2
+			
 			try:
-				modesMaxFreq = float(self.txt_phase1FreqMax.text())
-				if modesMaxFreq < 1.0:
-					QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for modes computing.', QMessageBox.Ok,)
+				nJobs = int(self.txt_nJobs.text())
+				if nJobs < 1 or nJobs > nJobsMax:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs (1-' + str(nJobsMax) + ').', QMessageBox.Ok,)
 					return
 			except:
-				QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for modes computing.', QMessageBox.Ok,)
+				QMessageBox.information(self, 'Error', 'Please enter a correct number of jobs.', QMessageBox.Ok,)
 				return
 				
-			dictSimu['modesMaxFreq'] = modesMaxFreq
-
+			dictSimu['nJobs'] = nJobs
+			
 			#
 			try:
-				phase1Freq = float(self.txt_phase1freq.text())
-				if phase1Freq < 0:
-					QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
+				nCPUs = int(self.txt_nCPUs.text())
+				if nCPUs < 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs (1-' + str(nJobsMax) + ').', QMessageBox.Ok,)
 					return
-			except:
-				QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['phase1Freq'] = phase1Freq
-				
-			#
-			try:
-				phase1CPUs = int(self.txt_phase1CPUs.text())
-				if phase1CPUs < 1:
-					QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
-					return
-				if phase1CPUs > nJobsMax:
-					QMessageBox.information(self, 'Error', 'The total number of CPUs used for modes computing is larger than the number of CPUs available (' + str(nJobsMax) + ').', QMessageBox.Ok,)
+				if nCPUs*nJobs > nJobsMax:
+					QMessageBox.information(self, 'Error', 'The total number of CPUs used (' + str(nCPUs*nJobs) + ') is larger than the number of CPUs available (' + str(nJobsMax) + ')', QMessageBox.Ok,)
 					return
 			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
 				return
 				
-			dictSimu['phase1CPUs'] = phase1CPUs
-
-		else:
+			dictSimu['nCPUs'] = nCPUs
+				
 			#
-			if self.modesFolder is None or os.path.exists(self.modesFolder) == False:
-				QMessageBox.information(self, 'Error', 'Modes directory was not found.', QMessageBox.Ok,)
-				return
+			host = self.txt_host.text()
+			dictSimu['host'] = host
 			
-			dictSimu['modesFolder'] = self.modesFolder
-			modesParameterFile = os.path.join(dictSimu['modesFolder'], 'parameters.json')
-
-			if os.path.exists(modesParameterFile) == False:
-				QMessageBox.information(self, 'Error', 'Modes parameter file (JSON) was not found.', QMessageBox.Ok,)
+			#
+			reptrav = self.txt_repTrav.text()
+			reptrav = reptrav.replace('/', os.sep)
+			reptrav = reptrav.replace('\\', os.sep)
+			if os.path.exists(reptrav) == False:
+				QMessageBox.information(self, 'Error', 'Please enter a correct working directory (reptrav).', QMessageBox.Ok,)
 				return
-
-			with open(modesParameterFile, 'r') as f:
-				txt = f.read()
-			f.close()
-			modesParameterDict = json.loads(txt)
-
-
-			dictSimu['phase1WorkingDir'] = None
-			dictSimu['debugPh1'] = None
-			dictSimu['modesMaxFreq'] = None				
-			dictSimu['phase1CPUs'] = None
-			dictSimu['phase1Freq'] = None
 				
+			dictSimu['reptrav'] = reptrav
+			
+			#
+			totalRAM = psutil.virtual_memory().total/1.0e6
+			try:
+				memLimit = float(self.txt_memLimit.text())
+				if memLimit < 0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct memory limit.', QMessageBox.Ok,)
+					return
+				elif memLimit > totalRAM:
+					QMessageBox.information(self, 'Warning', 'The specified memory limit is larger than the total RAM of this machine.', QMessageBox.Ok,)
+			except:
+				QMessageBox.information(self, 'Error', 'Please enter a correct memory limit.', QMessageBox.Ok,)
+				return
 				
-		# Parts & materials ==============================================================================================
-		#=========================================================================================================
-		try:
-			ERail = float(self.txt_ERail.text())
-			nuRail = float(self.txt_nuRail.text())
-			tanDRail = float(self.txt_tanDRail.text())
-			rhoRail = float(self.txt_rhoRail.text())
-			if ERail <= 0 or nuRail >= 0.5 or nuRail < 0 or tanDRail < 0 or rhoRail < 0:
+			dictSimu['memLimit'] = memLimit
+			
+			# Phase 1 (modes) parameters =====================================================================================
+			#=========================================================================================================
+			computeModes = self.cb_phase1.isChecked()
+			dictSimu['computeModes'] = computeModes
+			
+			if computeModes == True:
+			
+				dictSimu['phase1WorkingDir'] = os.path.join(dictSimu['simuParentFolder'], dictSimu['name'] + '_phase1')
+				
+				#
+				if self.modesParentFolder is None or os.path.exists(self.modesParentFolder) == False:
+					QMessageBox.information(self, 'Error', 'Modes saving directory was not found.', QMessageBox.Ok,)
+					return
+			
+				modesName = self.txt_phase1Name.text()
+				if len(modesName) == 0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct name for the modes simulation.', QMessageBox.Ok,)
+					return
+				
+				modesFolder = os.path.join(self.modesParentFolder, modesName)
+				if modesFolder == os.path.join(dictSimu['simuParentFolder'],  dictSimu['name']) or modesFolder == dictSimu['phase1WorkingDir']:
+					QMessageBox.information(self, 'Error', modesFolder + ' is already used. Please select another directory to save the modes.', QMessageBox.Ok,)
+					return
+
+				try:
+					shutil.rmtree(modesFolder)
+				except:
+					pass
+					
+				try:
+					os.makedirs(modesFolder)
+				except:
+					QMessageBox.information(self, 'Error', modesFolder + ' could not be created', QMessageBox.Ok,)
+					return
+				
+				dictSimu['modesFolder'] = modesFolder
+				
+
+				#
+				debugPh1 = self.cb_debugPh1.isChecked()
+				dictSimu['debugPh1'] = debugPh1
+
+				
+				#
+				try:
+					modesMaxFreq = float(self.txt_phase1FreqMax.text())
+					if modesMaxFreq < 1.0:
+						QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for modes computing.', QMessageBox.Ok,)
+						return
+				except:
+					QMessageBox.information(self, 'Error', 'Please enter a correct max frequency for modes computing.', QMessageBox.Ok,)
+					return
+					
+				dictSimu['modesMaxFreq'] = modesMaxFreq
+
+				#
+				try:
+					phase1Freq = float(self.txt_phase1freq.text())
+					if phase1Freq < 0:
+						QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
+						return
+				except:
+					QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
+					return
+					
+				dictSimu['phase1Freq'] = phase1Freq
+					
+				#
+				try:
+					phase1CPUs = int(self.txt_phase1CPUs.text())
+					if phase1CPUs < 1:
+						QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
+						return
+					if phase1CPUs > nJobsMax:
+						QMessageBox.information(self, 'Error', 'The total number of CPUs used for modes computing is larger than the number of CPUs available (' + str(nJobsMax) + ').', QMessageBox.Ok,)
+						return
+				except:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of CPUs.', QMessageBox.Ok,)
+					return
+					
+				dictSimu['phase1CPUs'] = phase1CPUs
+
+			else:
+				#
+				if self.modesFolder is None or os.path.exists(self.modesFolder) == False:
+					QMessageBox.information(self, 'Error', 'Modes directory was not found.', QMessageBox.Ok,)
+					return
+				
+				dictSimu['modesFolder'] = self.modesFolder
+				modesParameterFile = os.path.join(dictSimu['modesFolder'], 'parameters.json')
+
+				if os.path.exists(modesParameterFile) == False:
+					QMessageBox.information(self, 'Error', 'Modes parameter file (JSON) was not found.', QMessageBox.Ok,)
+					return
+
+				with open(modesParameterFile, 'r') as f:
+					txt = f.read()
+				f.close()
+				modesParameterDict = json.loads(txt)
+
+
+				dictSimu['phase1WorkingDir'] = None
+				dictSimu['debugPh1'] = None
+				dictSimu['modesMaxFreq'] = None				
+				dictSimu['phase1CPUs'] = None
+				dictSimu['phase1Freq'] = None
+					
+					
+			# Parts & materials ==============================================================================================
+			#=========================================================================================================
+			try:
+				ERail = float(self.txt_ERail.text())
+				nuRail = float(self.txt_nuRail.text())
+				tanDRail = float(self.txt_tanDRail.text())
+				rhoRail = float(self.txt_rhoRail.text())
+				if ERail <= 0 or nuRail >= 0.5 or nuRail < 0 or tanDRail < 0 or rhoRail < 0:
+					QMessageBox.information(self, 'Error', 'Please enter correct rails materials properties.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter correct rails materials properties.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter correct rails materials properties.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['ERail'] = ERail
-		dictSimu['nuRail'] = nuRail
-		dictSimu['tanDRail'] = tanDRail
-		dictSimu['rhoRail'] = rhoRail
+				
+			dictSimu['ERail'] = ERail
+			dictSimu['nuRail'] = nuRail
+			dictSimu['tanDRail'] = tanDRail
+			dictSimu['rhoRail'] = rhoRail
 
-		#
-		if computeModes:
-			if self.railMesh is None or os.path.exists(self.railMesh) == False:
-				QMessageBox.information(self, 'Error', 'Rail mesh not defined.', QMessageBox.Ok,)
+			#
+			if computeModes:
+				if self.railMesh is None or os.path.exists(self.railMesh) == False:
+					QMessageBox.information(self, 'Error', 'Rail mesh not defined.', QMessageBox.Ok,)
+					return
+			else:
+				self.railMesh = modesParameterDict['railMesh']
+				
+			dictSimu['railMesh'] = self.railMesh
+
+			#
+			if computeModes:
+				if self.sleeperMesh is None or os.path.exists(self.sleeperMesh) == False:
+					QMessageBox.information(self, 'Error', 'Sleeper mesh not defined.', QMessageBox.Ok,)
+					return
+			else:
+				self.sleeperMesh = modesParameterDict['sleeperMesh']
+				
+			dictSimu['sleeperMesh'] = self.sleeperMesh
+
+			#
+			if computeModes:
+				if self.padMesh is None or os.path.exists(self.padMesh) == False:
+					QMessageBox.information(self, 'Error', 'Pad mesh not defined.', QMessageBox.Ok,)
+					return
+			else:
+				self.padMesh = modesParameterDict['padMesh']
+				
+			dictSimu['padMesh'] = self.padMesh
+			
+			#
+			if self.Emat1 is None or os.path.exists(self.Emat1) == False:
+				QMessageBox.information(self, 'Error', 'Pad material 1 Young''s modulus not defined.', QMessageBox.Ok,)
 				return
-		else:
-			self.railMesh = modesParameterDict['railMesh']
+				
+			dictSimu['Emat1'] = self.Emat1
 			
-		dictSimu['railMesh'] = self.railMesh
-
-		#
-		if computeModes:
-			if self.sleeperMesh is None or os.path.exists(self.sleeperMesh) == False:
-				QMessageBox.information(self, 'Error', 'Sleeper mesh not defined.', QMessageBox.Ok,)
+			#
+			if self.Emat2 is None or os.path.exists(self.Emat2) == False:
+				QMessageBox.information(self, 'Error', 'Pad material 2 Young''s modulus not defined.', QMessageBox.Ok,)
 				return
-		else:
-			self.sleeperMesh = modesParameterDict['sleeperMesh']
+				
+			dictSimu['Emat2'] = self.Emat2
 			
-		dictSimu['sleeperMesh'] = self.sleeperMesh
-
-		#
-		if computeModes:
-			if self.padMesh is None or os.path.exists(self.padMesh) == False:
-				QMessageBox.information(self, 'Error', 'Pad mesh not defined.', QMessageBox.Ok,)
+			#
+			if self.tanDmat1 is None or os.path.exists(self.tanDmat1) == False:
+				QMessageBox.information(self, 'Error', 'Pad material 1 damping not defined.', QMessageBox.Ok,)
 				return
-		else:
-			self.padMesh = modesParameterDict['padMesh']
+				
+			dictSimu['tanDmat1'] = self.tanDmat1
 			
-		dictSimu['padMesh'] = self.padMesh
-		
-		#
-		if self.Emat1 is None or os.path.exists(self.Emat1) == False:
-			QMessageBox.information(self, 'Error', 'Pad material 1 Young''s modulus not defined.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['Emat1'] = self.Emat1
-		
-		#
-		if self.Emat2 is None or os.path.exists(self.Emat2) == False:
-			QMessageBox.information(self, 'Error', 'Pad material 2 Young''s modulus not defined.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['Emat2'] = self.Emat2
-		
-		#
-		if self.tanDmat1 is None or os.path.exists(self.tanDmat1) == False:
-			QMessageBox.information(self, 'Error', 'Pad material 1 damping not defined.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['tanDmat1'] = self.tanDmat1
-		
-		#
-		if self.tanDmat2 is None or os.path.exists(self.tanDmat2) == False:
-			QMessageBox.information(self, 'Error', 'Pad material 2 damping not defined.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['tanDmat2'] = self.tanDmat2
+			#
+			if self.tanDmat2 is None or os.path.exists(self.tanDmat2) == False:
+				QMessageBox.information(self, 'Error', 'Pad material 2 damping not defined.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['tanDmat2'] = self.tanDmat2
 
-		#
-		try:
-			nuMat1 = float(self.txt_nuMat1.text())
-			nuMat2 = float(self.txt_nuMat2.text())
-			if nuMat1 < 0 or nuMat1 >= 0.5 or nuMat2 < 0 or nuMat2 >= 0.5:
+			#
+			try:
+				nuMat1 = float(self.txt_nuMat1.text())
+				nuMat2 = float(self.txt_nuMat2.text())
+				if nuMat1 < 0 or nuMat1 >= 0.5 or nuMat2 < 0 or nuMat2 >= 0.5:
+					QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['nuMat1'] = nuMat1
+			dictSimu['nuMat2'] = nuMat2
 			
-		dictSimu['nuMat1'] = nuMat1
-		dictSimu['nuMat2'] = nuMat2
-		
-		#
-		try:
-			E1Sleeper = float(self.txt_E1Sleeper.text())
-			E2Sleeper = float(self.txt_E2Sleeper.text())
-			E3Sleeper = float(self.txt_E3Sleeper.text())
-			nuSleeper = float(self.txt_nuSleeper.text())
-			tanDSleeper = float(self.txt_tanDSleeper.text())
-			rhoSleeper = float(self.txt_rhoSleeper.text())
-			if computeModes:
-				slpHeight = float(self.txt_slpHeight.text())
-			else:
-				slpHeight = modesParameterDict['slpHeight']
-			if E1Sleeper <= 0 or E2Sleeper <= 0 or E3Sleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0 or slpHeight<0:
+			#
+			try:
+				E1Sleeper = float(self.txt_E1Sleeper.text())
+				E2Sleeper = float(self.txt_E2Sleeper.text())
+				E3Sleeper = float(self.txt_E3Sleeper.text())
+				nuSleeper = float(self.txt_nuSleeper.text())
+				tanDSleeper = float(self.txt_tanDSleeper.text())
+				rhoSleeper = float(self.txt_rhoSleeper.text())
+				if computeModes:
+					slpHeight = float(self.txt_slpHeight.text())
+				else:
+					slpHeight = modesParameterDict['slpHeight']
+				if E1Sleeper <= 0 or E2Sleeper <= 0 or E3Sleeper <= 0 or nuSleeper >= 0.5 or nuSleeper < 0 or tanDSleeper < 0 or rhoSleeper < 0 or slpHeight<0:
+					QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter correct sleepers materials properties.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['E1Sleeper'] = E1Sleeper
-		dictSimu['E2Sleeper'] = E2Sleeper
-		dictSimu['E3Sleeper'] = E3Sleeper
-		dictSimu['nuSleeper'] = nuSleeper
-		dictSimu['tanDSleeper'] = tanDSleeper
-		dictSimu['rhoSleeper'] = rhoSleeper
-		dictSimu['slpHeight'] = slpHeight
+				
+			dictSimu['E1Sleeper'] = E1Sleeper
+			dictSimu['E2Sleeper'] = E2Sleeper
+			dictSimu['E3Sleeper'] = E3Sleeper
+			dictSimu['nuSleeper'] = nuSleeper
+			dictSimu['tanDSleeper'] = tanDSleeper
+			dictSimu['rhoSleeper'] = rhoSleeper
+			dictSimu['slpHeight'] = slpHeight
 
-		#
-		try:
-			stiffX = float(self.txt_stiffX.text())
-			stiffY = float(self.txt_stiffY.text())
-			stiffZ = float(self.txt_stiffZ.text())
-			dampX = float(self.txt_dampX.text())
-			dampY = float(self.txt_dampY.text())
-			dampZ = float(self.txt_dampZ.text())
-			if stiffX < 0 or stiffY < 0 or stiffZ < 0 or dampX < 0 or dampY < 0 or dampZ < 0:
+			#
+			try:
+				stiffX = float(self.txt_stiffX.text())
+				stiffY = float(self.txt_stiffY.text())
+				stiffZ = float(self.txt_stiffZ.text())
+				dampX = float(self.txt_dampX.text())
+				dampY = float(self.txt_dampY.text())
+				dampZ = float(self.txt_dampZ.text())
+				if stiffX < 0 or stiffY < 0 or stiffZ < 0 or dampX < 0 or dampY < 0 or dampZ < 0:
+					QMessageBox.information(self, 'Error', 'Please enter correct clamps properties.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter correct clamps properties.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter correct clamps properties.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['clampStiffX'] = stiffX
-		dictSimu['clampStiffY'] = stiffY
-		dictSimu['clampStiffZ'] = stiffZ
-		dictSimu['clampDampX'] = dampX
-		dictSimu['clampDampY'] = dampY
-		dictSimu['clampDampZ'] = dampZ
+				
+			dictSimu['clampStiffX'] = stiffX
+			dictSimu['clampStiffY'] = stiffY
+			dictSimu['clampStiffZ'] = stiffZ
+			dictSimu['clampDampX'] = dampX
+			dictSimu['clampDampY'] = dampY
+			dictSimu['clampDampZ'] = dampZ
 
-		#
-		if computeModes:
-			USP_on = self.cb_USP.isChecked()
-		else:
-			USP_on = modesParameterDict['USP_on']
-		dictSimu['USP_on'] = USP_on
-		
-		if USP_on:
+			#Rail Damper
+			try:
+				railDamper_on = self.cb_railDamper.isChecked()
+
+				if railDamper_on == True:
+					mtot = float(self.txt_totMass.text())
+					m1_ratio = float(self.txt_m1Ratio.text())
+					# Verification mtot
+					if mtot <= 0:
+						QMessageBox.information(self, 'Error', 'The total mass of the damper must be strictly positive.', QMessageBox.Ok)
+						return
+
+					# Verification m1_ratio
+					if not (0 <= m1_ratio <= 1):
+						QMessageBox.information(self, 'Error', 'The m1 ratio must be between 0 and 1.', QMessageBox.Ok)
+						return
+
+					# Fonction for list parsing and checking
+					# It raises ValueError if the format is incorrect or if values are not positive
+					# It returns a list of 3 floats
+					def parse_and_check(txt, label):
+						try:
+							vals = [float(x) for x in txt.strip("()").split(",")]
+						except Exception:
+							raise ValueError(f"The format of {label} is incorrect. Use (val1,val2,val3).")
+						if len(vals) != 3:
+							raise ValueError(f"{label} must contain exactly 3 values.")
+						for v in vals:
+							if v < 0:
+								raise ValueError(f"All values of {label} must be null or positive.")
+						return vals
+
+					k1tot = parse_and_check(self.txt_k1.text(), "k1tot")
+					k2tot = parse_and_check(self.txt_k2.text(), "k2tot")
+					k3tot = parse_and_check(self.txt_k3.text(), "k3tot")
+					c1tot = parse_and_check(self.txt_c1.text(), "c1tot")
+					c2tot = parse_and_check(self.txt_c2.text(), "c2tot")
+					c3tot = parse_and_check(self.txt_c3.text(), "c3tot")
+				else:
+					mtot = None
+					m1_ratio = None
+					k1tot = None
+					k2tot = None
+					k3tot = None
+					c1tot = None
+					c2tot = None
+					c3tot = None
+
+			except ValueError as e:
+				QMessageBox.information(self, 'Error', 'Error while processing the dampers properties: ' + str(e), QMessageBox.Ok)
+				return
+			except Exception as e:
+				print(getattr(e, 'message', str(e)))
+				QMessageBox.information(self, 'Error', 'Please enter correct Rail Damper properties.', QMessageBox.Ok)
+				return
+			try:	
+				dictSimu["dampers_on"] = railDamper_on
+				if railDamper_on:
+					dictSimu["damper"] = {}
+					dictSimu["damper"]["mtot"] = mtot
+					dictSimu["damper"]["m1_ratio"] = m1_ratio
+					dictSimu["damper"]["k1tot"] = k1tot
+					dictSimu["damper"]["k2tot"] = k2tot
+					dictSimu["damper"]["k3tot"] = k3tot
+					dictSimu["damper"]["c1tot"] = c1tot
+					dictSimu["damper"]["c2tot"] = c2tot
+					dictSimu["damper"]["c3tot"] = c3tot
+			except Exception as e:
+				print(e.message)
+			
 			#
 			if computeModes:
-				if self.USPMesh is None or os.path.exists(self.USPMesh) == False:
-					QMessageBox.information(self, 'Error', 'USP mesh not defined.', QMessageBox.Ok,)
-					return
+				USP_on = self.cb_USP.isChecked()
 			else:
-				self.USPMesh = modesParameterDict['USPMesh']
-				
-			dictSimu['USPMesh'] = self.USPMesh
-
-			#
-			try:
+				USP_on = modesParameterDict['USP_on']
+			dictSimu['USP_on'] = USP_on
+			
+			if USP_on:
+				#
 				if computeModes:
-					thkUSP = float(self.txt_thkUSP.text())
+					if self.USPMesh is None or os.path.exists(self.USPMesh) == False:
+						QMessageBox.information(self, 'Error', 'USP mesh not defined.', QMessageBox.Ok,)
+						return
 				else:
-					thkUSP = modesParameterDict['thkUSP']
-				if thkUSP < 0:
+					self.USPMesh = modesParameterDict['USPMesh']
+					
+				dictSimu['USPMesh'] = self.USPMesh
+
+				#
+				try:
+					if computeModes:
+						thkUSP = float(self.txt_thkUSP.text())
+					else:
+						thkUSP = modesParameterDict['thkUSP']
+					if thkUSP < 0:
+						QMessageBox.information(self, 'Error', 'Please enter correct USP height.', QMessageBox.Ok,)
+						return
+				except:
 					QMessageBox.information(self, 'Error', 'Please enter correct USP height.', QMessageBox.Ok,)
 					return
-			except:
-				QMessageBox.information(self, 'Error', 'Please enter correct USP height.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['thkUSP'] = thkUSP
+					
+				dictSimu['thkUSP'] = thkUSP
 
 
-			#
-			try:
-				nuUSP = float(self.txt_nuUSP.text())
-				if nuUSP < 0 or nuUSP >= 0.5:
+				#
+				try:
+					nuUSP = float(self.txt_nuUSP.text())
+					if nuUSP < 0 or nuUSP >= 0.5:
+						QMessageBox.information(self, 'Error', 'Please enter correct USPs properties.', QMessageBox.Ok,)
+						return
+				except:
 					QMessageBox.information(self, 'Error', 'Please enter correct USPs properties.', QMessageBox.Ok,)
 					return
+					
+				dictSimu['nuUSP'] = nuUSP
+				
+				#
+				if self.EUSP is None or os.path.exists(self.EUSP) == False:
+					QMessageBox.information(self, 'Error', 'USP Young''s modulus not defined.', QMessageBox.Ok,)
+					return
+					
+				dictSimu['EUSP'] = self.EUSP
+				
+				#
+				if self.tanDUSP is None or os.path.exists(self.tanDUSP) == False:
+					QMessageBox.information(self, 'Error', 'USP damping not defined.', QMessageBox.Ok,)
+					return
+					
+				dictSimu['tanDUSP'] = self.tanDUSP
+
+			else:
+				dictSimu['USPMesh'] = None
+				dictSimu['nuUSP'] = None
+				dictSimu['thkUSP'] = None
+				dictSimu['EUSP'] = None
+				dictSimu['tanDUSP'] = None
+
+			#
+			if self.Ebal is None or os.path.exists(self.Ebal) == False:
+				QMessageBox.information(self, 'Error', 'Ballast Young''s modulus not defined.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['Ebal'] = self.Ebal
+			
+			#
+			if self.tanDbal is None or os.path.exists(self.tanDbal) == False:
+				QMessageBox.information(self, 'Error', 'Ballast damping not defined.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['tanDbal'] = self.tanDbal
+			
+			#
+			try:
+				nuBal = float(self.txt_nuBal.text())
+				if nuBal < 0 or nuBal >= 0.5:
+					QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
+					return
 			except:
-				QMessageBox.information(self, 'Error', 'Please enter correct USPs properties.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['nuUSP'] = nuUSP
-			
-			#
-			if self.EUSP is None or os.path.exists(self.EUSP) == False:
-				QMessageBox.information(self, 'Error', 'USP Young''s modulus not defined.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['EUSP'] = self.EUSP
-			
-			#
-			if self.tanDUSP is None or os.path.exists(self.tanDUSP) == False:
-				QMessageBox.information(self, 'Error', 'USP damping not defined.', QMessageBox.Ok,)
-				return
-				
-			dictSimu['tanDUSP'] = self.tanDUSP
-
-		else:
-			dictSimu['USPMesh'] = None
-			dictSimu['nuUSP'] = None
-			dictSimu['thkUSP'] = None
-			dictSimu['EUSP'] = None
-			dictSimu['tanDUSP'] = None
-
-
-		#
-		if self.Ebal is None or os.path.exists(self.Ebal) == False:
-			QMessageBox.information(self, 'Error', 'Ballast Young''s modulus not defined.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['Ebal'] = self.Ebal
-		
-		#
-		if self.tanDbal is None or os.path.exists(self.tanDbal) == False:
-			QMessageBox.information(self, 'Error', 'Ballast damping not defined.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['tanDbal'] = self.tanDbal
-		
-		#
-		try:
-			nuBal = float(self.txt_nuBal.text())
-			if nuBal < 0 or nuBal >= 0.5:
 				QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter correct Poisson''s ratios.', QMessageBox.Ok,)
-			return
 
-		dictSimu['nuBal'] = nuBal
-		
-		#
-		try:
-			hBal = float(self.txt_hBal.text())
-			if hBal < 0:
+			dictSimu['nuBal'] = nuBal
+			
+			#
+			try:
+				hBal = float(self.txt_hBal.text())
+				if hBal < 0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct ballast height.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct ballast height.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct ballast height.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['hBal'] = hBal
-			
-		#
-		try:
-			balAreaCoef = float(self.txt_balAreaCoef.text())
-			if balAreaCoef < 0:
+				
+			dictSimu['hBal'] = hBal
+				
+			#
+			try:
+				balAreaCoef = float(self.txt_balAreaCoef.text())
+				if balAreaCoef < 0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct ballast area coefficient.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct ballast area coefficient.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct ballast area coefficient.', QMessageBox.Ok,)
-			return
-			
-		dictSimu['balAreaCoef'] = balAreaCoef
+				
+			dictSimu['balAreaCoef'] = balAreaCoef
+				
 			
 
 
-
-			
-		# Simulation parameters ==================================================================================
-		#=========================================================================================================
-		try:
-			nModesRai = int(float(self.txt_nModesRai.text()))
-			if nModesRai < 1:
+				
+			# Simulation parameters ==================================================================================
+			#=========================================================================================================
+			try:
+				nModesRai = int(float(self.txt_nModesRai.text()))
+				if nModesRai < 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['nModesRai'] = nModesRai
 			
-		dictSimu['nModesRai'] = nModesRai
-
-		#
-		try:
-			nModesSlp = int(float(self.txt_nModesSlp.text()))
-			if nModesSlp < 1:
+			#
+			try:
+				nModesSlp = int(float(self.txt_nModesSlp.text()))
+				if nModesSlp < 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct number of interface modes.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['nModesSlp'] = nModesSlp
 			
-		dictSimu['nModesSlp'] = nModesSlp
-
-		#
-		try:
-			cumulMassEffeUn = float(self.txt_cumulMassEffeUn.text())
-			if cumulMassEffeUn < 0 or cumulMassEffeUn > 1:
+			#
+			try:
+				cumulMassEffeUn = float(self.txt_cumulMassEffeUn.text())
+				if cumulMassEffeUn < 0 or cumulMassEffeUn > 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct total effective unit mass.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct total effective unit mass.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct total effective unit mass.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['cumulMassEffeUn'] = cumulMassEffeUn
 			
-		dictSimu['cumulMassEffeUn'] = cumulMassEffeUn
-		
-		#
-		try:
-			nSlp = int(self.txt_nSlp.text())
-			if nSlp < 1:
+			#
+			try:
+				nSlp = int(self.txt_nSlp.text())
+				if nSlp < 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of sleepers.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct number of sleepers.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct number of sleepers.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['nSlp'] = nSlp
 			
-		dictSimu['nSlp'] = nSlp
-
-		#
-		try:
-			slpSpacing = float(self.txt_slpSpacing.text())
-			if slpSpacing < 0:
+			#
+			try:
+				slpSpacing = float(self.txt_slpSpacing.text())
+				if slpSpacing < 0:
+					QMessageBox.information(self, 'Error', 'Please enter a correct sleeper spacing.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter a correct sleeper spacing.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter a correct sleeper spacing.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['slpSpacing'] = slpSpacing
 			
-		dictSimu['slpSpacing'] = slpSpacing
-		
-		#
-		try:
-			fDirVert = float(self.txt_fDirVert.text())
-			fDirLat = float(self.txt_fDirLat.text())
-			if fDirVert == 0 and fDirLat == 0:
+			#
+			try:
+				fDirVert = float(self.txt_fDirVert.text())
+				fDirLat = float(self.txt_fDirLat.text())
+				if fDirVert == 0 and fDirLat == 0:
+					QMessageBox.information(self, 'Error', 'Please enter correct force directions.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Please enter correct force directions.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Please enter correct force directions.', QMessageBox.Ok,)
-			return
+				
+			dictSimu['fDirVert'] = fDirVert
+			dictSimu['fDirLat'] = fDirLat
 			
-		dictSimu['fDirVert'] = fDirVert
-		dictSimu['fDirLat'] = fDirLat
-		
-		#
-		forceNode = self.txt_forceNode.text()
-		if len(forceNode) < 1:
-			QMessageBox.information(self, 'Error', 'Please enter a correct node group for load application.', QMessageBox.Ok,)
-			return
+			#
+			forceNode = self.txt_forceNode.text()
+			if len(forceNode) < 1:
+				QMessageBox.information(self, 'Error', 'Please enter a correct node group for load application.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['forceNode'] = forceNode
 			
-		dictSimu['forceNode'] = forceNode
-		
-		#
-		try:
-			slpForce = int(self.txt_slpForce.text())
-			if slpForce < 1 or slpForce > dictSimu['nSlp']:
+			#
+			try:
+				slpForce = int(self.txt_slpForce.text())
+				if slpForce < 1 or slpForce > dictSimu['nSlp']:
+					QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure (sleeper).', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure (sleeper).', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'The load must be applied to an existing substructure (sleeper).', QMessageBox.Ok,)
-			return
+				
+			dictSimu['slpForce'] = slpForce
 			
-		dictSimu['slpForce'] = slpForce
-		
-		#
-		dictSimu['frequencies'] = self.frequencies
-		if len(dictSimu['frequencies']) < dictSimu['nJobs']:
-			QMessageBox.information(self, 'Error', 'The number of frequenciesis smaller than the number of jobs (=' + str(dictSimu['nJobs']) + ').', QMessageBox.Ok,)
-			return
-		
-		# Post-processing ========================================================================================
-		#=========================================================================================================
-		outputType = self.cbb_output.currentText()
-		
-		if outputType == 'Acceleration':
-			dictSimu['outputType'] = 'ACCE'
-		elif outputType == 'Velocity':
-			dictSimu['outputType'] = 'VITE'
-		elif outputType == 'Displacement':
-			dictSimu['outputType'] = 'DEPL'
-
-		dictSimu['nodesFRF'] = self.nodesFRF
-		
-		#
-		if self.selectedSubst == None or len(self.selectedSubst) == 0:
-			QMessageBox.information(self, 'Error', 'Please select at least one substructure to extract FRFs from.', QMessageBox.Ok,)
-			return
+			#
+			dictSimu['frequencies'] = self.frequencies
+			if len(dictSimu['frequencies']) < dictSimu['nJobs']:
+				QMessageBox.information(self, 'Error', 'The number of frequenciesis smaller than the number of jobs (=' + str(dictSimu['nJobs']) + ').', QMessageBox.Ok,)
+				return
 			
-		tmp = []
-		for subst in self.selectedSubst:
-			if subst <= dictSimu['nSlp']:
-				tmp.append(subst)
-		
-		self.selectedSubst = tmp
-		dictSimu['selectedSubstFRF'] = self.selectedSubst
+			# Post-processing ========================================================================================
+			#=========================================================================================================
+			outputType = self.cbb_output.currentText()
+			
+			if outputType == 'Acceleration':
+				dictSimu['outputType'] = 'ACCE'
+			elif outputType == 'Velocity':
+				dictSimu['outputType'] = 'VITE'
+			elif outputType == 'Displacement':
+				dictSimu['outputType'] = 'DEPL'
 
-		#
-		try:
-			nSlpAcoust1 = int(self.txt_nSlpAcoust1.text())
-			nSlpAcoust2 = int(self.txt_nSlpAcoust2.text())
-			if nSlpAcoust2 < nSlpAcoust1 or nSlpAcoust1 < 1 or nSlpAcoust2 > nSlp:
+			dictSimu['nodesFRF'] = self.nodesFRF
+			
+			#
+			if self.selectedSubst == None or len(self.selectedSubst) == 0:
+				QMessageBox.information(self, 'Error', 'Please select at least one substructure to extract FRFs from.', QMessageBox.Ok,)
+				return
+				
+			tmp = []
+			for subst in self.selectedSubst:
+				if subst <= dictSimu['nSlp']:
+					tmp.append(subst)
+			
+			self.selectedSubst = tmp
+			dictSimu['selectedSubstFRF'] = self.selectedSubst
+
+			#
+			try:
+				nSlpAcoust1 = int(self.txt_nSlpAcoust1.text())
+				nSlpAcoust2 = int(self.txt_nSlpAcoust2.text())
+				if nSlpAcoust2 < nSlpAcoust1 or nSlpAcoust1 < 1 or nSlpAcoust2 > nSlp:
+					QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
+					return
+			except:
 				QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
 				return
-		except:
-			QMessageBox.information(self, 'Error', 'Wrong number of sleepers for MED / acoustic calculation.', QMessageBox.Ok,)
-			return
-		
-		dictSimu['nSlpAcoust1'] = nSlpAcoust1
-		dictSimu['nSlpAcoust2'] = nSlpAcoust2
-		
-		#
-		computeAcoustic = self.cb_computeAcoustic.isChecked()
-		dictSimu['computeAcoustic'] = computeAcoustic
-		
-		#
-		if self.rb_1D.isChecked() == True:
-			acMeshDim = '1D'
-		elif self.rb_2D.isChecked() == True:
-			acMeshDim = '2D'
 			
-		dictSimu['acMeshDim'] = acMeshDim
-		
-		#
-		if computeAcoustic == True:
-			if (self.acousticMesh is None or os.path.exists(self.acousticMesh) == False):
-				QMessageBox.information(self, 'Error', 'Acoustic mesh not defined.', QMessageBox.Ok,)
-				return
+			dictSimu['nSlpAcoust1'] = nSlpAcoust1
+			dictSimu['nSlpAcoust2'] = nSlpAcoust2
 			
-			dictSimu['acousticMesh'] = self.acousticMesh
-		else:
-			dictSimu['acousticMesh'] = None
-	
-		#
-		try:
-			txt = json.dumps(dictSimu, indent = 4, sort_keys=True)
-			jsonPath = os.path.join(self.cwd, dictSimu['name'] + '.json')
-			with open(jsonPath, 'w') as f:
-				f.write(txt)
-			f.close()
-		except:
-			return jsonPath + ' could not be created.'
+			#
+			computeAcoustic = self.cb_computeAcoustic.isChecked()
+			dictSimu['computeAcoustic'] = computeAcoustic
+			#
+			if self.rb_1D.isChecked() == True:
+				acMeshDim = '1D'
+			elif self.rb_2D.isChecked() == True:
+				acMeshDim = '2D'
+				
+			dictSimu['acMeshDim'] = acMeshDim
+			
+			#
+			if computeAcoustic == True:
+				if (self.acousticMesh is None or os.path.exists(self.acousticMesh) == False):
+					QMessageBox.information(self, 'Error', 'Acoustic mesh not defined.', QMessageBox.Ok,)
+					return
+				
+				dictSimu['acousticMesh'] = self.acousticMesh
+			else:
+				dictSimu['acousticMesh'] = None
+			
+			BEM_activated = self.BEM_activated.isChecked()
+			dictSimu['BEM_activated'] = BEM_activated
+			if BEM_activated == True:
+				if (self.projMesh is None or os.path.exists(self.projMesh) == False):
+					QMessageBox.information(self, 'Error', 'Projection mesh for BEM not defined.', QMessageBox.Ok,)
+					return
 
-		if computeModes:
+				dictSimu['projMesh'] = self.projMesh
+			else:
+				dictSimu['projMesh'] = None
+
+			#
 			try:
-				jsonPath2 = os.path.join(dictSimu['modesFolder'], 'parameters.json')
-				shutil.copyfile(jsonPath, jsonPath2)
-			except:
-				return jsonPath + ' could not be copied to ' + jsonPath2
+				txt = json.dumps(dictSimu, indent = 4, sort_keys=True)
+				jsonPath = os.path.join(self.cwd, dictSimu['name'] + '.json')
+				with open(jsonPath, 'w') as f:
+					f.write(txt)
+				f.close()
+			except Exception as e:
+				print(e.message)
+				return jsonPath + ' could not be created.'
 
-		self.simuList.append(dictSimu)
-		newListItem = QListWidgetItem(simuName)
-		self.list_simu.addItem(newListItem)
-		self.list_simu.setCurrentRow(self.list_simu.count()-1)
-		self.btn_showMesh.setDisabled(False)
+			if computeModes:
+				try:
+					jsonPath2 = os.path.join(dictSimu['modesFolder'], 'parameters.json')
+					shutil.copyfile(jsonPath, jsonPath2)
+				except:
+					return jsonPath + ' could not be copied to ' + jsonPath2
+			self.simuList.append(dictSimu)
+			newListItem = QListWidgetItem(simuName)
+			self.list_simu.addItem(newListItem)
+			self.list_simu.setCurrentRow(self.list_simu.count()-1)
+			self.btn_showMesh.setDisabled(False)
+		except Exception as e:
+			print(e.message)
 		
 	def SelectSimuDir(self):
 		if self.simuParentFolder is None or os.path.exists(self.simuParentFolder) == False:
@@ -942,8 +1068,6 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_slpHeight.setText(str(modesParameterDict['slpHeight']))
 		self.txt_thkUSP.setText(str(modesParameterDict['thkUSP']))
 		self.cb_USP.setChecked(modesParameterDict['USP_on'])
-
-
 		
 	def SelectModesParentFolder(self):
 		# Used if modes are recomputed
@@ -957,8 +1081,7 @@ class MultiSleeperModelGUI(QMainWindow):
 			return
 			
 		self.modesParentFolder = folder
-		
-		
+			
 	def SelectFrequencies(self):
 		toolTip = 'Enter at least one frequency per job (=frequency band). Multiple cells can be copied/pasted from/to Excel or another table.'
 		dlg_frequencies = Dialog_EnterVals(self.frequencies, 'Spectrum definition (Hz)', 'float', toolTip)
@@ -972,8 +1095,6 @@ class MultiSleeperModelGUI(QMainWindow):
 		dlg_grps.show()
 		dlg_grps.exec_()
 		self.nodesFRF = dlg_grps.values
-
-		
 		
 	def SelectRailMesh(self):
 		defPath = os.path.join(self.cwd, 'Meshes', 'Rails')
@@ -1027,6 +1148,10 @@ class MultiSleeperModelGUI(QMainWindow):
 		defPath = os.path.join(self.cwd, 'Meshes', 'AcousticMeshes')
 		self.acousticMesh = self.SelectFile('Select acoustic mesh', self.acousticMesh, defPath, '*.med')
 		
+	def SelectAcousticBEMProjMesh(self):
+		defPath = os.path.join(self.cwd, 'Meshes', 'Projection')
+		self.projMesh = self.SelectFile('Select acoustic BEM projection mesh', self.projMesh, defPath, '*.med')
+
 	def SelectFile(self, p_title, p_file, p_defaultPath, p_ext):
 		if p_file == None or os.path.exists(p_file) == False:
 			path = p_defaultPath
@@ -1125,8 +1250,6 @@ class MultiSleeperModelGUI(QMainWindow):
 			shutil.rmtree(modesSimu['phase1WorkingDir'])
 		except:
 			pass
-
-
 		
 	def SimulateAll(self):
 	
@@ -1156,7 +1279,14 @@ class MultiSleeperModelGUI(QMainWindow):
 					print("Unknown error; exit code: " + str(code))
 					
 			mod.DeletePycFiles(self.appPath)
-				
+
+	def LaunchPostPro(self):
+		"""Launch the MultiSleeper Post-Processing GUI"""
+		filepath=os.path.dirname(os.path.abspath(__file__))
+		exe=os.path.join(filepath, os.pardir, os.pardir,'MultiSleeperModelPostPro.sh')
+		cmd="xterm -hold -e" + " " + exe + " &"		
+		os.system(cmd)
+
 	def DeleteSimu(self):
 		# if self.running == True:
 			# return
@@ -1172,8 +1302,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		if len(self.simuList) == 0:
 			self.DisplaySimu()
 			self.btn_showMesh.setDisabled(True)
-		
-	
+			
 	def MoveSimuUp(self):
 		# if self.running == True:
 			# return
