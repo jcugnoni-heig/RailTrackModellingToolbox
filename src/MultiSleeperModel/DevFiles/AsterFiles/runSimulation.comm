@@ -64,6 +64,10 @@ try:
     BEM_activated = parameters['BEM_activated']
 except:
     BEM_activated = False
+try:
+    railTilt = parameters['railTilt']
+except:
+    railTilt = 1/40.0
 
 # Rail dampers
 try:
@@ -377,7 +381,7 @@ def computePressure(p_femodel, p_chFprss, p_acGrps, p_velocR, p_velocI, p_side, 
 halfDistRails = 757.54
 padVerticalOffset = sleeperHeight*scaling_slpY
 padThickness = 7.0
-railTiltXrad = -math.atan(1/40.0)
+railTiltXrad = -math.atan(railTilt)
 railTiltX = railTiltXrad*180/math.pi
 railVerticalOffset = padVerticalOffset + padThickness*math.cos(railTiltXrad)
 
@@ -2517,6 +2521,7 @@ for substr in selectedSubstFRF:
             fMagnZ = CALC_FONCTION(EXTRACTION=_F(FONCTION=fZ, PARTIE='MODULE'))
             fPhaseY = CALC_FONCTION(EXTRACTION=_F(FONCTION=fY, PARTIE='PHASE'))
             fPhaseZ = CALC_FONCTION(EXTRACTION=_F(FONCTION=fZ, PARTIE='PHASE'))
+            
             for freq in allFreqsJob:
                 if grp[-1] == 'Y':
                     valuesMag[-1].append(fMagnY(freq))
@@ -2525,7 +2530,9 @@ for substr in selectedSubstFRF:
                     valuesMag[-1].append(fMagnZ(freq))
                     valuesPh[-1].append(fPhaseZ(freq))
                 else:
-                    z = fMagnY(freq)*np.exp(1*j*fPhaseY(freq)) + fMagnZ(freq)*np.exp(1*j*fPhaseZ(freq))
+                    valY = fY(freq)
+                    valZ = fZ(freq)
+                    z = valY + valZ
                     valuesMag[-1].append(np.abs(z))
                     valuesPh[-1].append(np.angle(z))
                     
