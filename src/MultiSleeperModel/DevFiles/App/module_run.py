@@ -794,29 +794,29 @@ def PostProcessResults(p_dictSimu):
 				return "Harmonic simulation: error copying post-processing export and comm files."
 			
 			
-			# Export & comm files string replacements			
-			try:
-				nCPUs = p_dictSimu.get('nCPUs')*p_dictSimu.get('nJobs')
-				memlim = p_dictSimu.get('memLimit')
-				reptravroot = p_dictSimu.get('reptrav')
-				server = p_dictSimu.get('host')
-				
-				os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + postProExportFile)
-				os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + postProExportFile)
-				os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + postProExportFile)
-				os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + postProExportFile)
-				os.system('sed -i -E "s!__server__!' + server + '!" ' + postProExportFile)
-				# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + postProExportFile)
-				os.system('sed -i -E "s!__messagesDir__!' + os.path.join(fullDir, 'Messages') + '!" ' + postProExportFile)
-				
-				reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0103')
-				file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
-				os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
-				txt = 'F libr Outputs' + os.sep + 'skeletonProj.med D  9'
-				os.system('sed -i -E "s!__skeletonProj__!' + txt + '!" ' + postProExportFile)
-				os.system('sed -i -E "s!__acousticMesh__!' + '' + '!" ' + postProExportFile)
-			except:
-				return "String replacements (sed) in post-processing export & comm files did not run properly."
+		# Export & comm files string replacements			
+		try:
+			nCPUs = p_dictSimu.get('nCPUs')*p_dictSimu.get('nJobs')
+			memlim = p_dictSimu.get('memLimit')
+			reptravroot = p_dictSimu.get('reptrav')
+			server = p_dictSimu.get('host')
+			
+			os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__server__!' + server + '!" ' + postProExportFile)
+			# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__messagesDir__!' + os.path.join(fullDir, 'Messages') + '!" ' + postProExportFile)
+			
+			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0103')
+			file = os.path.join(fullDir, 'postPro_concatMedFiles1.export')	
+			os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
+			txt = 'F libr Outputs' + os.sep + 'skeletonProj.med D  9'
+			os.system('sed -i -E "s!__skeletonProj__!' + txt + '!" ' + postProExportFile)
+			os.system('sed -i -E "s!__acousticMesh__!' + '' + '!" ' + postProExportFile)
+		except:
+			return "String replacements (sed) in post-processing export & comm files did not run properly."
 			
 		with open(postProExportFile) as f:
 			fileContent = f.read()
