@@ -16,7 +16,7 @@ P version stable
 A memjeveux __memjeveux__
 A tpmax 3600900.0
 
-F base base_modes RC 0
+F base base_modes/base__baseNumber__ RC 0
 F comm computeModes.comm D  1
 F libr parameters.json D  2
 F libr sleeper.med D  21
@@ -37,8 +37,8 @@ F libr E_bal.csv D  36
 __Ebal_2__
 F libr Damper.med D  65
 
-F libr modes.med R  80
-F libr modes2.med R  81
-F libr info_modes.txt R  83
-F libr info_modes2.txt R  84
+F libr modes__baseNumber__.med R  80
+F libr modes2__baseNumber__.med R  81
+F libr info_modes__baseNumber__.txt R  83
+F libr info_modes2__baseNumber__.txt R  84
 F mess __messagesDir__/message_modesSimu.mess R  6

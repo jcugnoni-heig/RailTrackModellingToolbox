@@ -20,7 +20,6 @@ parameters = json.loads(txt)
 
 
 maxFreq = parameters['modesMaxFreq']
-phase1Freq = parameters['phase1Freq']
 USP_on = parameters['USP_on']
 # What happend if USP2 is not present in key words ? For now is set to false but should it be like macro1 ?
 # USP2_on = parameters["macroEl2"].get("USP_on") if parameters["macroEl2"].get("USP_on") is not None else USP_on 
@@ -43,7 +42,16 @@ slpSpacing = parameters['slpSpacing']
 clampStiffX = parameters['clampStiffX']*1000/2
 clampStiffY = parameters['clampStiffY']*1000/2
 clampStiffZ = parameters['clampStiffZ']*1000/2
+try:
+    railTilt = parameters['railTilt']
+except:
+    railTilt = 1/40.0
 
+# List_phase1Freq = parameters['phase1Freq']
+List_phase1Freq = parameters['phase1Freq'] if isinstance(parameters['phase1Freq'], list) else [parameters['phase1Freq']]
+job_n = int(os.getenv("job_n", "default"))
+print('Job number : ', job_n)
+phase1Freq = List_phase1Freq[job_n-1]
 # Rail dampers
 try:
     dampers_on = parameters['dampers_on']
@@ -161,7 +169,7 @@ def OptimizedFreqBands(p_infoModes):
 halfDistRails = 757.54
 padVerticalOffset = sleeperHeight*scaling_slpY
 padThickness = 7.0
-railTiltXrad = -math.atan(1/40.0)
+railTiltXrad = -math.atan(railTilt)
 railTiltX = railTiltXrad*180/math.pi
 railVerticalOffset = padVerticalOffset + padThickness*math.cos(railTiltXrad)
 
@@ -1259,14 +1267,14 @@ if bool_macroEl2_slpShift:
 
 IMPR_RESU(MODELE=model, UNITE=83, FORMAT='RESULTAT', RESU=_F(RESULTAT=mdPh1,
                                                              TOUT_CHAM='NON',
-                                                             NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ'),
-                                                             FORM_TABL='OUI'))
+                                                             NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ','MASS_GENE'),
+                                                             FORM_TABL='EXCEL'))
 
 if bool_macroEl2_Ph1:
     IMPR_RESU(MODELE=model2, UNITE=84, FORMAT='RESULTAT', RESU=_F(RESULTAT=mdPh1_2,
                                                                 TOUT_CHAM='NON',
-                                                                NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ'),
-                                                                FORM_TABL='OUI'))
+                                                                NOM_PARA=('FREQ', 'MASS_EFFE_UN_DX', 'MASS_EFFE_UN_DY', 'MASS_EFFE_UN_DZ','MASS_GENE'),
+                                                                FORM_TABL='EXCEL'))
 
 eigenModesToPrint = min(300, nEigenModes)
 numordre = list(range(1, eigenModesToPrint + 1))

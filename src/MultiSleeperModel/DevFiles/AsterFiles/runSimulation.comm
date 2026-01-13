@@ -4,9 +4,12 @@
 POURSUITE(PAR_LOT='NON')
 
 from Utilitai import partition
-import math
 import numpy as np
 import json
+import math
+import re
+import os
+import contextlib
 
 ######################################################
 # Import parameters dictionnary
@@ -39,7 +42,6 @@ computeAcoustic = parameters['computeAcoustic']
 FRFtype = parameters['outputType']
 selectedSubstFRF = parameters['selectedSubstFRF']
 nodesFRF = parameters['nodesFRF']
-
 ERail = parameters['ERail']
 nuRail = parameters['nuRail']
 tanDRail = parameters['tanDRail']
@@ -60,6 +62,9 @@ clampDampX = parameters['clampDampX']/2
 clampDampY = parameters['clampDampY']/2
 clampDampZ = parameters['clampDampZ']/2
 writeMED = parameters['writeMED']
+
+
+
 try:
     BEM_activated = parameters['BEM_activated']
 except:
@@ -107,6 +112,7 @@ nSlpAcoust2 = parameters['nSlpAcoust2']
 cumulX_mini = parameters['cumulMassEffeUn']
 cumulY_mini = cumulX_mini
 cumulZ_mini = cumulX_mini
+MassP = parameters.get('MassP')
 
 if USP_on == True:
     nuUSP = parameters['nuUSP']
@@ -164,12 +170,17 @@ meanFreqJob = (allFreqsJob[0] + allFreqsJob[-1])/2
 ######################################################
 # Define functions
 ######################################################
-def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
+def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini, p_mdPh1):
+    
     with open(p_path, 'r') as f:
         lines = f.read().splitlines()
     f.close()
 
     modes = []
+    L_Mass = []
+    L_Mass_Y = []
+    L_Mass_Z = []
+
     for line in lines:
         splittedLine = line.split(' ')
         splittedLine = [x for x in splittedLine if x != '']
@@ -182,16 +193,34 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
             MASS_EFFE_UN_DX = float(splittedLine[2].replace('D', 'e'))
             MASS_EFFE_UN_DY = float(splittedLine[3].replace('D', 'e'))
             MASS_EFFE_UN_DZ = float(splittedLine[4].replace('D', 'e'))
+            MASS_GENE = float(splittedLine[5].replace('D', 'e'))
+            L_Mass.append(MASS_GENE)
         except:
             continue
-
-        mode = {'no' : modeNbr, 'freq' : freq, 'massX' : MASS_EFFE_UN_DX, 'massY' : MASS_EFFE_UN_DY, 'massZ' : MASS_EFFE_UN_DZ, 'massYZ' : MASS_EFFE_UN_DY + MASS_EFFE_UN_DZ}
+        if (parameters.get('NbrModes') is None or parameters.get('NbrModes') >= len(L_Mass)):
+            NbrModes = len(L_Mass)
+        else:
+            NbrModes = parameters.get('NbrModes')
+         
+        mode = {
+            'no' : modeNbr, 
+            'freq' : freq, 
+            'massX' : MASS_EFFE_UN_DX, 
+            'massY' : MASS_EFFE_UN_DY, 
+            'massZ' : MASS_EFFE_UN_DZ, 
+            'massYZ' : MASS_EFFE_UN_DY + MASS_EFFE_UN_DZ, 
+            'mass' : MASS_GENE, 
+            'max_mass' : max(MASS_EFFE_UN_DX,MASS_EFFE_UN_DY,MASS_EFFE_UN_DZ)
+            }
         modes.append(mode)
-
+    # We select the modes by decreasing unidirectionnal effective mass
+    print('L_MASS : ', L_Mass)
     sortedModesX = sorted(modes, key=lambda d: d['massX'], reverse=True)
     sortedModesY = sorted(modes, key=lambda d: d['massY'], reverse=True)
     sortedModesZ = sorted(modes, key=lambda d: d['massZ'], reverse=True)
+    sortedMaxMass = sorted(modes, key=lambda d: d['max_mass'], reverse=True)
 
+    # We select the modes until we reach the requested minimum cumulative effective mass
     listModesX = []
     cumulX = 0
     for mode in sortedModesX:
@@ -207,6 +236,7 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
     cumulY = 0
     for mode in sortedModesY:
         cumulY += mode['massY']
+        L_Mass_Y.append(mode['massY'])
         listModesY.append(mode['no'])
         if cumulY > p_cumulY_mini:
             break
@@ -218,6 +248,7 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
     cumulZ = 0
     for mode in sortedModesZ:
         cumulZ += mode['massZ']
+        L_Mass_Z.append(mode['massZ'])
         listModesZ.append(mode['no'])
         if cumulZ > p_cumulZ_mini:
             break
@@ -225,7 +256,9 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
     if cumulZ < p_cumulZ_mini:
         print('Warning: the effective mass cumulation requested in Z was ' + str(p_cumulZ_mini) + '. The actual value obtained is ' + str(cumulZ))
 
+    # We concatenate the lists of node numbers and we remove the doubles
     listModes = sorted(list(set(listModesX + listModesY + listModesZ)))
+
     if listModes == []:
         listModes.append(1)
 
@@ -234,11 +267,122 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini):
     print('Eigenmodes Z (' + str(len(listModesZ)) +  ') : ' + str(listModesZ))
     print('Selected eigenmodes (' + str(len(listModes)) +  ') : ' + str(listModes))
 
-    return listModes
+    if MassP is None:
+        return listModes
+
+    # ------------------------ NEW FILTER USING THE MASSES AND PHI ------------------------
+
+    # We create a table with the modal mass generalized
+    TAB_M = CREA_TABLE(
+    LISTE = _F(
+        PARA = 'Mass',
+        LISTE_R = L_Mass,
+    ),
+    )
+
+    # We create a table with the eigen vectors phi at specific nodes
+    # Those groups of nodes are changing, check if keep working correctly
+    # --->>>> Mettre dans la doc que ces groupes de noeuds sont à créer dans le modèle et leur position
+    # n1_F_Y : nodes at mid-span (X-)
+    # n3_F_Y : nodes at quarter-span (X-)
+    # n5_F_Y : nodes at over-sleeper (0)
+    # n7_F_Y : nodes at quarter-span (X+)
+    # n9_F_Y : nodes at mid-span (X+)
+    TAB_phi = CREA_TABLE(
+    RESU = _F(
+        RESULTAT   = p_mdPh1,
+        NOM_CHAM   = 'DEPL',
+        NOM_CMP    = ('DX', 'DY', 'DZ'),
+        TOUT_ORDRE = 'OUI',
+        GROUP_NO = ('n1_F_Y','n3_F_Y','n5_F_Y','n7_F_Y','n9_F_Y'),
+    ),
+    )
+
+    phi4phi = [[] for _ in range(5)]
+    nbr_tot_mode = len(L_Mass) # total number of modes available
+    MassModal = []
+    Sum_phi = np.zeros((5, 2))
+    Sum_Mass = 0
+    Sum_Mass_used = 0
+    nbr_modes_taken = NbrModes if NbrModes < nbr_tot_mode else nbr_tot_mode # number of modes for the final modal basis
+    mass_pourcentage = MassP # percentage of mode selected based on mass (between 0 and 1), the rest will be selected based on phi
+
+    # For each mode, we compute phi_i*phi_4/mass and add it to the list phi4phi[i]
+    for k in range(nbr_tot_mode):
+        phi4_idx = 5 * k + 4 # index of phi_4 for mode k (4 because of one based indexing in Aster -> TAB_phi['DY', phi4_idx])
+        mass = TAB_M['Mass', k + 1] # mass of mode k
+        MassModal.append(mass) # list of modal masses
+        Sum_Mass += mass # total mass
+
+        if (k <= round(nbr_modes_taken*mass_pourcentage)):
+            Sum_Mass_used += mass # sum of masses of the modes selected based on mass
+
+        # We compute phi_i*phi_4/mass for the 5 points of interest
+        # phi1 -> n5_F_Y
+        # phi2 -> n7_F_Y
+        # phi3 -> n9_F_Y
+        # phi4 -> n3_F_Y
+        # phi5 -> n1_F_Y
+        # loading point is phi4, at quarter span
+        for i in range(5):
+            phi_idx = 5 * k + (i+1) #(i+1) because of one based indexing in Aster -> TAB_phi['DY', phi_idx]
+            val_dy = TAB_phi['DY', phi_idx] * TAB_phi['DY', phi4_idx] / mass
+            val_dz = TAB_phi['DZ', phi_idx] * TAB_phi['DZ', phi4_idx] / mass
+            phi4phi[i].append([val_dy, val_dz])
+            Sum_phi[i] += np.abs([val_dy, val_dz]) # sum of |phi_i*phi_4/mass| over all modes
+
+    # We order the phi4phi[i] lists in descending order of |phi_i*phi_4/mass|
+    # At the end we have the sorted values of dy with their indices and then the sorted values of z with their indices
+    phi4phi_sorted = []
+    for vec in phi4phi:
+        arr = np.abs(np.array(vec))
+        phi4phi_sorted.extend([
+            sorted(enumerate(arr[:, 0]), key=lambda x: x[1], reverse=True),
+            sorted(enumerate(arr[:, 1]), key=lambda x: x[1], reverse=True)
+        ])
+    # struture of phi4phi_sorted (index is the mode number /!\ zero based indexing): 
+    # [[ (index, valueY), (index, valueY), ... ]    ->phi1Y
+    #  [ (index, valueZ), (index, valueZ), ... ]    ->phi1Z
+    #  [ (index, valueY), (index, valueY), ... ]    ->phi2Y
+    #  [ (index, valueZ), (index, valueZ), ... ]    ->phi2Z
+    #       ...              ...
+    #  [ (index, valueY), (index, valueY), ... ]    ->phi5Y
+    #  [ (index, valueZ), (index, valueZ), ... ]]   ->phi5Z
+    # You need 2*phi_used + Orientation to have the good list corresponding to the point and direction you want
+    # -> -> print(len(phi4phi_sorted[2*phi_used + Orientation]))
+
+    
+    # Iterative selection of modes until we have at least nbr_modes_taken
+    # first we take the modes with the highest mass until we reach the mass percentage
+    # Then we take the modes with the highest phi_i*phi_4/mass until we reach the total number of modes
+    # It could be that a mode with high phi is already taken because it has a high mass, so we use set() to remove duplicates
+    # and do one more loop if needed
+    phi_used = 3 # (0:phi1, 1:phi2, 2:phi3, 3:phi4, 4:phi5)
+    Orientation = 0 #  DY = 0 , DZ = 1 # --> Should we modify it depending on the loading case ?
+    for t in range (nbr_modes_taken, nbr_tot_mode + 1):
+        print(round((1-mass_pourcentage)*t))
+        # (phi4phi_sorted[][][]+1) because of the one based indexing in Aster
+        selected_phi = [(phi4phi_sorted[2*phi_used + Orientation][q][0]+1) for q in range(round((1-mass_pourcentage)*t))]
+        selected_mass = [sortedMaxMass[k]['no'] for k in range(round(mass_pourcentage*nbr_modes_taken))]
+        NewlistModes = list(set(selected_mass + selected_phi))
+        if (len(NewlistModes) >= nbr_modes_taken):
+            break
+        
+    DETRUIRE(CONCEPT=_F(NOM=(TAB_M, TAB_phi, )))
+    
+    print(f"------ phi used : Phi{str(phi_used + 1)} ------")
+    print('------ orientation used for the phi : DY')
+    print('The selected modal basis is: ', NewlistModes)
+    print('The dimension of the mode list is: ', len(NewlistModes))
+    print('List of selected phi modes: ', selected_phi)
+    print('List of selected mass modes: ', selected_mass)
+    print('The percentage of mass used is: ', (Sum_Mass_used/Sum_Mass)*100, ' %' )
+
+    return NewlistModes
 
 def GetAlphaBeta(p_freqList, p_dampingList):
-# Computes optimized Rayleigh's coefs alpha & beta ( eta=1/2*(alpha*w+beta/w) )
-# freqList in Hz ; damping list = corresponding hysteretic damping
+    # Computes optimized Rayleigh's coefs alpha & beta ( eta=1/2*(alpha*w+beta/w) )
+    # freqList in Hz ; damping list = corresponding hysteretic damping
     
     freqList = np.array(p_freqList)
     dampingList = np.array(p_dampingList)
@@ -1594,17 +1738,22 @@ if bool_macroEl2_slpShift:
 ######################################################
 # (if done after assembling matrices, it makes a weird error, idky...)
 print('Nominal macroelement')
-listEigenModes = GetEigenModesList('fort.7', cumulX_mini, cumulY_mini, cumulZ_mini)
+listEigenModes = GetEigenModesList('fort.7', cumulX_mini, cumulY_mini, cumulZ_mini, mdPh1)
+print('**************')
+print(listEigenModes)
 mod_trim = EXTR_MODE(FILTRE_MODE = _F(MODE=mdPh1, NUME_MODE=listEigenModes))
+DETRUIRE(CONCEPT=_F(NOM=(mdPh1,)))
 
 if bool_macroEl2_Ph2 and bool_macroEl2_Ph1:
         # if we want to make a macroelement 2, and if mode shapes for this macroelement are available from phase 1
         print('2nd macroelement')
-        listEigenModes2 = GetEigenModesList('fort.8', cumulX_mini, cumulY_mini, cumulZ_mini)
+        listEigenModes2 = GetEigenModesList('fort.8', cumulX_mini, cumulY_mini, cumulZ_mini, mdPh1_2)
         mdTrim2 = EXTR_MODE(FILTRE_MODE = _F(MODE=mdPh1_2, NUME_MODE=listEigenModes2))
+        DETRUIRE(CONCEPT=_F(NOM=(mdPh1_2,)))
 
 if bool_macroEl2_slpShift:
         mdTrim2S = EXTR_MODE(FILTRE_MODE = _F(MODE=mdPh1_2S, NUME_MODE=listEigenModes2))
+        DETRUIRE(CONCEPT=_F(NOM=(mdPh1_2S,)))
     
 ######################################################
 # Compute elementary matrices & assemble
@@ -1709,7 +1858,18 @@ if bool_macroEl2_slpShift:
 
     modGen2S = CALC_MODES(TYPE_RESU='DYNAMIQUE', MATR_RIGI=K_gen2S, MATR_MASS=M_gen2S, OPTION='TOUT', SOLVEUR_MODAL=_F(METHODE='QZ'), VERI_MODE=_F(STOP_ERREUR='NON',))
     mdPh2_2S = REST_GENE_PHYS(RESU_GENE=modGen2S, NUME_DDL=num2_2S)
-
+try:
+    DETRUIRE(CONCEPT=_F(NOM=(bmRef,)))
+except:
+    pass
+try:
+    DETRUIRE(CONCEPT=_F(NOM=(bmRef2,)))
+except:
+    pass
+try:
+    DETRUIRE(CONCEPT=_F(NOM=(bmRef2S,)))
+except:
+    pass
 ######################################################
 # Compute static interface modes
 ######################################################
@@ -2563,6 +2723,11 @@ for substr in selectedSubstFRF:
                                ORDONNEE = np.append(mnFRF_ph, [mnFRF_ph[-1]]*int(len(allFreqsJob)==1)))
                                
         j += 1
+    
+    try:
+        DETRUIRE(CONCEPT=_F(NOM=(struR)))
+    except:
+        pass
       
 for freq in allFreqsJob:
     FRFdataline = [str(freq)]

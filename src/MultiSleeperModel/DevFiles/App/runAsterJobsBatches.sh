@@ -11,7 +11,7 @@ messFile=$4      # Message file to check
 debugMode=$5     # True/False
 cpuPerJob=$6     # Number of CPUs per job
 memPerJob=$7     # RAM per job in MB
-
+memPerJob=${memPerJob%.*}
 # --- Terminal mode
 if [ "$debugMode" = "True" ]; then
     TERMCMD="xterm -hold -e"
@@ -20,18 +20,22 @@ else
 fi
 
 # --- Machine resources
-totalCPU=$(nproc)
+# totalCPU=$(nproc)
+totalCPU=$(cat /proc/cpuinfo | grep -i "^cpu cores" | awk -F": " '{print $2}' | head -1 | sed 's/ \+/ /g'
+)
+echo "Total CPU cores: $totalCPU"
+
 totalMem=$(free -m | awk '/Mem:/ {print $2}')
 
 # --- Maximum allowed jobs
 maxJobsCPU=$(( totalCPU / cpuPerJob ))
 maxJobsMEM=$(( totalMem / memPerJob ))
+
 if [ $maxJobsCPU -lt $maxJobsMEM ]; then
     maxJobs=$maxJobsCPU
 else
     maxJobs=$maxJobsMEM
 fi
-
 echo "[INFO] Machine: $totalCPU CPU, $totalMem MB RAM"
 echo "[INFO] Constraint: $cpuPerJob CPU/j, $memPerJob MB/j"
 echo "[INFO] Maximum parallel capacity: $maxJobs jobs"

@@ -112,7 +112,9 @@ class MultiSleeperModelGUI(QMainWindow):
 			self.modesParentFolder = modesParentFolder
 
 			self.txt_phase1FreqMax.setText(str(dictSimu['modesMaxFreq']))
-			self.txt_phase1freq.setText(str(dictSimu['phase1Freq']))
+			self.txt_phase1freq_1.setText(str(dictSimu['phase1Freq'][0]))
+			self.txt_phase1freq_2.setText(str(dictSimu['phase1Freq'][1]))
+			self.txt_cutoff.setText(str(dictSimu['cutoff']))
 			self.cb_debugPh1.setChecked(dictSimu['debugPh1'])
 			self.txt_phase1CPUs.setText(str(dictSimu['phase1CPUs']))
 			# default values must be shown if computeModes is turned off, instead of previous simu values
@@ -179,6 +181,8 @@ class MultiSleeperModelGUI(QMainWindow):
 
 		self.txt_nModesRai.setText(str(dictSimu['nModesRai']))
 		self.txt_nModesSlp.setText(str(dictSimu['nModesSlp']))
+		self.txt_massP.setText(str(dictSimu['MassP']))
+		self.txt_NbrModes.setText(str(dictSimu['NbrModes']))
 		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
 		self.txt_nSlp.setText(str(dictSimu['nSlp']))
 		self.txt_fDirVert.setText(str(dictSimu['fDirVert']))
@@ -218,12 +222,16 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.label_19.setDisabled(not computePhase1)
 		self.label_10.setDisabled(not computePhase1)
 		self.label_11.setDisabled(not computePhase1)
+		self.label_12.setDisabled(not computePhase1)
+		self.label_35.setDisabled(not computePhase1)
 		self.label_13.setDisabled(not computePhase1)
 		self.label_26.setDisabled(not computePhase1)
 		self.btn_savePhase1To.setDisabled(not computePhase1)
 		self.txt_phase1Name.setDisabled(not computePhase1)
 		self.txt_phase1FreqMax.setDisabled(not computePhase1)
-		self.txt_phase1freq.setDisabled(not computePhase1)
+		self.txt_phase1freq_1.setDisabled(not computePhase1)
+		self.txt_phase1freq_2.setDisabled(not computePhase1)
+		self.txt_cutoff.setDisabled(not computePhase1)
 		self.txt_phase1CPUs.setDisabled(not computePhase1)
 		self.cb_debugPh1.setDisabled(not computePhase1)
 
@@ -445,10 +453,24 @@ class MultiSleeperModelGUI(QMainWindow):
 
 				#
 				try:
-					phase1Freq = float(self.txt_phase1freq.text())
-					if phase1Freq < 0:
+					cutoff = float(self.txt_cutoff.text())
+					if cutoff < 0:
+						QMessageBox.information(self, 'Error', 'Please enter a correct cutoff frequency between base I and II.', QMessageBox.Ok,)
+						return
+				except:
+					QMessageBox.information(self, 'Error', 'Please enter a correct cutoff frequency between base I and II.', QMessageBox.Ok,)
+					return
+					
+				dictSimu['cutoff'] = cutoff
+
+				#
+				try:
+					phase1Freq_1 = float(self.txt_phase1freq_1.text())
+					phase1Freq_2 = float(self.txt_phase1freq_2.text())
+					if phase1Freq_1 < 0 or phase1Freq_2 < 0:
 						QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
 						return
+					phase1Freq = [phase1Freq_1, phase1Freq_2]
 				except:
 					QMessageBox.information(self, 'Error', 'Please enter a correct frequency for frequency-dependent materials.', QMessageBox.Ok,)
 					return
@@ -863,6 +885,30 @@ class MultiSleeperModelGUI(QMainWindow):
 				return
 				
 			dictSimu['cumulMassEffeUn'] = cumulMassEffeUn
+
+			#
+			try:
+				massP = float(self.txt_massP.text())
+				if massP < 0 or massP > 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct ratio between mass and phi filter.', QMessageBox.Ok,)
+					return
+			except:
+				QMessageBox.information(self, 'Error', 'Please enter a correct ratio between mass and phi filter.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['MassP'] = massP
+
+			#
+			try:
+				NbrModes = float(self.txt_NbrModes.text())
+				if NbrModes < 1:
+					QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for phase II simulation.', QMessageBox.Ok,)
+					return
+			except:
+				QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for phase II simulation.', QMessageBox.Ok,)
+				return
+				
+			dictSimu['NbrModes'] = NbrModes
 			
 			#
 			try:
@@ -1008,7 +1054,7 @@ class MultiSleeperModelGUI(QMainWindow):
 					f.write(txt)
 				f.close()
 			except Exception as e:
-				print(e.message)
+				print(e)
 				return jsonPath + ' could not be created.'
 
 			if computeModes:

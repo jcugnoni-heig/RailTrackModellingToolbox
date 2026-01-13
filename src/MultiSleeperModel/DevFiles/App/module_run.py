@@ -55,8 +55,6 @@ def RunSimulation(p_dictSimu):
 	print('[' + date_time + '] Harmonic simulation: "' + simuName + '" over.')
 		
 	return 0
-		
-
 
 def CreateMesh(p_dictSimu):
 
@@ -71,8 +69,6 @@ def CreateMesh(p_dictSimu):
 	code = RunJobModes(p_dictSimu, True)
 	return code
 		
-		
-		
 def RunJobModes(p_dictSimu, p_createMeshOnly=False):
 	code = PrepareFilesPhase1(p_dictSimu, p_createMeshOnly)
 	if code != 0:
@@ -81,14 +77,14 @@ def RunJobModes(p_dictSimu, p_createMeshOnly=False):
 	cwd = p_dictSimu['cwd']
 	simFolder = p_dictSimu['phase1WorkingDir']
 	modesFolder = p_dictSimu['modesFolder']
-	# messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_modesSimu.mess')
 	messageFile = os.path.join(simFolder, 'Messages', 'message_modesSimu.mess')
 	debugMode = p_dictSimu['debugPh1']
-
+	List_phase1Freq = p_dictSimu['phase1Freq'] if isinstance(p_dictSimu['phase1Freq'], list) else [p_dictSimu['phase1Freq']]
+ 
 	if p_createMeshOnly:
 		debugMode = False
 
-	code = RunMultiJobs(cwd, simFolder, 'computeModes', 1, messageFile, debugMode)
+	code = RunMultiJobs(cwd, simFolder, 'computeModes', len(List_phase1Freq), messageFile, debugMode)
 
 	if p_createMeshOnly:
 		try:
@@ -98,9 +94,9 @@ def RunJobModes(p_dictSimu, p_createMeshOnly=False):
 		return code
 
 	try:
-		shutil.copyfile(messageFile, os.path.join(simFolder, 'message_modesSimu.mess'))
+		shutil.copyfile(messageFile, os.path.join(simFolder, 'message_modesSimu1.mess'))
 	except:
-		return "Could not copy message_modesSimu.mess to " + simFolder
+		return "Could not copy message_modesSimu1.mess to " + simFolder
 
 	if code != 0:
 		return code
@@ -129,10 +125,13 @@ def RunJobHarmo(p_dictSimu):
 	messageFilePath = os.path.join(simFolder, 'Messages')
 	logFile = os.path.join(simFolder, 'Outputs', 'log.txt')
 	debugMode = p_dictSimu['debugPh2']
-		
-	code = RunMultiJobs(cwd, simFolder, 'runSimulation_b', nJobs, messageFile, debugMode)
-	
-	
+	memLimit = p_dictSimu['memLimit']
+	nCPUs = p_dictSimu['nCPUs']
+
+	# code = RunMultiJobs(cwd, simFolder, 'runSimulation_b', nJobs, messageFile, debugMode, nCPUs, memLimit)
+	code = RunMultiJobsBatches(cwd, simFolder, 'runSimulation_b', nJobs, messageFile, debugMode, nCPUs, memLimit)
+
+
 	try:
 		runScript = os.path.join(cwd, 'DevFiles', 'App', 'createLogFile.sh')
 		os.system('bash ' + runScript + ' ' + str(nJobs) + ' ' + messageFilePath + ' ' + logFile)
@@ -161,7 +160,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
 	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
 	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
-	usp2_on = bool_macroEl2_Ph1 and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
+	usp2_on = ('macroEl2' in p_dictSimu.keys()) and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
 
 	try:
 		shutil.rmtree(fullDir)
@@ -228,85 +227,89 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	except:
 		return "Modes simulation: some mesh files could not be copied to " + fullDir + "."
 
-	# Export & comm files copy
-	try:
-		asterFilesPath = os.path.join(p_dictSimu['cwd'], 'DevFiles', 'AsterFiles')
-		exportFileName = 'computeModes1.export'
-		shutil.copyfile(os.path.join(asterFilesPath, exportFileName), os.path.join(fullDir, exportFileName))
-		shutil.copyfile(os.path.join(asterFilesPath, 'computeModes.comm'), os.path.join(fullDir, 'computeModes.comm'))
-	except:
-		return "Modes simulation: export or comm files could not be copied to " + fullDir + "."
+	list_phase1Freq = p_dictSimu['phase1Freq'] if isinstance(p_dictSimu['phase1Freq'], list) else [p_dictSimu['phase1Freq']]
+	for k in range(len(list_phase1Freq)):
+
+		# Export & comm files copy
+		try:
+			asterFilesPath = os.path.join(p_dictSimu['cwd'], 'DevFiles', 'AsterFiles')
+			exportFileName = 'computeModes.export'
+			shutil.copyfile(os.path.join(asterFilesPath, exportFileName), os.path.join(fullDir, 'computeModes' + str(k+1) + '.export'))
+			shutil.copyfile(os.path.join(asterFilesPath, 'computeModes.comm'), os.path.join(fullDir, 'computeModes.comm'))
+		except:
+			return "Modes simulation: export or comm files could not be copied to " + fullDir + "."
 	
-	# Export file string replacements	
-	exportFiles = os.path.join(fullDir, 'computeModes1.export')	
-	
-	nCPUs = p_dictSimu.get('phase1CPUs')
-	if p_createMeshOnly:
-		nCPUs = 1
-	memlim = p_dictSimu.get('memLimit')
-	reptravroot = p_dictSimu.get('reptrav')
-	server = p_dictSimu.get('host')
-	
-	try:
-		os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + exportFiles)
-		os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + exportFiles)
-		os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + exportFiles)
-		os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + exportFiles)
-		reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0101')
-		file = os.path.join(fullDir, 'computeModes1.export')
-		os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
-		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
-		# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
-		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['phase1WorkingDir'], 'Messages') + '!" ' + exportFiles)
-
-		# E pad 1 files for macroEl 2
-		if bool_macroEl2_Ph1 and 'Emat1' in p_dictSimu['macroEl2'].keys():
-			os.system('sed -i -E "s!__Emat1_2__!F libr E_mat1_2.csv D  50!" ' + exportFiles)
-		else:
-			os.system('sed -i -E "s!__Emat1_2__!!" ' + exportFiles)
-
-		# E pad 2 files for macroEl 2
-		if bool_macroEl2_Ph1 and 'Emat2' in p_dictSimu['macroEl2'].keys():
-			os.system('sed -i -E "s!__Emat2_2__!F libr E_mat2_2.csv D  52!" ' + exportFiles)
-		else:
-			os.system('sed -i -E "s!__Emat2_2__!!" ' + exportFiles)
-
-		# E ballast files for macroEl 2 + 3
-		if bool_macroEl2_Ph1 and 'Ebal' in p_dictSimu['macroEl2'].keys():
-			os.system('sed -i -E "s!__Ebal_2__!F libr Ebal_2.csv D  62!" ' + exportFiles)
-		else:
-			os.system('sed -i -E "s!__Ebal_2__!!" ' + exportFiles)
-
-		if p_dictSimu['USP_on'] or usp2_on:
-			os.system('sed -i -E "s!__meshUSP__!F libr USP.med D  26!" ' + exportFiles)
-		else:
-			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
+		# Export file string replacements
 		
-		if p_dictSimu['USP_on'] == True:
-			os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
+		exportFiles = os.path.join(fullDir, 'computeModes' + str(k+1) + '.export')	
 		
-		if usp2_on:
-			# E USP
-			if (bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys()):
-				os.system('sed -i -E "s!__EUSP_2__!F libr E_USP_2.csv D  58!" ' + exportFiles)
-				if p_dictSimu['USP_on'] == False:
-					os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
-			else:
-				os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
-		else:
-			os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
-			
-			
-	except:
+		nCPUs = p_dictSimu.get('phase1CPUs')/len(list_phase1Freq)
 		if p_createMeshOnly:
-			return "Mesh creation: string replacements (sed) in export files did not run properly."
-		else:
-			return "Modes simulation: string replacements (sed) in export files did not run properly."
+			nCPUs = 1
+		memlim = p_dictSimu.get('memLimit')
+		reptravroot = p_dictSimu.get('reptrav')
+		server = p_dictSimu.get('host')
+		
+		try:
+			os.system('sed -i -E "s!__memjob__!' + str(memlim*1024) + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__memlim__!' + str(memlim) + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__memjeveux__!' + str(memlim/4) + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__ncpus__!' + str(nCPUs) + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__baseNumber__!' + str(k+1) + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__jobNumber__!' + str(k+1) + '!" ' + exportFiles)
+
+			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_01001'+ str(k+1))
+			file = os.path.join(fullDir, 'computeModes' + str(k+1) + '.export')
+			os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
+			os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
+			# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['phase1WorkingDir'], 'Messages') + '!" ' + exportFiles)
+
+			# E pad 1 files for macroEl 2
+			if bool_macroEl2_Ph1 and 'Emat1' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__Emat1_2__!F libr E_mat1_2.csv D  50!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__Emat1_2__!!" ' + exportFiles)
+
+			# E pad 2 files for macroEl 2
+			if bool_macroEl2_Ph1 and 'Emat2' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__Emat2_2__!F libr E_mat2_2.csv D  52!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__Emat2_2__!!" ' + exportFiles)
+
+			# E ballast files for macroEl 2 + 3
+			if bool_macroEl2_Ph1 and 'Ebal' in p_dictSimu['macroEl2'].keys():
+				os.system('sed -i -E "s!__Ebal_2__!F libr Ebal_2.csv D  62!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__Ebal_2__!!" ' + exportFiles)
+
+			if p_dictSimu['USP_on'] or usp2_on:
+				os.system('sed -i -E "s!__meshUSP__!F libr USP.med D  26!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
+			
+			if p_dictSimu['USP_on'] == True:
+				os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
+			
+			if usp2_on:
+				# E USP
+				if (bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys()):
+					os.system('sed -i -E "s!__EUSP_2__!F libr E_USP_2.csv D  58!" ' + exportFiles)
+					if p_dictSimu['USP_on'] == False:
+						os.system('sed -i -E "s!__EUSP__!!" ' + exportFiles)
+				else:
+					os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__EUSP_2__!!" ' + exportFiles)
+								
+		except:
+			if p_createMeshOnly:
+				return "Mesh creation: string replacements (sed) in export files did not run properly."
+			else:
+				return "Modes simulation: string replacements (sed) in export files did not run properly."
 		
 	return 0
 		
-
-
 def PrepareFilesPhase2(p_dictSimu):
 	# Create empty simulation folder
 	fullDir = os.path.join(p_dictSimu.get('simuParentFolder'), p_dictSimu.get('name'))
@@ -322,7 +325,7 @@ def PrepareFilesPhase2(p_dictSimu):
 
 	# Phase 2: even if mode shapes not computed in Ph1 for macroEl2 or 3, macroEl 2/3 are computed based on nominal mode shapes
 	bool_macroEl2_Ph2 = 'macroEl2' in p_dictSimu.keys()
-	usp2_on = bool_macroEl2_Ph1 and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
+	usp2_on = ('macroEl2' in p_dictSimu.keys()) and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
 
 	
 	try:
@@ -340,17 +343,22 @@ def PrepareFilesPhase2(p_dictSimu):
 		
 	# Copy base files
 	modesFolder = p_dictSimu.get('modesFolder')
-			
+	list_phase1Freq = p_dictSimu['phase1Freq'] if isinstance(p_dictSimu['phase1Freq'], list) else [p_dictSimu['phase1Freq']]
+	nbr_base = len(list_phase1Freq)
 	try:
-		shutil.copyfile(os.path.join(modesFolder, 'info_modes.txt'), os.path.join(fullDirInput, 'info_modes.txt'))
-		if bool_macroEl2_Ph1:
-			shutil.copyfile(os.path.join(modesFolder, 'info_modes2.txt'), os.path.join(fullDirInput, 'info_modes2.txt'))
-
 		shutil.copytree(os.path.join(modesFolder, 'base_modes'), os.path.join(fullDirInput, 'base_modes'))
 	except:
-		return "Problem while copying files from phase 1."
+		return "impossible de copy the base_modes"
+			
+	for k in range(nbr_base):
+		try:
+			shutil.copyfile(os.path.join(modesFolder, 'info_modes' + str(k+1) +'.txt'), os.path.join(fullDirInput, 'info_modes' + str(k+1) +'.txt'))
+			if bool_macroEl2_Ph1:
+				# TODO à modifier pour que ça marche avec le macro-élément 2
+				shutil.copyfile(os.path.join(modesFolder, 'info_modes2' + str(k+1) +'.txt'), os.path.join(fullDirInput, 'info_modes2' + str(k+1) +'.txt')) 
+		except:
+			return "Problem encountered when copying phase 1 files. The problem occurs with database files. " + str(k+1)
 	
-	#
 	try:
 		txt = json.dumps(p_dictSimu, indent = 4, sort_keys=True)
 		jsonPath = os.path.join(fullDir, 'parameters.json')
@@ -429,7 +437,10 @@ def PrepareFilesPhase2(p_dictSimu):
 		return "Harmonic simulation: some mesh files could not be copied to " + fullDirInput + "."
 
 	# Frequency files & bands management
-	code = PrepareFreqFiles(p_dictSimu)
+	code, batches_low, batches_high = PrepareFreqFiles(p_dictSimu)
+	print('batches_low : ', batches_low)
+	print('batches_high', batches_high)
+	all_batches = batches_low + batches_high
 	if code != 0:
 		return code
 
@@ -437,9 +448,12 @@ def PrepareFilesPhase2(p_dictSimu):
 	try:
 		nJobs = p_dictSimu.get('nJobs')
 		asterFilesPath = os.path.join(p_dictSimu['cwd'], 'DevFiles', 'AsterFiles')
-		for i in range(nJobs):
+		for i in range(nJobs): 
 			exportFileName = 'runSimulation_b' + str(i+1) + '.export'
-			shutil.copyfile(os.path.join(asterFilesPath, exportFileName), os.path.join(fullDir, exportFileName))
+			if i == 0:
+				shutil.copyfile(os.path.join(asterFilesPath, 'runSimulation1.export'), os.path.join(fullDir, exportFileName))
+			else:
+				shutil.copyfile(os.path.join(asterFilesPath, 'runSimulation2.export'), os.path.join(fullDir, exportFileName))
 		
 		shutil.copyfile(os.path.join(asterFilesPath, 'runSimulation.comm'), os.path.join(fullDir, 'runSimulation.comm'))
 	except:
@@ -461,12 +475,14 @@ def PrepareFilesPhase2(p_dictSimu):
 		os.system('sed -i -E "s!__server__!' + server + '!" ' + exportFiles)
 		# os.system('sed -i -E "s!__messagesDir__!' + os.path.join(p_dictSimu['cwd'], 'DevFiles', 'Messages') + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__messagesDir__!' + os.path.join(fullDir, 'Messages') + '!" ' + exportFiles)
-
-		# info modes for macroEl 2
-		if bool_macroEl2_Ph1:
-			os.system('sed -i -E "s!__infoModes2__!F libr Inputs/info_modes2.txt D  8!" ' + exportFiles)
-		else:
-			os.system('sed -i -E "s!__infoModes2__!!" ' + exportFiles)
+		
+		list_phase1Freq = p_dictSimu['phase1Freq'] if isinstance(p_dictSimu['phase1Freq'], list) else [p_dictSimu['phase1Freq']]
+		for k in range(len(list_phase1Freq)):
+			# info modes for macroEl 2
+			if bool_macroEl2_Ph1:
+				os.system('sed -i -E "s!__infoModes2__!F libr Inputs/info_modes2'+ str(k+1)+ '.txt D  8!" ' + exportFiles)
+			else:
+				os.system('sed -i -E "s!__infoModes2__!!" ' + exportFiles)
 
 		# E pad 1 files for macroEl 2
 		if bool_macroEl2_Ph2 and 'Emat1' in p_dictSimu['macroEl2'].keys():
@@ -550,72 +566,83 @@ def PrepareFilesPhase2(p_dictSimu):
 		os.system('sed -i -E "s!__meshrailP__!' + txt1 + '!" ' + exportFiles)
 		os.system('sed -i -E "s!__meshProjT__!' + txt2 + '!" ' + exportFiles)
 
+		cutoff = p_dictSimu.get('cutoff') 
 		for i in range(nJobs):
 			reptrav = os.path.join(reptravroot, 'cae-caesrv1-interactif_0102' + str(i+1))
 			file = os.path.join(fullDir, 'runSimulation_b' + str(i+1) + '.export')	
 			os.system('sed -i -E "s!__reptrav__!' + reptrav + '!" ' + file)
+			os.system('sed -i -E "s!__JobN__!' + str(i+1) + '!" ' + file)
+			if(cutoff == None or np.max(all_batches[i])<=cutoff):
+				os.system('sed -i -E "s!__baseNumber__!' + str(1) + '!" ' + file)
+			else:
+				os.system('sed -i -E "s!__baseNumber__!' + str(2) + '!" ' + file)
 			
 	except:
 		return "Harmonic simulation: string replacements (sed) in export & comm files did not run properly."
 		
 	return 0
 
-
-# Divide arbitrary frequency list into N jobs with lengths as close as possible
 def PrepareFreqFiles(p_dictSimu):
-	freqs = p_dictSimu['frequencies']
-	nJobs = p_dictSimu['nJobs']
-	fullDir = os.path.join(p_dictSimu.get('simuParentFolder'), p_dictSimu.get('name'), 'Inputs')
-	
-	nFreqs = len(freqs)
-	freqs = sorted(freqs)
-	
-	if nFreqs<nJobs or nJobs<1:
-		return "Error; more jobs than frequencies (Harmonic simulation)."
-	
-	# initialize array showing how many frequencies will be in each band
-	bands = []*nJobs
-	for i in range(nJobs):
-		bands.append([])
-	
-	# initialize frequency bands for later
-	freqBands = bands
-	
-	# fill array with 0 just to know the number of elements per band
-	for i in range(len(freqs)):
-		jobNo = i % nJobs
-		bands[jobNo] += [0]
-	
-	# fill frequency bands array with actual frequencies
-	j = 0
-	for i in range(len(bands)):
-		band = bands[i]
-		freqBands[i] = freqs[j:j+len(band)]
-		j += len(band)
-		
-	for i in range(len(freqBands)):
-		bandStr = []
-		for item in freqBands[i]:
-			bandStr.append(str(item))
-	
-		file = os.path.join(fullDir, 'f' + str(i+1) + '.txt')
-		txt = '\n'.join(bandStr)
-		with open(file, 'w') as f:
-			f.write(txt)
-		f.close()
-		
-	return 0
-		
-		
-	
+    """Divide arbitrary frequency list into N jobs with lengths as close as possible"""
 
+    freqs = sorted(p_dictSimu['frequencies'])
+    nJobs = p_dictSimu['nJobs']
+    cutoff = p_dictSimu.get('cutoff')
+    fullDir = os.path.join(p_dictSimu.get('simuParentFolder'),
+                           p_dictSimu.get('name'),
+                           'Inputs')
+
+    if len(freqs) < nJobs or nJobs < 1:
+        return "Error; more jobs than frequencies (Harmonic simulation)."
 	
+    # --- Split frequencies into low and high bands based on cutoff
+    if cutoff is None:
+        low = freqs
+        high = []
+    else:
+        low = [f for f in freqs if f <= cutoff]
+        high = [f for f in freqs if f > cutoff]
+    if len(low) != 0 and len(high) != 0 and (nJobs < 2):
+        return 1, [], []
+    # --- Compute proportional number of batches for each band
+    n_total = len(freqs)
+    n_batch_low = max(1, round(len(low) / n_total * nJobs)) if low else 0
+    n_batch_high = nJobs - n_batch_low
+
+    if n_batch_high == 0 and len(high) > 0:
+        n_batch_high = 1
+        n_batch_low -= 1
+    if n_batch_low == 0 and len(low) > 0:
+        n_batch_low = 1
+        n_batch_high -= 1
+
+    # --- Split each band into batches
+    batches_low = np.array_split(sorted(low), n_batch_low) if low else []
+    batches_high = np.array_split(sorted(high), n_batch_high) if high else []
+
+    all_batches = list(batches_low) + list(batches_high)
+
+    # --- Write each batch to a separate file
+    for i, batch in enumerate(all_batches, start=1):
+        file = os.path.join(fullDir, f"f{i}.txt")
+        with open(file, "w") as f:
+            f.write("\n".join(str(freq) for freq in batch))
+
+    return 0, batches_low, batches_high
 	
 def RunMultiJobs(p_workingDir, p_simFolder, p_job, p_nJobs, p_messageFile, p_debugMode):
 	# p_job is the name of the export file (without its number and ".export")
 	
 	runScript = os.path.join(p_workingDir, 'DevFiles', 'App', 'runAsterJobs.sh')
 	code = os.system('bash ' + runScript + ' ' + p_job + ' ' + p_simFolder + ' ' + str(p_nJobs) + ' ' + p_messageFile + ' ' + str(p_debugMode))
+	time.sleep(1)
+	return code
+
+def RunMultiJobsBatches(p_workingDir, p_simFolder, p_job, p_nJobs, p_messageFile, p_debugMode, p_nCPUs, p_memLimit):
+	# p_job is the name of the export file (without its number and ".export")
+	
+	runScript = os.path.join(p_workingDir, 'DevFiles', 'App', 'runAsterJobsBatches.sh')
+	code = os.system('bash ' + runScript + ' ' + p_job + ' ' + p_simFolder + ' ' + str(p_nJobs) + ' ' + p_messageFile + ' ' + str(p_debugMode) + ' ' + str(p_nCPUs) + ' ' + str(p_memLimit))
 	time.sleep(1)
 	return code
 
@@ -646,17 +673,18 @@ def SaveBaseFiles(p_dictSimu, p_saveBaseDir, p_simFolder):
 		shutil.copytree(dir1, dir2)
 	except:
 		return "Impossible to copy base_modes from " + p_simFolder + " to " + p_saveBaseDir + "."
-	
-	try:
-		shutil.copyfile(os.path.join(p_simFolder, 'info_modes.txt'), os.path.join(p_saveBaseDir, 'info_modes.txt'))
-	except:
-		return "Impossible to copy " + os.path.join(p_simFolder, 'info_modes.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes.txt') + "."
-	
-	if bool_macroEl2_Ph1:
+	list_phase1Freq = p_dictSimu['phase1Freq'] if isinstance(p_dictSimu['phase1Freq'], list) else [p_dictSimu['phase1Freq']]
+	for k in range(len(list_phase1Freq)):
 		try:
-			shutil.copyfile(os.path.join(p_simFolder, 'info_modes2.txt'), os.path.join(p_saveBaseDir, 'info_modes2.txt'))
+			shutil.copyfile(os.path.join(p_simFolder, 'info_modes' + str(k+1) + '.txt'), os.path.join(p_saveBaseDir, 'info_modes' + str(k+1) + '.txt'))
 		except:
-			return "Impossible to copy " + os.path.join(p_simFolder, 'info_modes2.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes2.txt') + "."
+			return "Impossible to copy " + os.path.join(p_simFolder, 'info_modes' + str(k+1) + '.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes' + str(k+1) + '.txt') + "."
+	
+		if bool_macroEl2_Ph1:
+			try:
+				shutil.copyfile(os.path.join(p_simFolder, 'info_modes2' + str(k+1) + '.txt'), os.path.join(p_saveBaseDir, 'info_modes2' + str(k+1) + '.txt'))
+			except:
+				return "Impossible to copy " + os.path.join(p_simFolder, 'info_modes2' + str(k+1) + '.txt') + " to " + os.path.join(p_saveBaseDir, 'info_modes2' + str(k+1) + '.txt') + "."
 		
 	try:
 		shutil.copyfile(os.path.join(p_simFolder, 'mesh.med'), os.path.join(p_saveBaseDir, 'mesh.med'))
@@ -693,6 +721,11 @@ def PostProcessResults(p_dictSimu):
 			code = ConcatTxtFiles(fullDirOutput, nJobs, 'acousticResults', 2)
 			if code != 0:
 				return code
+	
+	if p_dictSimu.get('BEM_activated') == True:
+		code = ConcatTxtFiles(fullDirOutput, nJobs, 'nodeDisplacement', 1)
+		if code != 0:
+			return code
 	
 	if p_dictSimu['writeMED'] == True:
 		# Concatenate MED files
@@ -752,26 +785,6 @@ def PostProcessResults(p_dictSimu):
 		with open(postProExportFile, 'w') as f:
 			f.write(fileContent)
 		f.close()
-
-		# # messageFile = os.path.join(cwd, 'DevFiles', 'Messages', 'message_concatMedFiles.mess')
-		# messageFile = os.path.join(fullDir, 'Messages', 'message_concatMedFiles.mess')
-		# debugMode = p_dictSimu['debugPh2']
-
-		# code = RunMultiJobs(cwd, fullDir, 'postPro_concatMedFiles', 1, messageFile, debugMode)
-
-		# try:
-		# 	shutil.copyfile(messageFile, os.path.join(fullDirOutput, 'message_concatMedFiles.mess'))
-		# except:
-		# 	return "Could not copy message_concatMedFiles.mess to Phase 2 outputs directory."
-
-		# if code == 0:
-		# 	for i in range(nJobs):
-		# 		try:
-		# 			os.remove(os.path.join(fullDirOutput, 'resuHarm_b' + str(i+1) + '.med'))
-		# 			if p_dictSimu['computeAcoustic'] == True:
-		# 				os.remove(os.path.join(fullDirOutput, 'resuAcou_b' + str(i+1) + '.med'))
-		# 		except:
-		# 			pass
 
 	try:
 		BEM_activated = p_dictSimu['BEM_activated']
@@ -900,9 +913,7 @@ def PostProcessResults(p_dictSimu):
 			return "Post-processing: error completing " + file + "."
 			
 	return code
-	
-	
-	
+		
 def ConcatTxtFiles(p_simFolder, p_nJobs, p_fileType, p_dataLineStart):
 	newFileContentList = []
 	for i in range(p_nJobs):

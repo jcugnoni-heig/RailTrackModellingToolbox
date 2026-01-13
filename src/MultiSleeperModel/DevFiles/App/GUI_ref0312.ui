@@ -147,37 +147,17 @@
                   </widget>
                  </item>
                  <item row="4" column="0">
-                  <widget class="QLabel" name="label_12">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Frequency for freq-dep materials base I (Hz)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="txt_phase1freq_1">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>1000</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
                   <widget class="QLabel" name="label_11">
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
                    <property name="text">
-                    <string>Frequency for freq-dep materials base II (Hz)</string>
+                    <string>Frequency for freq-dep materials (Hz)</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
-                  <widget class="QLineEdit" name="txt_phase1freq_2">
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="txt_phase1freq">
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
@@ -185,31 +165,11 @@
                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The stiffness matrix is evaluated at this frequency to compute modes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
-                    <string>3500</string>
+                    <string>1000</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="0">
-                  <widget class="QLabel" name="label_35">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>CutOff frequency between base I and II (Hz)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="1">
-                  <widget class="QLineEdit" name="txt_cutoff">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>3000</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
+                 <item row="5" column="0">
                   <widget class="QLabel" name="label_13">
                    <property name="enabled">
                     <bool>false</bool>
@@ -219,7 +179,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="7" column="1">
+                 <item row="5" column="1">
                   <widget class="QLineEdit" name="txt_phase1CPUs">
                    <property name="enabled">
                     <bool>false</bool>
@@ -1662,14 +1622,14 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="0">
+                 <item row="3" column="0">
                   <widget class="QLabel" name="label_20">
                    <property name="text">
                     <string>Number of sleepers</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
+                 <item row="3" column="1">
                   <widget class="QLineEdit" name="txt_nSlp">
                    <property name="toolTip">
                     <string/>
@@ -1679,45 +1639,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="0">
+                 <item row="4" column="0">
                   <widget class="QLabel" name="label_36">
                    <property name="text">
                     <string>Sleeper spacing (mm)</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
+                 <item row="4" column="1">
                   <widget class="QLineEdit" name="txt_slpSpacing">
                    <property name="text">
                     <string>600.0</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_54">
-                   <property name="text">
-                    <string>Ratio of modes selected with mass filter</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_55">
-                   <property name="text">
-                    <string>Number of mode used for phase II</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="txt_massP">
-                   <property name="text">
-                    <string>0.5</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="txt_NbrModes">
-                   <property name="text">
-                    <string>500</string>
                    </property>
                   </widget>
                  </item>
@@ -2232,6 +2164,7 @@
   <tabstop>btn_savePhase1To</tabstop>
   <tabstop>cb_debugPh1</tabstop>
   <tabstop>txt_phase1FreqMax</tabstop>
+  <tabstop>txt_phase1CPUs</tabstop>
   <tabstop>txt_simuName</tabstop>
   <tabstop>btn_simuDir</tabstop>
   <tabstop>cb_debugPh2</tabstop>
