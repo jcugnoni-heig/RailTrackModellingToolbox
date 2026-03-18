@@ -21,9 +21,14 @@ parameters = json.loads(txt)
 
 maxFreq = parameters['modesMaxFreq']
 USP_on = parameters['USP_on']
-# What happend if USP2 is not present in key words ? For now is set to false but should it be like macro1 ?
-# USP2_on = parameters["macroEl2"].get("USP_on") if parameters["macroEl2"].get("USP_on") is not None else USP_on 
-USP2_on = ('macroEl2' in parameters.keys() and "USP_on" in parameters['macroEl2'].keys() and parameters["macroEl2"].get("USP_on"))
+USP2_is_defined = 'macroEl2' in parameters.keys() and "USP_on" in parameters['macroEl2'].keys()
+if USP2_is_defined:
+    USP2_on = parameters["macroEl2"].get("USP_on")
+else:
+    if 'macroEl2' in parameters.keys():
+        USP2_on = USP_on
+    else:
+        USP2_on = False
 nuPadMat1 = parameters['nuMat1']
 nuPadMat2 = parameters['nuMat2']
 coefSlpBotArea = parameters['balAreaCoef']
@@ -111,12 +116,20 @@ except:
 # 2nd and 3rd macroelements implementation (not implemented in GUI)
 # Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
 # True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
-bool_macroEl2_Ph1 = ('macroEl2' in parameters.keys()) and ((("computeModeShapesPh1" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['slpShift'] !=0)))
-# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
+bool_macroEl2_Ph1 = (('macroEl2' in parameters.keys()) 
+                    and 
+                    (
+                    (("computeModeShapesPh1" in parameters['macroEl2'].keys()) 
+                     and 
+                     (parameters['macroEl2']['computeModeShapesPh1'] is True)) 
+                    or 
+                    (("slpShift" in parameters['macroEl2'].keys()) 
+                     and 
+                     (parameters['macroEl2']['slpShift'] !=0))
+                    or
+                    (USP_on != USP2_on)
+                    ))# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
 bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in parameters['macroEl2'].keys() and parameters['macroEl2']['slpShift'] !=0
-bool_macroEl2_usp = ('macroEl2' in parameters.keys()) and (("USP_on" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['USP_on'] is True))
-# bool_macroEl2_usp = USP2_on
-
 
 ######################################################
 # Define frequency bands based on INFO_MODES() s.t. ~40 modes per band
@@ -461,7 +474,7 @@ if USP_on:
     mesh_1 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE') # macroelement 1 (nominal)
 else:
     discreteBalNodes = 'sntb'
-    if bool_macroEl2_Ph1 and bool_macroEl2_usp:
+    if bool_macroEl2_Ph1 and USP2_on:
         # Translate components above USPs of USP's thickness
         meshSlp = MODI_MAILLAGE(reuse=meshSlp, MAILLAGE=meshSlp, TRANSLATION=(0, thkUSP2, 0));
         meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(0, thkUSP2, 0));
@@ -477,7 +490,7 @@ DETRUIRE(CONCEPT=_F(NOM=(tmp2)))
 # Duplicate and translate (USP-)sleeper-pad mesh if another macroelement needs to be defined with a sleeper shift
 if bool_macroEl2_Ph1:
     slpShift = parameters['macroEl2'].get('slpShift') if parameters['macroEl2'].get('slpShift') is not None else 0
-    if bool_macroEl2_usp:
+    if USP2_on:
         # Delete all groups of meshSlp that exist in meshUSP
         pyUSP2 = partition.MAIL_PY()
         pyUSP2.FromAster('meshUSP2')
@@ -867,13 +880,13 @@ if bool_macroEl2_Ph1:
             a+=1
         
         tieDmp2 = AFFE_CHAR_MECA(MODELE=model2, LIAISON_SOLIDE=liaisons_dampers2,)
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
             BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2, tieDmp2)
         else:
             BCs2 = (BCintf2, tie2_2, tie3_2, tieClp2, tieDmp2)
     else:
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
             BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2)
         else:
@@ -894,13 +907,13 @@ if bool_macroEl2_slpShift:
             a+=1
         tieDmp2S = AFFE_CHAR_MECA(MODELE=model2S, LIAISON_SOLIDE=liaisons_dampers2S,)
         
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
             BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S, tieDmp2S)
         else:
             BCs2S = (BCintf2S, tie2_2S, tie3_2S, tieClp2S, tieDmp2S)
     else:
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
             BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S)
         else:
@@ -993,7 +1006,7 @@ if USP_on:
     USPmat = DEFI_MATERIAU(ELAS=_F(E=f_EUSP(phase1Freq)/scaling_slpX,  NU=nuUSP, RHO=0.375e-09)) 
 
     # USP material ; macroEl2
-if bool_macroEl2_Ph1 and bool_macroEl2_usp:
+if bool_macroEl2_Ph1 and USP2_on:
     try:
         EUSP = f_EUSP2(phase1Freq)
     except:
@@ -1022,7 +1035,7 @@ if bool_macroEl2_Ph1:
               _F(GROUP_MA=('soft'), MATER=(padMat22, )),
               _F(GROUP_MA=('raile'), MATER=(railMat, ))]
 
-    if bool_macroEl2_usp:
+    if USP2_on:
         affeMat.append(_F(GROUP_MA=('USPe'), MATER=(USPmat2, )),)
 
     fldMat2 = AFFE_MATERIAU(AFFE=affeMat, MAILLAGE=mesh2, MODELE=model2,)
@@ -1324,7 +1337,7 @@ if bool_macroEl2_Ph1:
         DETRUIRE(CONCEPT=_F(NOM=(fEpad22, )))
     if 'Ebal' in parameters['macroEl2'].keys():
         DETRUIRE(CONCEPT=_F(NOM=(f_EBal2, )))
-    if bool_macroEl2_usp == True:
+    if USP2_on == True:
         DETRUIRE(CONCEPT=_F(NOM=(USPmat2, tie1_2, f_EUSP2)))
 
 if bool_macroEl2_slpShift:

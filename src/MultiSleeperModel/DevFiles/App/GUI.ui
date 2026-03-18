@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>834</width>
-    <height>453</height>
+    <width>1019</width>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2060,6 +2060,26 @@
                 </widget>
                </item>
                <item>
+                <widget class="QCheckBox" name="BEM_sleepers">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Include Sleepers in BEM calculation</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="select_projMeshSlp">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Select Sleeper projection mesh for BEM</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <spacer name="verticalSpacer_5">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -2205,7 +2225,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>834</width>
+     <width>1019</width>
      <height>23</height>
     </rect>
    </property>

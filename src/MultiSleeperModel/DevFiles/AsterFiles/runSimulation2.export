@@ -53,10 +53,12 @@ F libr Inputs/tanD_bal.csv D  37
 __tanDbal_2__
 F libr Inputs/Damper.med D  65
 __meshrailP__
+__meshslpP__
 
 
 F libr Inputs/f__JobN__.txt D  40
 __meshProjT__
+__slpProjT__
 F libr Outputs/acousticResults_b__JobN__.txt R  41
 F libr Outputs/data_b__JobN__ R  44
 F libr Outputs/resuHarm_b__JobN__.med R  80
@@ -64,10 +66,12 @@ F rmed Outputs/resuAcou_b__JobN__.med R  81
 F libr Outputs/modalBasis_b__JobN__.med R  82
 F libr Outputs/FRF_b__JobN__.txt R  83
 F libr Outputs/nodeDisplacement_b__JobN__.txt R  84
-
+F libr Outputs/nodeDisplacementSlp_b__JobN__.txt R  89
 F libr Outputs/masseModal_b__JobN__.txt R  42
 F libr Outputs/valeurModal_b__JobN__.txt R  43
 F libr Outputs/resuProj_b__JobN__.med R  86
+F libr Outputs/resuProjSlp_b__JobN__.med R  90
 F libr Outputs/skeletonProj.med R  87
+F libr Outputs/skeletonProjSlp.med R  88
 
 F mess __messagesDir__/message_harmonicSimu_b__JobN__.mess R  6

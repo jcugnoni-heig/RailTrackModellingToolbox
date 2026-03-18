@@ -13,7 +13,11 @@ fi
 
 for (( i=1; i<=$nCPUs; i++ ))
 do
+ job_n=$i
+ export job_n
  myCommand="$TERMCMD $ASRUNPATH $SIMUDIR/$ASRUNJOB$i.export &"
+ echo $myCommand
+ echo $job_n
  eval $myCommand
  myString="pid""$i""=""\$!"
  eval $myString

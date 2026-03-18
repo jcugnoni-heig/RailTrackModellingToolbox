@@ -19,9 +19,15 @@ A tpmax 3600900.0
 F comm postPro_concatMedFiles.comm D  1
 __skeleton__
 __skeletonProj__
+__skeletonProjSlp__
 __acousticMesh__
 F libr Outputs/resultsHarmonic.med R  3
 F libr Outputs/resultsAcoustic.med R  4
 F libr Outputs/resultsBEM.med R  8
+F libr Outputs/resultsBEMSlp.med R  98
 F libr parameters.json D  5
 F mess __messagesDir__/message_concatMedFiles.mess R  6
+
+F libr Outputs/meshProjT.med D  67
+F libr Outputs/slpProjT.med D  69
+

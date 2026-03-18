@@ -40,9 +40,11 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.btn_selectSubstructures.clicked.connect(self.SelectSubstructures)
 		self.cb_computeAcoustic.stateChanged.connect(self.ComputeAcousticStateChanged)
 		self.BEM_activated.stateChanged.connect(self.ComputeAcousticBEMStateChanged)
+		self.BEM_sleepers.stateChanged.connect(self.ComputeAcousticBEMSlpStateChanged)
 		self.cb_writeMED.stateChanged.connect(self.WriteMedStateChanged)
 		self.btn_selectAcousticMesh.clicked.connect(self.SelectAcousticMesh)
 		self.select_proj_mesh_BEM.clicked.connect(self.SelectAcousticBEMProjMesh)
+		self.select_projMeshSlp.clicked.connect(self.SelectAcousticBEMProjMeshSlp)
 		self.btn_addSimu.clicked.connect(self.AddSimuToList)
 		self.btn_simuDir.clicked.connect(self.SelectSimuDir)
 		self.btn_simulate.clicked.connect(self.SimulateAll)
@@ -83,6 +85,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.selectedSubst = None
 		self.acousticMesh = None
 		self.projMesh = None
+		self.projMeshSlp = None
 		self.simuParentFolder = None
 		
 	def DisplaySimu(self): #called when the index of list_simu is changed
@@ -211,7 +214,10 @@ class MultiSleeperModelGUI(QMainWindow):
 		else:
 			self.acousticMesh = None
 		if dictSimu['BEM_activated'] == True:
+			self.BEM_sleepers.setChecked(dictSimu['BEM_sleepers'])
 			self.projMesh = dictSimu['projMesh']
+			if dictSimu['BEM_sleepers'] == True:
+				self.projMeshSlp = dictSimu['projMeshSlp']
 		else:
 			self.projMesh = None
 
@@ -296,6 +302,10 @@ class MultiSleeperModelGUI(QMainWindow):
 
 	def ComputeAcousticBEMStateChanged(self):
 		self.select_proj_mesh_BEM.setDisabled(not self.BEM_activated.isChecked())
+		self.BEM_sleepers.setDisabled(not self.BEM_activated.isChecked())
+
+	def ComputeAcousticBEMSlpStateChanged(self):
+		self.select_projMeshSlp.setDisabled(not self.BEM_sleepers.isChecked())
 
 	def WriteMedStateChanged(self):
 		self.txt_nSlpAcoust1.setDisabled(not (self.cb_computeAcoustic.isChecked() or self.cb_writeMED.isChecked()))
@@ -1037,14 +1047,24 @@ class MultiSleeperModelGUI(QMainWindow):
 			
 			BEM_activated = self.BEM_activated.isChecked()
 			dictSimu['BEM_activated'] = BEM_activated
+			BEM_sleepers = self.BEM_sleepers.isChecked()
+			dictSimu['BEM_sleepers'] = BEM_sleepers
 			if BEM_activated == True:
 				if (self.projMesh is None or os.path.exists(self.projMesh) == False):
 					QMessageBox.information(self, 'Error', 'Projection mesh for BEM not defined.', QMessageBox.Ok,)
 					return
-
 				dictSimu['projMesh'] = self.projMesh
+				
+				if BEM_sleepers == True:
+					if (self.projMeshSlp is None or os.path.exists(self.projMeshSlp) == False):
+						QMessageBox.information(self, 'Error', 'Sleeper projection mesh for BEM not defined.', QMessageBox.Ok,)
+						return
+					dictSimu['projMeshSlp'] = self.projMeshSlp
+				else:
+					dictSimu['projMeshSlp'] = None
 			else:
 				dictSimu['projMesh'] = None
+				dictSimu['projMeshSlp'] = None
 
 			#
 			try:
@@ -1197,6 +1217,10 @@ class MultiSleeperModelGUI(QMainWindow):
 	def SelectAcousticBEMProjMesh(self):
 		defPath = os.path.join(self.cwd, 'Meshes', 'Projection')
 		self.projMesh = self.SelectFile('Select acoustic BEM projection mesh', self.projMesh, defPath, '*.med')
+
+	def SelectAcousticBEMProjMeshSlp(self):
+		defPath = os.path.join(self.cwd, 'Meshes', 'Projection')
+		self.projMeshSlp = self.SelectFile('Select acoustic BEM projection mesh for sleepers', self.projMeshSlp, defPath, '*.med')
 
 	def SelectFile(self, p_title, p_file, p_defaultPath, p_ext):
 		if p_file == None or os.path.exists(p_file) == False:

@@ -158,9 +158,30 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 	fullDir = p_dictSimu.get('phase1WorkingDir')
 
 	# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
-	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
-	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
-	usp2_on = ('macroEl2' in p_dictSimu.keys()) and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
+	# True if either: a separate macroEl is requested for macroEl2, a sleeper shift is set (!=0) or USP_on is different between macroEl1 and macroEl2.
+	USP_on = p_dictSimu.get("USP_on")
+	USP2_is_defined = 'macroEl2' in p_dictSimu.keys() and "USP_on" in p_dictSimu['macroEl2'].keys()
+	if USP2_is_defined:
+		USP2_on = p_dictSimu["macroEl2"].get("USP_on")
+	else:
+		if 'macroEl2' in p_dictSimu.keys():
+			USP2_on = USP_on
+		else:
+			USP2_on = False
+	bool_macroEl2_Ph1 = (('macroEl2' in p_dictSimu.keys()) 
+						and 
+						(
+						(("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) 
+						and 
+						(p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) 
+						or 
+						(("slpShift" in p_dictSimu['macroEl2'].keys()) 
+						and 
+						(p_dictSimu['macroEl2']['slpShift'] !=0))
+						or
+						(USP_on != USP2_on)
+						))
+	
 
 	try:
 		shutil.rmtree(fullDir)
@@ -206,7 +227,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 			shutil.copyfile(p_dictSimu.get('EUSP'), os.path.join(fullDir, 'E_USP.csv'))
 		
 		# E USP2
-		if usp2_on:
+		if USP2_on:
 			if bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys():
 				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDir, 'E_USP_2.csv'))
 			else:
@@ -222,7 +243,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDir, 'sleeper.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDir, 'Clamp.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Dampers', 'damper.med'), os.path.join(fullDir, 'Damper.med'))
-		if p_dictSimu.get('USP_on') == True or usp2_on:
+		if p_dictSimu.get('USP_on') == True or USP2_on:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDir, 'USP.med'))
 	except:
 		return "Modes simulation: some mesh files could not be copied to " + fullDir + "."
@@ -283,7 +304,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 			else:
 				os.system('sed -i -E "s!__Ebal_2__!!" ' + exportFiles)
 
-			if p_dictSimu['USP_on'] or usp2_on:
+			if p_dictSimu['USP_on'] or USP2_on:
 				os.system('sed -i -E "s!__meshUSP__!F libr USP.med D  26!" ' + exportFiles)
 			else:
 				os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
@@ -291,7 +312,7 @@ def PrepareFilesPhase1(p_dictSimu, p_createMeshOnly=False):
 			if p_dictSimu['USP_on'] == True:
 				os.system('sed -i -E "s!__EUSP__!F libr E_USP.csv D  34!" ' + exportFiles)
 			
-			if usp2_on:
+			if USP2_on:
 				# E USP
 				if (bool_macroEl2_Ph1 and 'EUSP' in p_dictSimu['macroEl2'].keys()):
 					os.system('sed -i -E "s!__EUSP_2__!F libr E_USP_2.csv D  58!" ' + exportFiles)
@@ -317,16 +338,35 @@ def PrepareFilesPhase2(p_dictSimu):
 	fullDirOutput = os.path.join(fullDir, 'Outputs')
 
 	# Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
-	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
-	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
+	# True if either: a separate macroEl is requested for macroEl2, a sleeper shift is set (!=0) or USP_on is different between macroEl1 and macroEl2.
+	USP_on = p_dictSimu.get("USP_on")
+	USP2_is_defined = 'macroEl2' in p_dictSimu.keys() and "USP_on" in p_dictSimu['macroEl2'].keys()
+	if USP2_is_defined:
+		USP2_on = p_dictSimu["macroEl2"].get("USP_on")
+	else:
+		if 'macroEl2' in p_dictSimu.keys():
+			USP2_on = USP_on
+		else:
+			USP2_on = False
 
+	bool_macroEl2_Ph1 = (('macroEl2' in p_dictSimu.keys()) 
+						and 
+						(
+						(("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) 
+						and 
+						(p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) 
+						or 
+						(("slpShift" in p_dictSimu['macroEl2'].keys()) 
+						and 
+						(p_dictSimu['macroEl2']['slpShift'] !=0))
+						or
+						(USP_on != USP2_on)
+						))
 	# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
 	bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2']['slpShift'] !=0
 
 	# Phase 2: even if mode shapes not computed in Ph1 for macroEl2 or 3, macroEl 2/3 are computed based on nominal mode shapes
 	bool_macroEl2_Ph2 = 'macroEl2' in p_dictSimu.keys()
-	usp2_on = ('macroEl2' in p_dictSimu.keys()) and 'USP_on' in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2'].get('USP_on')
-
 	
 	try:
 		shutil.rmtree(fullDir)
@@ -354,7 +394,6 @@ def PrepareFilesPhase2(p_dictSimu):
 		try:
 			shutil.copyfile(os.path.join(modesFolder, 'info_modes' + str(k+1) +'.txt'), os.path.join(fullDirInput, 'info_modes' + str(k+1) +'.txt'))
 			if bool_macroEl2_Ph1:
-				# TODO à modifier pour que ça marche avec le macro-élément 2
 				shutil.copyfile(os.path.join(modesFolder, 'info_modes2' + str(k+1) +'.txt'), os.path.join(fullDirInput, 'info_modes2' + str(k+1) +'.txt')) 
 		except:
 			return "Problem encountered when copying phase 1 files. The problem occurs with database files. " + str(k+1)
@@ -406,7 +445,7 @@ def PrepareFilesPhase2(p_dictSimu):
 			# tanD USP
 			shutil.copyfile(p_dictSimu.get('tanDUSP'), os.path.join(fullDirInput, 'tanD_USP.csv'))
 		
-		if usp2_on:
+		if USP2_on:
 			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
 				shutil.copyfile(p_dictSimu['macroEl2'].get('EUSP'), os.path.join(fullDirInput, 'E_USP_2.csv'))
 			else:
@@ -426,13 +465,15 @@ def PrepareFilesPhase2(p_dictSimu):
 		shutil.copyfile(p_dictSimu.get('sleeperMesh'), os.path.join(fullDirInput, 'sleeper.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Clamps', 'Clamp.med'), os.path.join(fullDirInput, 'Clamp.med'))
 		shutil.copyfile(os.path.join(p_dictSimu['cwd'], 'Meshes', 'Dampers', 'damper.med'), os.path.join(fullDirInput, 'Damper.med'))
-		if p_dictSimu.get('USP_on') == True or usp2_on:
+		if p_dictSimu.get('USP_on') == True or USP2_on:
 			shutil.copyfile(p_dictSimu.get('USPMesh'), os.path.join(fullDirInput, 'USP.med'))
 		
 		if p_dictSimu.get('computeAcoustic') == True:
 			shutil.copyfile(p_dictSimu.get('acousticMesh'), os.path.join(fullDirInput, 'acousticMesh.med'))
 		if 'BEM_activated' in p_dictSimu.keys() and p_dictSimu.get('BEM_activated'):
-			shutil.copyfile(p_dictSimu.get('projMesh'), os.path.join(fullDirInput, 'railP.med'))
+			shutil.copyfile(p_dictSimu.get('projMesh'), os.path.join(fullDirInput, 'railP.med'))	
+			if 'BEM_sleepers' in p_dictSimu.keys() and p_dictSimu.get('BEM_sleepers'):
+				shutil.copyfile(p_dictSimu.get('projMeshSlp'), os.path.join(fullDirInput, 'slpP.med'))
 	except:
 		return "Harmonic simulation: some mesh files could not be copied to " + fullDirInput + "."
 
@@ -480,7 +521,7 @@ def PrepareFilesPhase2(p_dictSimu):
 		for k in range(len(list_phase1Freq)):
 			# info modes for macroEl 2
 			if bool_macroEl2_Ph1:
-				os.system('sed -i -E "s!__infoModes2__!F libr Inputs/info_modes2'+ str(k+1)+ '.txt D  8!" ' + exportFiles)
+				os.system('sed -i -E "s!__infoModes2__!F libr Inputs/info_modes2__baseNumber__.txt D  8!" ' + exportFiles)
 			else:
 				os.system('sed -i -E "s!__infoModes2__!!" ' + exportFiles)
 
@@ -520,7 +561,7 @@ def PrepareFilesPhase2(p_dictSimu):
 		else:
 			os.system('sed -i -E "s!__tanDbal_2__!!" ' + exportFiles)
 
-		if p_dictSimu['USP_on'] == True or usp2_on:
+		if p_dictSimu['USP_on'] == True or USP2_on:
 			os.system('sed -i -E "s!__meshUSP__!F libr Inputs/USP.med D  26!" ' + exportFiles)
 		else:
 			os.system('sed -i -E "s!__meshUSP__!!" ' + exportFiles)
@@ -531,7 +572,7 @@ def PrepareFilesPhase2(p_dictSimu):
 			# tanD USP
 			os.system('sed -i -E "s!__tanDUSP__!F libr Inputs/tanD_USP.csv D  35!" ' + exportFiles)
 
-		if usp2_on:
+		if USP2_on:
 			# E USP
 			if bool_macroEl2_Ph2 and 'EUSP' in p_dictSimu['macroEl2'].keys():
 				os.system('sed -i -E "s!__EUSP_2__!F libr Inputs/E_USP_2.csv D  58!" ' + exportFiles)
@@ -560,6 +601,16 @@ def PrepareFilesPhase2(p_dictSimu):
 		if 'BEM_activated' in p_dictSimu.keys() and p_dictSimu.get('BEM_activated'):
 			txt1 = 'F libr Inputs' + os.sep + 'railP.med D  66'
 			txt2 = 'F libr Outputs' + os.sep + 'meshProjT.med R  67'
+
+			if 'BEM_sleepers' in p_dictSimu.keys() and p_dictSimu.get('BEM_sleepers'):
+				txt3 = 'F libr Inputs' + os.sep + 'slpP.med D  68'
+				txt4 = 'F libr Outputs' + os.sep + 'slpProjT.med R  69'
+			else:
+				txt3 = ''
+				txt4 = ''
+			os.system('sed -i -E "s!__meshslpP__!' + txt3 + '!" ' + exportFiles)
+			os.system('sed -i -E "s!__slpProjT__!' + txt4 + '!" ' + exportFiles)
+			
 		else:
 			txt1 = ''
 			txt2 = ''
@@ -647,8 +698,20 @@ def RunMultiJobsBatches(p_workingDir, p_simFolder, p_job, p_nJobs, p_messageFile
 	return code
 
 def SaveBaseFiles(p_dictSimu, p_saveBaseDir, p_simFolder):
-	# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
-	bool_macroEl2_Ph1 = ('macroEl2' in p_dictSimu.keys()) and ((("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in p_dictSimu['macroEl2'].keys()) and (p_dictSimu['macroEl2']['slpShift'] !=0)))
+	# True if either: a separate macroEl is requested for macroEl2, a sleeper shift is set (!=0) or USP_on is different between macroEl1 and macroEl2.
+	bool_macroEl2_Ph1 = (('macroEl2' in p_dictSimu.keys()) 
+						and 
+						(
+						(("computeModeShapesPh1" in p_dictSimu['macroEl2'].keys()) 
+						and 
+						(p_dictSimu['macroEl2']['computeModeShapesPh1'] is True)) 
+						or 
+						(("slpShift" in p_dictSimu['macroEl2'].keys()) 
+						and 
+						(p_dictSimu['macroEl2']['slpShift'] !=0))
+						or
+						(USP_on != USP2_on)
+						))
 	# With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another one with -slpShift to make the left side of the track
 	bool_macroEl2_slpShift = bool_macroEl2_Ph1 and "slpShift" in p_dictSimu['macroEl2'].keys() and p_dictSimu['macroEl2']['slpShift'] !=0
 
@@ -726,6 +789,11 @@ def PostProcessResults(p_dictSimu):
 		code = ConcatTxtFiles(fullDirOutput, nJobs, 'nodeDisplacement', 1)
 		if code != 0:
 			return code
+			
+		if p_dictSimu.get('BEM_sleepers') == True:
+			code = ConcatTxtFiles(fullDirOutput, nJobs, 'nodeDisplacementSlp', 1)
+			if code != 0:
+				return code
 	
 	if p_dictSimu['writeMED'] == True:
 		# Concatenate MED files
@@ -788,6 +856,10 @@ def PostProcessResults(p_dictSimu):
 
 	try:
 		BEM_activated = p_dictSimu['BEM_activated']
+		try:
+			BEM_sleepers = p_dictSimu['BEM_sleepers']
+		except:
+			BEM_sleepers = False
 	except:
 		BEM_activated = False
 
@@ -828,6 +900,10 @@ def PostProcessResults(p_dictSimu):
 			txt = 'F libr Outputs' + os.sep + 'skeletonProj.med D  9'
 			os.system('sed -i -E "s!__skeletonProj__!' + txt + '!" ' + postProExportFile)
 			os.system('sed -i -E "s!__acousticMesh__!' + '' + '!" ' + postProExportFile)
+			if BEM_sleepers == True:
+				txt = 'F libr Outputs' + os.sep + 'skeletonProjSlp.med D  99' #change to 99
+				os.system('sed -i -E "s!__skeletonProjSlp__!' + txt + '!" ' + postProExportFile)
+			#os.system('sed -i -E "s!__acousticMesh__!' + '' + '!" ' + postProExportFile)
 		except:
 			return "String replacements (sed) in post-processing export & comm files did not run properly."
 			
@@ -837,6 +913,8 @@ def PostProcessResults(p_dictSimu):
 		
 		for i in range(nJobs):
 			fileContent += '\nF mmed Outputs/resuProj_b' + str(i+1) + '.med D  ' + str(20 + i)
+			if BEM_sleepers == True:
+				fileContent += '\nF mmed Outputs/resuProjSlp_b' + str(i+1) + '.med D  ' + str(30 + i)
 			if p_dictSimu['writeMED'] == False: 
 				fileContent += '\nF libr Inputs/f' + str(i+1) + '.txt D  ' + str(70 + i)
 			
@@ -865,6 +943,8 @@ def PostProcessResults(p_dictSimu):
 						os.remove(os.path.join(fullDirOutput, 'resuAcou_b' + str(i+1) + '.med'))
 					if BEM_activated == True:
 						os.remove(os.path.join(fullDirOutput, 'resuProj_b' + str(i+1) + '.med'))
+						if BEM_sleepers == True:
+							os.remove(os.path.join(fullDirOutput, 'resuProjSlp_b' + str(i+1) + '.med'))
 				except:
 					pass
 

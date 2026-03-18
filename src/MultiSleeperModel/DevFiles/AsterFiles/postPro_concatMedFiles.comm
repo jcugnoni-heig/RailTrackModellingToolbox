@@ -13,6 +13,10 @@ computeAcoustic = parameters['computeAcoustic']
 nJobs = parameters['nJobs']
 try:
     BEM_activated = parameters['BEM_activated']
+    try:
+        BEM_sleepers = parameters['BEM_sleepers']
+    except:
+        BEM_sleepers = False
 except:
     BEM_activated = False
 
@@ -20,8 +24,9 @@ if writeMED:
     print(writeMED)
     squel = LIRE_MAILLAGE(FORMAT="MED",UNITE=2);
 if BEM_activated:
-    squel2 = LIRE_MAILLAGE(FORMAT="MED",UNITE=9);
-
+    squel2 = LIRE_MAILLAGE(FORMAT="MED",UNITE=67);
+    if BEM_sleepers:
+        squel3 = LIRE_MAILLAGE(FORMAT="MED",UNITE=69)
 if computeAcoustic:
 	grid = LIRE_MAILLAGE(FORMAT="MED",UNITE=7);
 
@@ -116,11 +121,11 @@ if writeMED:
                 
             DETRUIRE(CONCEPT=_F(NOM=(resAcou)))
 
-    IMPR_RESU(FORMAT='MED',
-            RESU=_F(RESULTAT=pressAc,
-                    PARTIE='REEL',
-                    TOUT_CHAM='OUI'),
-            UNITE=4)
+        IMPR_RESU(FORMAT='MED',
+                RESU=_F(RESULTAT=pressAc,
+                        PARTIE='REEL',
+                        TOUT_CHAM='OUI'),
+                UNITE=4)
 
 if BEM_activated:
     for i in range(nJobs):
@@ -168,5 +173,58 @@ if BEM_activated:
                     PARTIE='REEL',
                     TOUT_CHAM='OUI'),
             UNITE=8)
+
+
+
+    ###############################################################################
+    ### saving of displacement field projection results for sleepers 15-01-2026 ###
+    ###############################################################################
+    if BEM_sleepers:
+        for i in range(nJobs):
+            # Get frequencies of job i
+            with open('fort.' + str(70+i)) as freqFile:
+                freqlines = freqFile.read().splitlines()
+            freqFile.close()
+
+            allFreqs = []
+            for freqline in freqlines:
+                try:
+                    frequency=float(freqline.split(' ')[0])
+                except:
+                    continue
+                allFreqs.append(frequency)
+
+            # Get BEM result of job i
+            resBEM2 = LIRE_RESU(FORMAT='MED',
+                            UNITE=30+i,
+                            FORMAT_MED=(_F(NOM_CHAM='DEPL',
+                                            NOM_CHAM_MED='resProjS',),),
+                            TYPE_RESU='DYNA_HARMO',
+                            TOUT_ORDRE='OUI',
+                            MAILLAGE=squel3);
+            
+            # Get fields for each frequency and append them to the final result
+            for freq in allFreqs:                              
+                field2 = CREA_CHAMP(FREQ=freq,
+                                    NOM_CHAM='DEPL',
+                                    OPERATION='EXTR',
+                                    RESULTAT=resBEM2,
+                                    TYPE_CHAM='NOEU_DEPL_R')
+                
+                if i == 0 and freq == allFreqs[0]:
+                    bemSlp = CREA_RESU(OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=field2, FREQ=freq),);
+                else:
+                    bemSlp = CREA_RESU(reuse=bemSlp, RESULTAT=bemSlp, OPERATION='AFFE',TYPE_RESU='DYNA_HARMO',NOM_CHAM='DEPL',AFFE=_F(CHAM_GD=field2, FREQ=freq),);
+
+                DETRUIRE(CONCEPT=_F(NOM=(field2, )))
+                
+            DETRUIRE(CONCEPT=_F(NOM=(resBEM2, )))
+
+        IMPR_RESU(FORMAT='MED',
+                RESU=_F(RESULTAT=bemSlp,
+                        PARTIE='REEL',
+                        TOUT_CHAM='OUI'),
+                UNITE=98)
+
 
 FIN()

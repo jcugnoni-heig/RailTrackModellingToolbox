@@ -22,9 +22,14 @@ parameters = json.loads(txt)
 
 nSlp = parameters['nSlp']
 USP_on = parameters['USP_on']
-# What happend if USP2 is not present in key words ? For now is set to false but should it be like macro1 ?
-# USP2_on = parameters["macroEl2"].get("USP_on") if parameters["macroEl2"].get("USP_on") is not None else USP_on 
-USP2_on = ('macroEl2' in parameters.keys() and "USP_on" in parameters['macroEl2'].keys() and parameters["macroEl2"].get("USP_on"))
+USP2_is_defined = 'macroEl2' in parameters.keys() and "USP_on" in parameters['macroEl2'].keys()
+if USP2_is_defined:
+    USP2_on = parameters["macroEl2"].get("USP_on")
+else:
+    if 'macroEl2' in parameters.keys():
+        USP2_on = USP_on
+    else:
+        USP2_on = False
 freq1 = parameters['frequencies'][0]
 freq2 = parameters['frequencies'][-1]
 nuPadMat1 = parameters['nuMat1']
@@ -67,6 +72,10 @@ writeMED = parameters['writeMED']
 
 try:
     BEM_activated = parameters['BEM_activated']
+    try:
+        BEM_sleepers = parameters['BEM_sleepers']
+    except:
+        BEM_sleepers = False
 except:
     BEM_activated = False
 try:
@@ -138,17 +147,26 @@ except:
 
 # macroElements 2 & 2S (symmetric version) (not implemented in GUI)
 # Phase 1: if different mat props but same mesh (no sleeper shift), and computeModeShapesPh1 False, no need to compute new macroelement mode shapes.
-# True if either: a separate macroEl is requested for macroEl2, or a sleeper shift is set (!=0)
-bool_macroEl2_Ph1 = ('macroEl2' in parameters.keys()) and ((("computeModeShapesPh1" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['computeModeShapesPh1'] is True)) or (("slpShift" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['slpShift'] !=0)))
+# True if either: a separate macroEl is requested for macroEl2, a sleeper shift is set (!=0) or USP_on is different between macroEl1 and macroEl2.
+bool_macroEl2_Ph1 = (('macroEl2' in parameters.keys()) 
+                    and 
+                    (
+                    (("computeModeShapesPh1" in parameters['macroEl2'].keys()) 
+                     and 
+                     (parameters['macroEl2']['computeModeShapesPh1'] is True)) 
+                    or 
+                    (("slpShift" in parameters['macroEl2'].keys()) 
+                     and 
+                     (parameters['macroEl2']['slpShift'] !=0))
+                    or
+                    (USP_on != USP2_on)
+                    ))
 
 # Phase 2: even if mode shapes not computed in Ph1 for macroEl2, macroEl 2/2S are computed based on nominal mode shapes
 bool_macroEl2_Ph2 = 'macroEl2' in parameters.keys() and 'macroElSequence' in parameters.keys() and (2 in parameters['macroElSequence'] or 3 in parameters['macroElSequence'])
 
 # With a sleeper shift, the macroelement is not symmetric anymore ; so: need to create another macroelement with -slpShift to make the left side of the track
 bool_macroEl2_slpShift = bool_macroEl2_Ph1 and bool_macroEl2_Ph2 and "slpShift" in parameters['macroEl2'].keys() and parameters['macroEl2']['slpShift'] !=0
-
-bool_macroEl2_usp = ('macroEl2' in parameters.keys()) and (("USP_on" in parameters['macroEl2'].keys()) and (parameters['macroEl2']['USP_on'] is True))
-# bool_macroEl2_usp = USP2_on
 
 ######################################################
 # Get list of frequencies from freq file
@@ -337,8 +355,9 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini, p_mdP
     for vec in phi4phi:
         arr = np.abs(np.array(vec))
         phi4phi_sorted.extend([
-            sorted(enumerate(arr[:, 0]), key=lambda x: x[1], reverse=True),
-            sorted(enumerate(arr[:, 1]), key=lambda x: x[1], reverse=True)
+            sorted(enumerate(fDirVert*arr[:, 0] + fDirLat*arr[:, 1]), key=lambda x: x[1], reverse=True),
+            # sorted(enumerate(arr[:, 0]), key=lambda x: x[1], reverse=True),
+            # sorted(enumerate(arr[:, 1]), key=lambda x: x[1], reverse=True)
         ])
     # struture of phi4phi_sorted (index is the mode number /!\ zero based indexing): 
     # [[ (index, valueY), (index, valueY), ... ]    ->phi1Y
@@ -358,11 +377,12 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini, p_mdP
     # It could be that a mode with high phi is already taken because it has a high mass, so we use set() to remove duplicates
     # and do one more loop if needed
     phi_used = 3 # (0:phi1, 1:phi2, 2:phi3, 3:phi4, 4:phi5)
-    Orientation = 0 #  DY = 0 , DZ = 1 # --> Should we modify it depending on the loading case ?
+    Orientation = 0 #  DY = 0 , DZ = 1 
     for t in range (nbr_modes_taken, nbr_tot_mode + 1):
         print(round((1-mass_pourcentage)*t))
         # (phi4phi_sorted[][][]+1) because of the one based indexing in Aster
-        selected_phi = [(phi4phi_sorted[2*phi_used + Orientation][q][0]+1) for q in range(round((1-mass_pourcentage)*t))]
+        # selected_phi = [(phi4phi_sorted[2*phi_used + Orientation][q][0]+1) for q in range(round((1-mass_pourcentage)*t))]
+        selected_phi = [(phi4phi_sorted[phi_used][q][0]+1) for q in range(round((1-mass_pourcentage)*t))]
         selected_mass = [sortedMaxMass[k]['no'] for k in range(round(mass_pourcentage*nbr_modes_taken))]
         NewlistModes = list(set(selected_mass + selected_phi))
         if (len(NewlistModes) >= nbr_modes_taken):
@@ -817,7 +837,7 @@ if USP_on:
     mesh_1 = ASSE_MAILLAGE(MAILLAGE_1=tmp2, MAILLAGE_2=meshRaiR, OPERATION='SUPERPOSE') # macroelement 1 (nominal)
 else:
     discreteBalNodes = 'sntb'
-    if bool_macroEl2_Ph2 and bool_macroEl2_usp:
+    if bool_macroEl2_Ph2 and USP2_on:
         # Translate components above USPs of USP's thickness
         meshSlp = MODI_MAILLAGE(reuse=meshSlp, MAILLAGE=meshSlp, TRANSLATION=(0, thkUSP2, 0));
         meshPadR = MODI_MAILLAGE(reuse=meshPadR, MAILLAGE=meshPadR, TRANSLATION=(0, thkUSP2, 0));
@@ -833,7 +853,7 @@ DETRUIRE(CONCEPT=_F(NOM=(tmp2)))
 # Duplicate and translate (USP-)sleeper-pad mesh if other macroelements need to be defined with a sleeper shift
 if bool_macroEl2_Ph2:
     slpShift = parameters['macroEl2'].get('slpShift') if parameters['macroEl2'].get('slpShift') is not None else 0
-    if bool_macroEl2_usp:
+    if USP2_on:
         # Delete all groups of meshSlp that exist in meshUSP
         pyUSP2 = partition.MAIL_PY()
         pyUSP2.FromAster('meshUSP2')
@@ -1275,13 +1295,13 @@ if bool_macroEl2_Ph2:
             a+=1
         
         tieDmp2 = AFFE_CHAR_MECA(MODELE=model2, LIAISON_SOLIDE=liaisons_dampers2,)
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
             BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2, tieDmp2)
         else:
             BCs2 = (BCintf2, tie2_2, tie3_2, tieClp2, tieDmp2)
     else:
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2)
             BCs2 = (BCintf2, tie1_2, tie2_2, tie3_2, tieClp2)
         else:
@@ -1302,13 +1322,13 @@ if bool_macroEl2_slpShift:
             a+=1
         tieDmp2S = AFFE_CHAR_MECA(MODELE=model2S, LIAISON_SOLIDE=liaisons_dampers2S,)
         
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
             BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S, tieDmp2S)
         else:
             BCs2S = (BCintf2S, tie2_2S, tie3_2S, tieClp2S, tieDmp2S)
     else:
-        if bool_macroEl2_usp == True:
+        if USP2_on == True:
             tie1_2S = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('USPtop', ), GROUP_MA_MAIT=('setb', ), TYPE_RACCORD='MASSIF', DISTANCE_MAX=1.0)), MODELE=model2S)
             BCs2S = (BCintf2S, tie1_2S, tie2_2S, tie3_2S, tieClp2S)
         else:
@@ -1320,15 +1340,15 @@ fNorm = 100000 # with a too low force value, displacements may be so low that we
 fVert = fDirVert/dirNorm*fNorm
 fLat = fDirLat/dirNorm*fNorm
 
-load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0, FY = -fVert, FZ = fLat, GROUP_NO=(nForce, )),
+load = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0, FY = fVert, FZ = fLat, GROUP_NO=(nForce, )),
                       MODELE=model)
 
 if bool_macroEl2_Ph2:
-    load2 = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0, FY = -fVert, FZ = fLat, GROUP_NO=(nForce, )),
+    load2 = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0, FY = fVert, FZ = fLat, GROUP_NO=(nForce, )),
                            MODELE=model2)
     
 if bool_macroEl2_slpShift:
-    load2S = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0, FY = -fVert, FZ = fLat, GROUP_NO=(nForce, )),
+    load2S = AFFE_CHAR_MECA(FORCE_NODALE=_F(FX = 0, FY = fVert, FZ = fLat, GROUP_NO=(nForce, )),
                            MODELE=model2S)
 
 
@@ -1476,7 +1496,7 @@ if USP_on:
                                    E=f_EUSP(meanFreqJob)/scaling_slpX, NU=nuUSP, RHO=0.375e-09)) 
     
 # USP material macroEl2
-if bool_macroEl2_Ph2 and bool_macroEl2_usp:
+if bool_macroEl2_Ph2 and USP2_on:
     try:
         EUSP = f_EUSP2(meanFreqJob)
     except:
@@ -1513,7 +1533,7 @@ if bool_macroEl2_Ph2:
               _F(GROUP_MA=('soft'), MATER=(padMat22, )),
               _F(GROUP_MA=('raile'), MATER=(railMat, ))]
 
-    if bool_macroEl2_usp:
+    if USP2_on:
         affeMat.append(_F(GROUP_MA=('USPe'), MATER=(USPmat2, )),)
 
     fldMat2 = AFFE_MATERIAU(AFFE=affeMat, MAILLAGE=mesh2, MODELE=model2,)
@@ -2457,7 +2477,8 @@ if writeMED:
             UNITE=28)
     
     # free memory destroy unused objects: JC 20.08.2025
-    DETRUIRE(CONCEPT=_F(NOM=(harmGlob,resOut, squel, )))
+    # commented: because we need resOut in the projection: ousl 21-01-2026
+    #DETRUIRE(CONCEPT=_F(NOM=(harmGlob,resOut, squel, )))
 	
 
 ### modified Slimane & Chakib
@@ -2478,8 +2499,13 @@ if BEM_activated:
         meshP = MODI_MAILLAGE(reuse=meshP, 
                               MAILLAGE=meshP, 
                               TRANSLATION=(0, thkUSP, 0));
+    else:
+        discreteBalNodes = 'sntb'
+        if bool_macroEl2_Ph2 and USP2_on:
+            # Translate components above USPs of USP's thickness
+            meshP= MODI_MAILLAGE(reuse=meshP, MAILLAGE=meshP, TRANSLATION=(0, thkUSP2, 0));
 
-    ### New selection of all the surfaces with railBEM
+    ### Rail full length assembly and projection
     ### for i in selectedSubstFRF:
     substructs3 = []
     listGroupMa = []
@@ -2612,7 +2638,190 @@ if BEM_activated:
               UNITE=84,
               )
 
+###########################################################
+#### BEM sleeper geometrical transformation 14-01-2026 ###
+###########################################################
+    if BEM_sleepers:
+        ### for sleeper projection ousl 15-01-2026
+        meshSlpP = LIRE_MAILLAGE(FORMAT="MED",UNITE=68);
 
+        dpX_slpP = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='X*(scaling-1)', scaling=scaling_slpX,)
+                    
+        dpY_slpP = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='Y*(scaling-1)', scaling=scaling_slpY)
+                    
+        dpZ_slpP = FORMULE(NOM_PARA=('X', 'Y', 'Z'), VALE='Z*0',)
+
+        CHdplFP = CREA_CHAMP(AFFE=_F(TOUT='OUI',
+                                    NOM_CMP=('X1', 'X2', 'X3'),
+                                    VALE_F=(dpX_slpP, dpY_slpP, dpZ_slpP)),
+                            OPERATION='AFFE',
+                            MAILLAGE=meshSlpP,
+                            TYPE_CHAM='NOEU_NEUT_F')
+
+        CHcoordP = CREA_CHAMP(MAILLAGE=meshSlpP,
+                            NOM_CHAM='GEOMETRIE',
+                            OPERATION='EXTR',
+                            TYPE_CHAM='NOEU_GEOM_R')
+
+        tempP = CREA_CHAMP(CHAM_F=CHdplFP,
+                            CHAM_PARA=(CHcoordP, ),
+                            OPERATION='EVAL',
+                            TYPE_CHAM='NOEU_NEUT_R')
+
+        CHdpl_P=CREA_CHAMP(OPERATION='ASSE', TYPE_CHAM='NOEU_DEPL_R', MAILLAGE=meshSlpP,
+                        ASSE=_F(TOUT = 'OUI', CHAM_GD = tempP,
+                                NOM_CMP = ('X1', 'X2', 'X3',),
+                                NOM_CMP_RESU = ('DX','DY','DZ',)))
+
+        meshSlpP = MODI_MAILLAGE(reuse=meshSlpP, MAILLAGE=meshSlpP, 
+                        DEFORME=_F(OPTION='TRAN', DEPL=CHdpl_P))
+        
+        if USP_on:
+            meshSlpP = MODI_MAILLAGE(reuse=meshSlpP, MAILLAGE=meshSlpP, TRANSLATION=(0, thkUSP, 0));
+        else:
+            discreteBalNodes = 'sntb'
+            if bool_macroEl2_Ph2 and bool_macroEl2_usp:
+                # Translate components above USPs of USP's thickness
+                meshSlpP = MODI_MAILLAGE(reuse=meshSlpP, MAILLAGE=meshSlpP, TRANSLATION=(0, thkUSP2, 0));
+
+        ### Sleeper assembly and projection
+        substructs4 = []
+        listGroupMa4 = []
+        # for i in range(nSlp):
+        for i in nSlpAcoustRange:
+            substructs4.append(_F(NOM='elem'+str(i)+'R', GROUP_MA='slpBEM'))
+            listGroupMa4.append('elem' + str(i) + 'R') 
+            ### try to mirror the sleeper ousl 16-01-2025       
+            substructs4.append(_F(NOM='elem'+str(i)+'L', GROUP_MA='slpBEM'))
+            listGroupMa4.append('elem' + str(i) + 'L') 
+
+        squel4 = DEFI_SQUELETTE(MODELE_GENE=modeGene,
+                                SOUS_STRUC=substructs4)
+
+        harmGlo4 = REST_SOUS_STRUC(RESU_GENE=harmGene, 
+                                SQUELETTE=squel4, 
+                                NOM_CHAM='DEPL',)
+
+        # --- harmonic loop and build resOut4 ---
+        for freq in allFreqsJob:
+            out4 = CREA_CHAMP(FREQ=freq,
+                            NOM_CHAM='DEPL',
+                            OPERATION='EXTR',
+                            RESULTAT=harmGlo4,
+                            TYPE_CHAM='NOEU_DEPL_C',
+                            )
+
+            if freq == allFreqsJob[0]:
+                resOut4 = CREA_RESU(OPERATION='AFFE', 
+                                    TYPE_RESU='DYNA_HARMO',
+                                    NOM_CHAM='DEPL', 
+                                    AFFE=_F(CHAM_GD=out4, 
+                                            FREQ=freq),)
+            else:
+                resOut4 = CREA_RESU(reuse=resOut4, 
+                                    RESULTAT=resOut4, 
+                                    OPERATION='AFFE',
+                                    TYPE_RESU='DYNA_HARMO', 
+                                    NOM_CHAM='DEPL', 
+                                    AFFE=_F(CHAM_GD=out4, 
+                                            FREQ=freq),)
+                
+            DETRUIRE(CONCEPT=_F(NOM=(out4,)))
+
+        # --- assemble projection mesh ---
+        # this can be changed later to have different section for the sleeper
+        lSlpAcoustRange = nSlpAcoust2 - (nSlpAcoust1 - 1)
+        N = lSlpAcoustRange
+
+        meshSlpP = MODI_MAILLAGE(reuse=meshSlpP,
+                            MAILLAGE=meshSlpP,
+                            TRANSLATION=((nSlpAcoust1 - 1) * slpSpacing, 0.0, 0.0),
+                            )
+        mesh_tm2 = COPIER(CONCEPT=meshSlpP)
+        ms_S = {}
+        ms_S[0] = COPIER(CONCEPT=meshSlpP)
+        ms_S[1] = COPIER(CONCEPT=meshSlpP)
+        ms_S[1] = MODI_MAILLAGE(reuse=ms_S[1],
+                                MAILLAGE=ms_S[1],
+                                TRANSLATION=(slpSpacing, 0.0, 0.0),
+                                )
+
+        # ms_S2 … ms_SN the mesh
+        for i in range(2, N):
+            ms_S[i] = COPIER(CONCEPT=ms_S[i - 1])
+            ms_S[i] = MODI_MAILLAGE(reuse=ms_S[i],
+                                    MAILLAGE=ms_S[i],
+                                    TRANSLATION=(slpSpacing, 0.0, 0.0),
+                                    )
+        # — Step 2: superpose them in sequence —
+        ms_B = {}
+
+        # first superposition: ms_S12
+        ms_B[0] = ASSE_MAILLAGE(MAILLAGE_1=ms_S[0],
+                                MAILLAGE_2=ms_S[1],
+                                OPERATION='SUPERPOSE',
+                                )
+
+        # fold in ms_S3 … ms_SN
+        for i in range(1, N - 1):
+            ms_B[i] = ASSE_MAILLAGE(MAILLAGE_1=ms_B[i - 1],
+                                    MAILLAGE_2=ms_S[i + 1],
+                                    OPERATION='SUPERPOSE',
+                                    )
+
+        # — Final result —
+        meshS_t = ms_B[N - 2]
+
+
+        # --- projection ---
+        resProjS = PROJ_CHAMP(RESULTAT=resOut4,
+                            METHODE='COLLOCATION',
+                            MAILLAGE_1=squel4,
+                            MAILLAGE_2=meshS_t,
+                            ALARME='OUI',
+                            NOM_CHAM=('DEPL',),
+                            )
+
+        ## Save assembled projection mesh
+        IMPR_RESU(FORMAT='MED',
+                RESU=_F(MAILLAGE=meshS_t,),
+                UNITE=69,
+                )
+
+        IMPR_RESU(FORMAT='MED',
+            RESU=_F(MAILLAGE=squel4,),
+            UNITE=88)
+
+        ## check projection field
+        IMPR_RESU(FORMAT='MED',
+                RESU=_F(RESULTAT=resProjS,
+                        PARTIE='REEL',
+                        NOM_CHAM='DEPL',
+                        NOM_CHAM_MED='resProjS',
+                        ),
+                UNITE=90,
+                )
+
+        ### coordinates file of meshS_t - BEM mesh  (nodeCoordinateSlp.txt file for sleeper)
+        IMPR_RESU(FORMAT='RESULTAT',
+                RESU=_F(FORMAT_R='1PE12.5',
+                        IMPR_COOR='OUI',
+                        MAILLAGE=meshS_t,
+                        ),
+                UNITE=91,
+                )
+
+        ## displacement field in Excel table (nodeDisplacementSlp.txt file for sleeper)
+        IMPR_RESU(FORMAT='RESULTAT',
+                RESU=_F(FORM_TABL='EXCEL',
+                        IMPR_COOR='NON',
+                        NOM_CHAM=('DEPL',),
+                        FORMAT_R='1PE12.5',
+                        RESULTAT=resProjS,
+                        ),
+                UNITE=89,
+                )
+###############################################
 
 ######################################################
 # POST-PROCESSING : Get force-velocity FRF functions
