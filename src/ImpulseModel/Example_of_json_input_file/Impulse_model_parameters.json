@@ -1,0 +1,72 @@
+{
+    "TakeUSP" :  false,
+    "Load" : -54000,
+    "Load_Grp" : "nRai3_Y",
+    "speed" : 100,
+    "timeStep" : 0.001,
+    "timeline" : [0, 0.005 , 0.01  , 0.015 , 0.018 , 0.0185, 0.019 , 0.0195, 0.02  , 0.0205],
+    "alpha_htt" : -0.05,
+    "nCPUs" : 4,
+    "memlim" : 15000,
+    "run_simulation" : true, 
+    "debug" : true,
+    "Static" : false,
+    "A_slp": 325000,
+    "simu_folder" : "/simuResults",
+    "mesh" : "/meshTrack.med",
+    "reptrav" : "/tmp",
+    "pads" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/MaterialsProperties/EVA.json",
+    "sleeper" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/MaterialsProperties/Concrete.json",
+    "ballast" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/MaterialsProperties/Gravel.json", 
+    "rail" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/MaterialsProperties/Steel.json",
+    "usp" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/MaterialsProperties/usp.json",
+
+    "Geometry" : {
+        "Creat_geom": true,
+        "tiltAngle_rad" : -0.025,
+        "padThickness" : 7,
+        "halfDistBtwnRails" : 757.56,
+        "USPthickness" : 8.5,
+        "padYOffset" : 214,
+        "USP_mesh" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/Mesh/USPs/USP_B91_60E2.med",
+        "Ballast" : {
+            "Ballast_l" : 1500,
+            "Ballast_h" :  300,
+            "Element_per_edge_h" : 6,
+            "Element_size_L" : 30
+        },
+        "Rail" : {
+            "Element_size" : 13.63,
+            "Rail_portion" : 600,
+            "Rail_mesh": "/opt/RailTrackModellingToolbox/src/ImpulseModel/Mesh/Rails/rail_60E2.med"
+        },
+        "Sleepers" : {
+            "nbr_sleepers_3D" : 3,
+            "nbr_sleepers" : 9,
+            "L_Sleeper_z" : 1300,
+            "slpSpacing" : 600,
+            "L_beamSleeper" : 65,
+            "Sleeper3D_mesh" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/Mesh/Sleepers/sleeper_60E2.med"    
+        },
+
+        "Pads" : {
+            "Lx" : 150,
+            "Lz" : 162,
+            "heigth" : 7,
+            "Pad_mesh" : "/opt/RailTrackModellingToolbox/src/ImpulseModel/Mesh/Pads/pad_singleMat.med"
+
+        }
+
+    },
+
+    "clamp" : {
+        "Name" : "",
+        "kx" : 0,
+        "ky" : 375,
+        "kz" : 0,
+        "ampx" : 0,
+        "ampy" : 0,
+        "ampz" : 0
+
+    }
+}

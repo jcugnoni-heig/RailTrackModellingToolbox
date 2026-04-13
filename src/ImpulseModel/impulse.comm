@@ -1,0 +1,564 @@
+from Utilitai import partition
+import json
+import numpy as np
+
+DEBUT(LANG='EN', PAR_LOT='NON')
+
+###################################
+# Import JSON parameters
+###################################
+
+with open('fort.5', 'r') as f:
+  txt = f.read()
+material = json.loads(txt)
+
+with open(material['pads'], 'r') as f:
+  pads_txt = f.read()
+pads = json.loads(pads_txt)
+
+with open(material['sleeper'], 'r') as f:
+  slp_txt = f.read()
+slp = json.loads(slp_txt)
+
+with open(material['ballast'], 'r') as f:
+  bal_txt = f.read()
+bal = json.loads(bal_txt)
+
+with open(material['rail'], 'r') as f:
+  rail_txt = f.read()
+rail = json.loads(rail_txt)
+
+with open(material['usp'], 'r') as f:
+  usp_txt = f.read()
+usp = json.loads(usp_txt)
+
+
+clamp = material["clamp"]
+
+takeUsp = material["TakeUSP"]
+F_y = material["Load"]
+F_Grp = material["Load_Grp"]
+
+Sec1_Sleeper_A, Sec2_Sleeper_A, Beam_A =slp["Geometry"]["sec1"]["A"] , slp["Geometry"]["sec2"]["A"], rail["Geometry"]["A"] 
+Sec1_Sleeper_IY, Sec2_Sleeper_IY, Beam_IY =slp["Geometry"]["sec1"]["IY"] , slp["Geometry"]["sec2"]["IY"], rail["Geometry"]["IY"] 
+Sec1_Sleeper_IZ, Sec2_Sleeper_IZ, Beam_IZ =slp["Geometry"]["sec1"]["IZ"] , slp["Geometry"]["sec2"]["IZ"], rail["Geometry"]["IZ"] 
+Sec1_Sleeper_AY, Sec2_Sleeper_AY, Beam_AY =slp["Geometry"]["sec1"]["AY"] , slp["Geometry"]["sec2"]["AY"], rail["Geometry"]["AY"] 
+Sec1_Sleeper_AZ, Sec2_Sleeper_AZ, Beam_AZ =slp["Geometry"]["sec1"]["AZ"] , slp["Geometry"]["sec2"]["AZ"], rail["Geometry"]["AZ"] 
+Sec1_Sleeper_JX, Sec2_Sleeper_JX, Beam_JX =slp["Geometry"]["sec1"]["JX"] , slp["Geometry"]["sec2"]["JX"], rail["Geometry"]["JX"] 
+
+nbrBeamSleeper = material["Geometry"]["Sleepers"]["nbr_sleepers"] - material["Geometry"]["Sleepers"]["nbr_sleepers_3D"]
+slpSpacing = material["Geometry"]["Sleepers"]["slpSpacing"]
+
+
+###################################
+#Read New Mesh
+###################################
+
+mesh0 = LIRE_MAILLAGE(UNITE=20) 
+
+SprgS = tuple(['pdsR_n' + str(n) for n in range(1,nbrBeamSleeper//2+1)] + ['pdsR_p' + str(p) for p in range(1,nbrBeamSleeper//2+1)]) # SpringSlepper
+SprgR = tuple(['pdsS_n' + str(n) for n in range(1,nbrBeamSleeper//2+1)] + ['pdsS_p' + str(p) for p in range(1,nbrBeamSleeper//2+1)]) # SpringRail
+
+
+mesh0 = DEFI_GROUP(CREA_GROUP_NO=(_F(UNION=SprgS, 
+                                     NOM='SprgS'), 
+                                  _F(UNION=SprgR,  
+                                     NOM='SprgR'),
+                                  _F(INTERSEC=('ballast_sym','bst_dwn'),  
+                                     NOM='bstDbl')),
+                    
+                   reuse=mesh0,
+                   MAILLAGE=mesh0
+)
+mesh0 = DEFI_GROUP(CREA_GROUP_NO=(_F(DIFFE=('ballast_sym','bstDbl'), 
+                                     NOM='bst_sym'), 
+                                  ),
+                    
+                   reuse=mesh0,
+                   MAILLAGE=mesh0
+)
+
+
+
+mesh = CREA_MAILLAGE(CREA_POI1=_F(GROUP_NO='BmSlpN', # BeamSleeperNode
+                                  NOM_GROUP_MA='BmSlpN0D'), 
+                     MAILLAGE=mesh0)
+
+DETRUIRE(CONCEPT=_F(NOM=( mesh0)))
+
+###################################
+# Affectation of the elements type
+###################################
+
+Grpa_3D = ('ballast', 'raile', 'hard', 'sleepere')
+
+if takeUsp :
+    Grpa_3D = Grpa_3D + ('USPe',)
+
+
+model = AFFE_MODELE(AFFE=(_F(GROUP_MA=Grpa_3D, 
+                             MODELISATION=('3D', ), 
+                             PHENOMENE='MECANIQUE'
+                            ),
+                          _F(GROUP_MA=('BeamSlp', 'BmRp_e', 'BmRn_e', ),  # BeanSleeper , 
+                             MODELISATION=('POU_D_T', ), # DIST_TR -> IMPORTER LES RIGIDITEES EN ROTATION
+                             PHENOMENE='MECANIQUE'
+                            ),
+                          _F(GROUP_MA=('SprgPad'),
+                             MODELISATION=('DIS_TR', ), 
+                             PHENOMENE='MECANIQUE'
+                            ),
+                            
+                          _F(MODELISATION=('DIS_T', ), 
+                             PHENOMENE='MECANIQUE',
+                             GROUP_MA=('BmSlpN0D','clamp_iae', 'clamp_ibe', 'clamp_eae', 'clamp_ebe'),
+                            )),
+                    INFO=1, 
+                    MAILLAGE=mesh) 
+
+# -------------------
+# Ballast Stifness, Damping and Mass
+
+A_slp = material["A_slp"]
+h_bst = material["Geometry"]["Ballast"]["Ballast_h"]
+h_usp = material["Geometry"]["USPthickness"]
+nbrBeamNode = 23
+coefSlpBotArea = 1.7
+Ballast_l = material["Geometry"]["Ballast"]["Ballast_l"]
+
+MBallast_perBeam = (A_slp*h_bst)*bal['rho']
+BstMass = MBallast_perBeam/nbrBeamNode/2
+
+
+BstStiff_Y = (bal['E']*coefSlpBotArea*A_slp/(h_bst))/nbrBeamNode
+BstStiff_XZ = (bal['E']/(2*(1+bal['nu']))*coefSlpBotArea*A_slp/(h_bst))/nbrBeamNode
+
+
+BstAmo_Y = bal['beta']*BstMass + bal['alpha']*BstStiff_Y
+BstAmo_XZ = bal['beta']*BstMass + bal['alpha']*BstStiff_XZ
+
+# -------------------
+# USP Stifness, Damping and Mass
+
+UspStiff_Y = (usp['E']*coefSlpBotArea*A_slp/h_usp)/nbrBeamNode
+UspStiff_XZ = (usp['E']/(2*(1+usp['nu']))*A_slp/h_usp)/nbrBeamNode
+
+UspMass = ((A_slp*h_usp)*usp['rho'])/nbrBeamNode/2
+
+UspAmo_Y = usp['beta']*UspMass + usp['alpha']*UspStiff_Y
+UspAmo_XZ = usp['beta']*UspMass + usp['alpha']*UspStiff_XZ
+
+# -------------------
+# Ballast + USP Stifness, Damping and Mass
+
+if takeUsp :
+   StiffEq_Y = 1/(1/UspStiff_Y + 1/BstStiff_Y)
+   StiffEq_XZ = 1/(1/BstStiff_XZ+1/UspStiff_XZ)
+   AmoEq_Y = 1/(1/UspAmo_Y + 1/BstAmo_Y)
+   AmoEq_XZ = 1/(1/UspAmo_XZ + 1/BstAmo_XZ)
+else :
+    StiffEq_Y = BstStiff_Y
+    StiffEq_XZ = BstStiff_XZ
+    AmoEq_Y = BstAmo_Y
+    AmoEq_XZ = BstAmo_XZ
+
+# Pads + Clamp, Stifness and Damping discret element
+
+Lx = material["Geometry"]["Pads"]["Lx"] # en mm
+Lz = material["Geometry"]["Pads"]["Lz"] # en mm
+A_pads = Lx*Lz # mm^2
+h_pads = material["Geometry"]["Pads"]["heigth"] # en mm
+
+PadsMass = A_pads*h_pads*pads["rho"]
+Iyy = PadsMass*(Lx**2 + Lz**2)/12
+Izz = PadsMass*(Lx**2 + h_pads**2)/12
+Ixx = PadsMass*(Lz**2 + h_pads**2)/12
+
+PadStiff_TY = pads["DIS_Ky"]
+PadStiff_TXZ = pads["DIS_Kz"]
+PadStiff_RY = pads["DIS_Kry"]
+PadStiff_RX = pads["DIS_Krx"]
+PadStiff_RZ = pads["DIS_Krz"]
+
+
+padsAmo_Y = pads["beta"]*PadsMass + pads["alpha"]*PadStiff_TY
+padsAmo_XZ = pads["beta"]*PadsMass + pads["alpha"]*PadStiff_TXZ
+PadsAmo_RY = pads["beta"]*Iyy + pads["alpha"]*PadStiff_RY
+PadsAmo_RX = pads["beta"]*Ixx + pads["alpha"]*PadStiff_RX
+PadsAmo_RZ = pads["beta"]*Izz + pads["alpha"]*PadStiff_RZ
+
+Stiff_PadClp_Y = PadStiff_TY + 4*clamp['ky'] # 1 Pads + 4 clamps in parallèle
+#Stiff_PadClp_XZ = 1/(1/PadStiff_TXZ+1/clamp['kz'])
+Stiff_PadClp_XZ = PadStiff_TXZ
+
+ElmProp = AFFE_CARA_ELEM(POUTRE=(_F(GROUP_MA=('BmRn_e', 'BmRp_e'), 
+                                     SECTION='GENERALE',
+                                     CARA=('A', 'IY', 'IZ', 'AY', 'AZ', 'JX'),  
+                                     VALE=(Beam_A, Beam_IY, Beam_IZ, Beam_AY, Beam_AZ, Beam_JX), 
+                                     VARI_SECT='CONSTANT'
+                                     ),
+                                  _F(GROUP_MA=('Sec1' ), 
+                                     SECTION='GENERALE', 
+                                     CARA=('A', 'IY', 'IZ', 'AY', 'AZ', 'JX'), 
+                                     VALE=(Sec1_Sleeper_A, Sec1_Sleeper_IY, Sec1_Sleeper_IZ, Sec1_Sleeper_AY, Sec1_Sleeper_AZ, Sec1_Sleeper_JX), 
+                                     VARI_SECT='CONSTANT'
+                                     ),
+                                  _F(GROUP_MA=('Sec2'), 
+                                     SECTION='GENERALE', 
+                                     CARA=('A', 'IY', 'IZ', 'AY', 'AZ', 'JX'), 
+                                     VALE=(Sec2_Sleeper_A, Sec2_Sleeper_IY, Sec2_Sleeper_IZ, Sec2_Sleeper_AY, Sec2_Sleeper_AZ, Sec2_Sleeper_JX), 
+                                     VARI_SECT='CONSTANT'
+                                     )),
+                        ORIENTATION=(_F(CARA='VECT_Y',
+                                       GROUP_MA=('BeamSlp'),
+                                       VALE=(0.0, 1.0, 0.0)),
+                                     _F(CARA='VECT_Y',
+                                       GROUP_MA=('BmRn_e','BmRp_e',),
+                                       VALE=(0.0, 1.0, 0.0))),
+                        MASSIF =(_F(GROUP_MA = ('sleepere', ),
+                                    ANGL_REP = (0,90,0) # (0,0,-90)
+                                     )), 
+                        DISCRET=(_F(CARA='K_T_D_N',
+                                      GROUP_MA=('BmSlpN0D'),
+                                      REPERE='GLOBAL',
+                                      SYME='OUI',
+                                      VALE=(StiffEq_XZ, StiffEq_Y, StiffEq_XZ),),
+                                   _F(CARA='M_T_D_N',
+                                      GROUP_MA=('BmSlpN0D'),
+                                      SYME='OUI',
+                                      REPERE='GLOBAL',
+                                      VALE=BstMass),
+                                   _F(CARA='A_T_D_N',
+                                      GROUP_MA=('BmSlpN0D'),
+                                      SYME='OUI',
+                                      REPERE='GLOBAL',
+                                      VALE=(AmoEq_XZ, AmoEq_Y, AmoEq_XZ)),
+                                   _F(CARA='K_TR_D_L',
+                                      GROUP_MA=('SprgPad'),
+                                      REPERE='GLOBAL',
+                                      VALE=(Stiff_PadClp_XZ, Stiff_PadClp_Y, Stiff_PadClp_XZ,PadStiff_RX,PadStiff_RY,PadStiff_RZ),),
+                                   _F(CARA='M_TR_D_L',
+                                      GROUP_MA=('SprgPad'),
+                                      REPERE='GLOBAL',
+                                      VALE=(PadsMass, Ixx, Iyy,Izz),),
+                                   _F(CARA='A_TR_D_L',
+                                      GROUP_MA=('SprgPad'),
+                                      REPERE='GLOBAL', 
+                                      VALE=(padsAmo_XZ, padsAmo_Y, padsAmo_XZ,PadsAmo_RX,PadsAmo_RY,PadsAmo_RZ)),
+                                    _F(CARA='K_T_D_L',
+                                      GROUP_MA=('clamp_iae', 'clamp_ibe', 'clamp_eae', 'clamp_ebe'),
+                                      VALE=(clamp['kx'],clamp['ky'],clamp['kz']),),
+                                      ),
+                          MODELE=model) 
+
+
+###################################
+# Material Definition
+###################################
+
+CREA_LIB_MFRONT(UNITE_MFRONT=10,
+                UNITE_LIBRAIRIE=11, ) 
+
+padhard = DEFI_MATERIAU(ELAS=_F(E=pads["E"], NU=pads["nu"], RHO=pads["rho"]),
+                        MFRONT=_F( LISTE_COEF = (pads["K"][0],pads["G"][0],
+                                                 pads["K"][1],pads["K"][2],pads["K"][3],pads["K"][4],
+                                                 pads["G"][1],pads["G"][2],pads["G"][3],pads["G"][4],
+                                                 pads["tau"][0],pads["tau"][1],pads["tau"][2],pads["tau"][3],)), 
+                        )
+
+
+# Before roration: XYZ=LTN ; after rotation (90° Y): XYZ=NTL. See R4.01.02
+slpMx = DEFI_MATERIAU(ELAS_ORTH=_F(E_L=slp["E_L"],
+                                     E_N=slp["E_N"],
+                                     E_T=slp["E_T"],
+                                     G_LN=slp["E_L"]/2/(1+slp["nu"]),
+                                     G_LT=slp["E_L"]/2/(1+slp["nu"]), 
+                                     G_TN=slp["E_N"]/2/(1+slp["nu"]),
+                                     NU_LN=slp["nu"],
+                                     NU_LT=slp["nu"],
+                                     NU_TN=slp["nu"],
+                                     RHO=slp["rho"],
+                                     AMOR_ALPHA=slp["alpha"],
+                                     AMOR_BETA=slp["beta"]))
+
+slpMxIso = DEFI_MATERIAU(
+    ELAS = _F(E=slp["E_L"], NU=slp["nu"], RHO=slp["rho"])   # check the value
+
+)
+
+balMx = DEFI_MATERIAU(ELAS=_F(E=bal["E"],
+                             NU=bal["nu"],
+                             RHO=bal["rho"],
+                             AMOR_ALPHA=bal["alpha"],
+                             AMOR_BETA=bal["beta"]))
+
+
+railMx = DEFI_MATERIAU(ELAS=_F(E=rail["E"],
+                             NU=rail["nu"],
+                             RHO=rail["rho"],
+                             AMOR_ALPHA=rail["alpha"],
+                             AMOR_BETA=rail["beta"]))
+
+
+USPMx = DEFI_MATERIAU(ELAS=_F(E=usp["E"],
+                             NU=usp["nu"],
+                             RHO=usp["rho"],
+                             AMOR_ALPHA=usp["alpha"],
+                             AMOR_BETA=usp["beta"]))
+
+# Affectation
+
+Mat = [_F(GROUP_MA=('ballast', ),MATER=(balMx, )),
+       _F(GROUP_MA=('sleepere'), MATER=(slpMx, )),
+       _F(GROUP_MA=('BeamSlp'), MATER=(slpMxIso, )),
+       _F(GROUP_MA=('hard'), MATER=(padhard, )),
+       _F(GROUP_MA=('BmRn_e','BmRp_e'), MATER=(railMx, )),
+       _F(GROUP_MA=('raile'),MATER=(railMx, ))]
+
+if takeUsp :
+    Mat.append(_F(GROUP_MA=('USPe'), MATER=(USPMx, )))
+
+fieldmat = AFFE_MATERIAU(AFFE=(Mat),
+                         MAILLAGE=mesh,
+                         MODELE=model)
+
+
+###################################
+# Rail, BC and Symetry
+###################################
+
+# Contact between 3D Rail and Beam Rail
+
+tie3DB1 = AFFE_CHAR_MECA(LIAISON_SOLIDE=_F(GROUP_NO=('Bm_xpBC', 'rBk_top')), 
+                                        MODELE=model) 
+
+tie3DB2 = AFFE_CHAR_MECA(LIAISON_SOLIDE=_F(GROUP_NO=('Bm_xnBC', 'rft_top')), # Change the name to rFt_top
+                                        MODELE=model) 
+
+###################################
+# Sleeper Symetry
+###################################
+
+Sym3DS = AFFE_CHAR_MECA(DDL_IMPO=_F(DZ=0.0,
+                                  GROUP_NO=('slpSym', )), 
+                      MODELE=model) 
+
+
+SymBS = AFFE_CHAR_MECA(DDL_IMPO=_F(DRX=0.0,
+                                   DRY=0.0, 
+                                   DZ=0.0, 
+                                   GROUP_NO=('BC_sym', )), 
+                       MODELE=model) 
+
+###################################
+# Ballast, BC and Symetry
+###################################
+
+# Encastrement
+BCfix = AFFE_CHAR_MECA(DDL_IMPO=_F(DX=0.0,
+                                   DY=0.0,
+                                   DZ=0.0,
+                                   GROUP_NO=('bst_dwn', )),
+                       MODELE=model)
+
+#Symetry
+SymBst = AFFE_CHAR_MECA(DDL_IMPO=_F(DZ=0.0,
+                                  GROUP_NO=('bst_sym', )), 
+                      MODELE=model) 
+
+###################################
+# Contact
+###################################
+
+# 3D Rail / Pads
+
+tie1 = AFFE_CHAR_MECA(LIAISON_MAIL=( _F(GROUP_NO_ESCL=('pntr_3DR', ),
+                                         GROUP_MA_MAIT=('retp', ),
+                                         TYPE_RACCORD='MASSIF',
+                                         DISTANCE_MAX=1.0)),
+                       MODELE=model) 
+
+# Pads / 3D Sleeper
+
+tie2 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('pnts', ),
+                                       GROUP_MA_MAIT=('setp', ),
+                                       TYPE_RACCORD='MASSIF',
+                                       DISTANCE_MAX=1.0)),
+                      MODELE=model) 
+
+Bc = (SymBS, tie3DB1, tie3DB2, Sym3DS, BCfix, SymBst, tie1, tie2)
+
+# 3D Sleeper / USP + USP / Ballast
+
+if takeUsp :
+   tie3 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('sntb', ),
+                                          GROUP_MA_MAIT=('USPe', ),
+                                          TYPE_RACCORD='MASSIF',
+                                          DISTANCE_MAX=1.0)),
+                        MODELE=model) 
+
+   tie4 = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('untb', ),
+                                             GROUP_MA_MAIT=('v_up', ),
+                                             TYPE_RACCORD='MASSIF',
+                                             DISTANCE_MAX=1.0)),
+                           MODELE=model)
+   Bc = Bc + (tie3, tie4,)
+else:
+   tie3b = AFFE_CHAR_MECA(LIAISON_MAIL=(_F(GROUP_NO_ESCL=('sntb', ),
+                                          GROUP_MA_MAIT=('v_up', ),
+                                          TYPE_RACCORD='MASSIF',
+                                          DISTANCE_MAX=1.0)),
+                        MODELE=model) 
+   Bc = Bc + (tie3b,)
+
+
+
+###################################
+# Load
+###################################
+
+BCload = AFFE_CHAR_MECA(FORCE_NODALE=_F(FY=F_y,
+                                        GROUP_NO=(F_Grp, )),
+                        MODELE=model)
+
+tmps_load = 2*slpSpacing*1e-3/(material['speed']*1e3/3600)
+timeStep = material['timeStep']
+nbr_steps_load =  int(tmps_load//timeStep)
+load_value = [0,0]
+for k in range (1, nbr_steps_load):
+   load_value.append(k*timeStep)
+   load_value.append(np.sin(np.pi*k*timeStep*material['speed']*1e3/3600/(2*slpSpacing*1e-3)))
+
+for p in range(nbr_steps_load, nbr_steps_load + 5):
+   load_value.append(p*timeStep)
+   load_value.append(0)
+
+load = tuple(load_value)
+
+Mimp=DEFI_FONCTION(NOM_PARA='INST',
+                   VALE=load,
+                   INFO=1,TITRE='Mimp',
+                   PROL_DROITE='CONSTANT',);
+excit = []
+for bcl in Bc:
+	excit.append(_F(CHARGE=bcl,))
+excit.append(_F(CHARGE=BCload,FONC_MULT=Mimp,))
+
+pyTime = np.array(material['timeline'])
+print('schema de temps utilisé : ', pyTime)
+
+dt = pyTime[1:] - pyTime[0:-1]
+pasMaxi = max(dt)
+
+time = DEFI_LIST_REEL(INFO=1,
+                      VALE=pyTime,
+                      TITRE='time')
+
+deflist = DEFI_LIST_INST(DEFI_LIST=_F(LIST_INST=time,
+                                      PAS_MINI=1e-07,
+                                      PAS_MAXI=pasMaxi),
+                         INFO=2,
+                         METHODE='AUTO')
+                         
+# parallel MUMPS, robust and pretty fast
+SOLVOPT={'ELIM_LAGR':'LAGR2','LOW_RANK_SEUIL':1e-09, 'MATR_DISTRIBUEE':'OUI','METHODE':'MUMPS','RENUM':'SCOTCH'} 
+
+if(material['Static']):
+   resImp=STAT_NON_LINE(MODELE=model,
+                        SOLVEUR=SOLVOPT,
+                        CHAM_MATER=fieldmat,
+                        CARA_ELEM=(ElmProp),
+                        EXCIT=excit,
+                        COMPORTEMENT=_F(RELATION='MFRONT',
+                                       GROUP_MA='hard',
+                                       UNITE_LIBRAIRIE=11,
+                                       NOM_ROUTINE='astergeneralizedmaxwell',),
+                        INCREMENT=_F(LIST_INST= deflist,),
+                        NEWTON=_F(REAC_INCR=1,
+                                 MATRICE='TANGENTE',
+                                 REAC_ITER=1,),
+                        CONVERGENCE=_F(ITER_GLOB_MAXI=200,),
+                        # ARCHIVAGE=_F(PAS_ARCH=1,),
+                        ARCHIVAGE=_F(LIST_INST=time,),
+                        );
+else : 
+   resImp = DYNA_NON_LINE(MODELE=model,
+                        SOLVEUR=SOLVOPT,
+                        CHAM_MATER=fieldmat,
+                        CARA_ELEM=(ElmProp),
+                        EXCIT=excit,
+                        COMPORTEMENT=_F(RELATION='MFRONT',
+                                       GROUP_MA='hard',
+                                       UNITE_LIBRAIRIE=11,
+                                       NOM_ROUTINE='astergeneralizedmaxwell',),
+                        INCREMENT=_F(LIST_INST= deflist,),
+                        SCHEMA_TEMPS =_F(FORMULATION = 'DEPLACEMENT',
+                                          SCHEMA = 'HHT',
+                                          ALPHA = material['alpha_htt'],),
+                        NEWTON=_F(REAC_INCR=1,
+                                 MATRICE='TANGENTE',
+                                 REAC_ITER=1,),
+                        ENERGIE = _F()
+                           )
+
+
+resBst=CALC_CHAMP(MODELE=model,
+                  GROUP_MA ='ballast',
+                  CHAM_MATER=fieldmat,
+                  CONTRAINTE =('SIGM_NOEU',),
+                  RESULTAT=resImp,);
+'''
+TDispS = CREA_TABLE (RESU = _F(RESULTAT=resImp,
+                              NOM_CHAM = 'DEPL',
+                              TOUT_CMP = 'OUI',
+                              GROUP_NO = ('Slp3D','SlpBm',),),)
+
+TDispR = CREA_TABLE (RESU = _F(RESULTAT=resImp,
+                              NOM_CHAM = 'DEPL',
+                              TOUT_CMP = 'OUI',
+                              GROUP_NO = ('RbmN','R3DN',),),)
+
+TBrd = CREA_TABLE (RESU = _F(RESULTAT=resImp,
+                              NOM_CHAM = 'DEPL',
+                              TOUT_CMP = 'OUI',
+                              GROUP_NO = ('NBrd3D',),),)
+
+IMPR_TABLE (TABLE = TDispS,
+            UNITE = 24,)
+
+IMPR_TABLE (TABLE = TDispR,
+            UNITE = 25,)
+
+IMPR_TABLE (TABLE = TBrd,
+            UNITE = 26,)
+'''
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(PARTIE='REEL',
+                  NOM_CHAM=('SIGM_NOEU'),
+                  NOM_CHAM_MED = ('stress'),
+                  RESULTAT=resBst,),
+          UNITE=22)
+
+StressB = CREA_TABLE (RESU = _F(RESULTAT=resBst,
+                              NOM_CHAM = 'SIGM_NOEU',
+                              TOUT_CMP = 'OUI',
+                              GROUP_NO = ('bst_up',),),)
+
+IMPR_TABLE (TABLE = StressB,
+            UNITE = 27,)
+
+Eng_T = RECU_TABLE (CO = resImp,
+                    NOM_TABLE = 'PARA_CALC',
+)
+
+
+IMPR_TABLE (TABLE = Eng_T,
+            UNITE = 28,)
+
+IMPR_RESU(FORMAT='MED',
+          RESU=_F(PARTIE='REEL',
+                  TOUT_CHAM = 'OUI',
+                  IMPR_NOM_VARI='NON',
+                  RESULTAT=resImp,),
+          UNITE=23)
+FIN()

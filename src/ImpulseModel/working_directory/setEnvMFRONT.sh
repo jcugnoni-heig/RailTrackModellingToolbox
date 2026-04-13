@@ -1,2 +1,0 @@
-export PATH=__path__setEnvMfront1
-export LD_LIBRARY_PATH=__path__setEnvMfront2
