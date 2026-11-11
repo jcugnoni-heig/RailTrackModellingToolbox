@@ -87,7 +87,7 @@ except:
 try:
     dampers_on = parameters['dampers_on']
     if dampers_on:
-        mtot = parameters["damper"].get("mtot")/1000 # Convert kg to tonnes
+        mtot = parameters["damper"].get("mtot")
         m1_ratio = parameters["damper"].get("m1_ratio")
         k1tot = parameters["damper"].get("k1tot")
         k2tot = parameters["damper"].get("k2tot")
@@ -101,7 +101,7 @@ except:
 
 # Rail dampers macro-element 2
 try:
-    dampers_on2 = parameters["macroEl2"].get("dampers_on")/1000 if parameters["macroEl2"].get("dampers_on") is not None else dampers_on
+    dampers_on2 = parameters["macroEl2"].get("dampers_on") if parameters["macroEl2"].get("dampers_on") is not None else dampers_on
     if dampers_on2:
         mtot_2 = parameters["macroEl2"]["damper"].get("mtot") if parameters["macroEl2"]["damper"].get("mtot") is not None else mtot
         m1_ratio_2 = parameters["macroEl2"]["damper"].get("m1_ratio") if parameters["macroEl2"]["damper"].get("m1_ratio") is not None else m1_ratio
@@ -215,11 +215,7 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini, p_mdP
             L_Mass.append(MASS_GENE)
         except:
             continue
-        if (parameters.get('NbrModes') is None or parameters.get('NbrModes') >= len(L_Mass)):
-            NbrModes = len(L_Mass)
-        else:
-            NbrModes = parameters.get('NbrModes')
-         
+
         mode = {
             'no' : modeNbr, 
             'freq' : freq, 
@@ -290,145 +286,149 @@ def GetEigenModesList(p_path, p_cumulX_mini, p_cumulY_mini, p_cumulZ_mini, p_mdP
 
     # ------------------------ NEW FILTER USING THE MASSES AND PHI ------------------------
 
-    # We create a table with the modal mass generalized
-    TAB_M = CREA_TABLE(
-    LISTE = _F(
-        PARA = 'Mass',
-        LISTE_R = L_Mass,
-    ),
-    )
-
-    # We create a table with the eigen vectors phi at specific nodes
-    # Those groups of nodes are changing, check if keep working correctly
-    # --->>>> Mettre dans la doc que ces groupes de noeuds sont à créer dans le modèle et leur position
-    # n1_F_Y : nodes at mid-span (X-)
-    # n3_F_Y : nodes at quarter-span (X-)
-    # n5_F_Y : nodes at over-sleeper (0)
-    # n7_F_Y : nodes at quarter-span (X+)
-    # n9_F_Y : nodes at mid-span (X+)
-    TAB_phi = CREA_TABLE(
-    RESU = _F(
-        RESULTAT   = p_mdPh1,
-        NOM_CHAM   = 'DEPL',
-        NOM_CMP    = ('DX', 'DY', 'DZ'),
-        TOUT_ORDRE = 'OUI',
-        GROUP_NO = ('n1_F_Y','n3_F_Y','n5_F_Y','n7_F_Y','n9_F_Y'),
-    ),
-    )
-
-    phi4phi = [[] for _ in range(5)]
-    nbr_tot_mode = len(L_Mass) # total number of modes available
-    MassModal = []
-    Sum_phi = np.zeros((5, 2))
-    Sum_Mass = 0
-    Sum_Mass_used = 0
-    nbr_modes_taken = NbrModes if NbrModes < nbr_tot_mode else nbr_tot_mode # number of modes for the final modal basis
+    nbr_tot_mode = len(modes) # total number of modes available
+    NbrModes_requested = parameters.get('NbrModes')
+    if NbrModes_requested is None:
+        nbr_modes_taken = nbr_tot_mode
+    else:
+        nbr_modes_taken = min(int(NbrModes_requested), nbr_tot_mode) # number of modes for the final modal basis
     mass_pourcentage = MassP # percentage of mode selected based on mass (between 0 and 1), the rest will be selected based on phi
 
-    # For each mode, we compute phi_i*phi_4/mass and add it to the list phi4phi[i]
-    for k in range(nbr_tot_mode):
-        phi4_idx = 5 * k + 4 # index of phi_4 for mode k (4 because of one based indexing in Aster -> TAB_phi['DY', phi4_idx])
-        mass = TAB_M['Mass', k + 1] # mass of mode k
-        MassModal.append(mass) # list of modal masses
-        Sum_Mass += mass # total mass
+    # Points of interest (each group must contain exactly ONE node, cf. doc):
+    # phi1 -> n5_F_Y : over-sleeper (0)
+    # phi2 -> n7_F_Y : quarter-span (X+)
+    # phi3 -> n9_F_Y : mid-span (X+)
+    # phi4 -> n3_F_Y : quarter-span (X-)  <- loading point
+    # phi5 -> n1_F_Y : mid-span (X-)
+    phi_groups = ('n5_F_Y', 'n7_F_Y', 'n9_F_Y', 'n3_F_Y', 'n1_F_Y')
+    phi_load = 3 # index of the loading point in phi_groups (phi4)
+    phi_used = 3 # point used for the selection (0:phi1, 1:phi2, 2:phi3, 3:phi4, 4:phi5)
 
-        if (k <= round(nbr_modes_taken*mass_pourcentage)):
-            Sum_Mass_used += mass # sum of masses of the modes selected based on mass
+    # Selection of exactly nbr_modes_taken modes:
+    # first we take the modes with the highest mass until we reach the mass percentage,
+    # then we fill the rest with the modes with the highest phi_i*phi_4/mass, skipping
+    # modes already selected on mass, until we reach exactly nbr_modes_taken modes.
+    if nbr_modes_taken >= nbr_tot_mode:
+        # As many (or more) modes requested than available: take them all directly.
+        NewlistModes = [mode['no'] for mode in modes]
+        selected_phi = []
+        selected_mass = NewlistModes
+    else:
+        # Eigen vectors at the points of interest: one table per node group, rows identified
+        # by NUME_ORDRE -> independent of the row ordering in the table (node numbering)
+        # phi_val[i][nume_ordre] = (DY, DZ) at node of phi_groups[i]
+        phi_val = []
+        for grp in phi_groups:
+            TAB_phi = CREA_TABLE(
+            RESU = _F(
+                RESULTAT   = p_mdPh1,
+                NOM_CHAM   = 'DEPL',
+                NOM_CMP    = ('DY', 'DZ'),
+                TOUT_ORDRE = 'OUI',
+                GROUP_NO   = grp,
+            ),
+            )
+            tab_val = TAB_phi.EXTR_TABLE().values()
+            DETRUIRE(CONCEPT=_F(NOM=(TAB_phi, )))
 
-        # We compute phi_i*phi_4/mass for the 5 points of interest
-        # phi1 -> n5_F_Y
-        # phi2 -> n7_F_Y
-        # phi3 -> n9_F_Y
-        # phi4 -> n3_F_Y
-        # phi5 -> n1_F_Y
-        # loading point is phi4, at quarter span
-        for i in range(5):
-            phi_idx = 5 * k + (i+1) #(i+1) because of one based indexing in Aster -> TAB_phi['DY', phi_idx]
-            val_dy = TAB_phi['DY', phi_idx] * TAB_phi['DY', phi4_idx] / mass
-            val_dz = TAB_phi['DZ', phi_idx] * TAB_phi['DZ', phi4_idx] / mass
-            phi4phi[i].append([val_dy, val_dz])
-            Sum_phi[i] += np.abs([val_dy, val_dz]) # sum of |phi_i*phi_4/mass| over all modes
+            grp_val = {}
+            for no, dy, dz in zip(tab_val['NUME_ORDRE'], tab_val['DY'], tab_val['DZ']):
+                if no in grp_val:
+                    raise ValueError('GetEigenModesList: node group ' + grp + ' must contain exactly one node.')
+                grp_val[no] = (dy, dz)
+            phi_val.append(grp_val)
 
-    # We order the phi4phi[i] lists in descending order of |phi_i*phi_4/mass|
-    # At the end we have the sorted values of dy with their indices and then the sorted values of z with their indices
-    phi4phi_sorted = []
-    for vec in phi4phi:
-        arr = np.abs(np.array(vec))
-        phi4phi_sorted.extend([
-            sorted(enumerate(fDirVert*arr[:, 0] + fDirLat*arr[:, 1]), key=lambda x: x[1], reverse=True),
-            # sorted(enumerate(arr[:, 0]), key=lambda x: x[1], reverse=True),
-            # sorted(enumerate(arr[:, 1]), key=lambda x: x[1], reverse=True)
-        ])
-    # struture of phi4phi_sorted (index is the mode number /!\ zero based indexing): 
-    # [[ (index, valueY), (index, valueY), ... ]    ->phi1Y
-    #  [ (index, valueZ), (index, valueZ), ... ]    ->phi1Z
-    #  [ (index, valueY), (index, valueY), ... ]    ->phi2Y
-    #  [ (index, valueZ), (index, valueZ), ... ]    ->phi2Z
-    #       ...              ...
-    #  [ (index, valueY), (index, valueY), ... ]    ->phi5Y
-    #  [ (index, valueZ), (index, valueZ), ... ]]   ->phi5Z
-    # You need 2*phi_used + Orientation to have the good list corresponding to the point and direction you want
-    # -> -> print(len(phi4phi_sorted[2*phi_used + Orientation]))
+        # For each mode, score = fDirVert*|phiY_i*phiY_4/mass| + fDirLat*|phiZ_i*phiZ_4/mass|
+        # phi4phi_sorted[i] = [ (mode_no, score), ... ] sorted by decreasing score (mode_no = Aster mode number)
+        phi4phi_sorted = []
+        for i in range(len(phi_groups)):
+            scores = []
+            for mode in modes:
+                dy_i, dz_i = phi_val[i][mode['no']]
+                dy_4, dz_4 = phi_val[phi_load][mode['no']]
+                score = fDirVert*abs(dy_i*dy_4/mode['mass']) + fDirLat*abs(dz_i*dz_4/mode['mass'])
+                scores.append((mode['no'], score))
+            phi4phi_sorted.append(sorted(scores, key=lambda x: x[1], reverse=True))
 
-    
-    # Iterative selection of modes until we have at least nbr_modes_taken
-    # first we take the modes with the highest mass until we reach the mass percentage
-    # Then we take the modes with the highest phi_i*phi_4/mass until we reach the total number of modes
-    # It could be that a mode with high phi is already taken because it has a high mass, so we use set() to remove duplicates
-    # and do one more loop if needed
-    phi_used = 3 # (0:phi1, 1:phi2, 2:phi3, 3:phi4, 4:phi5)
-    Orientation = 0 #  DY = 0 , DZ = 1 
-    for t in range (nbr_modes_taken, nbr_tot_mode + 1):
-        print(round((1-mass_pourcentage)*t))
-        # (phi4phi_sorted[][][]+1) because of the one based indexing in Aster
-        # selected_phi = [(phi4phi_sorted[2*phi_used + Orientation][q][0]+1) for q in range(round((1-mass_pourcentage)*t))]
-        selected_phi = [(phi4phi_sorted[phi_used][q][0]+1) for q in range(round((1-mass_pourcentage)*t))]
-        selected_mass = [sortedMaxMass[k]['no'] for k in range(round(mass_pourcentage*nbr_modes_taken))]
-        NewlistModes = list(set(selected_mass + selected_phi))
-        if (len(NewlistModes) >= nbr_modes_taken):
-            break
-        
-    DETRUIRE(CONCEPT=_F(NOM=(TAB_M, TAB_phi, )))
-    
-    print(f"------ phi used : Phi{str(phi_used + 1)} ------")
-    print('------ orientation used for the phi : DY')
-    print('The selected modal basis is: ', NewlistModes)
-    print('The dimension of the mode list is: ', len(NewlistModes))
-    print('List of selected phi modes: ', selected_phi)
-    print('List of selected mass modes: ', selected_mass)
-    print('The percentage of mass used is: ', (Sum_Mass_used/Sum_Mass)*100, ' %' )
+        nbr_mass_modes = int(round(mass_pourcentage*nbr_modes_taken))
+        selected_mass = [sortedMaxMass[k]['no'] for k in range(nbr_mass_modes)]
+        selected_mass_set = set(selected_mass)
+
+        selected_phi = []
+        for mode_no, score in phi4phi_sorted[phi_used]:
+            if len(selected_mass) + len(selected_phi) >= nbr_modes_taken:
+                break
+            if mode_no not in selected_mass_set:
+                selected_phi.append(mode_no)
+
+        NewlistModes = sorted(selected_mass + selected_phi)
+
+    nbr_selected = len(NewlistModes)
+    nbr_mass = len(selected_mass)
+    nbr_phi = len(selected_phi)
+    pct_of_total = (nbr_selected/nbr_tot_mode*100) if nbr_tot_mode else 0
+
+    print(f"------ Eigenmode selection summary (phi used: Phi{phi_used + 1}) ------")
+    print(f"Requested modes (NbrModes parameter) : {NbrModes_requested if NbrModes_requested is not None else 'None (all available modes)'}")
+    print(f"Total modes available                : {nbr_tot_mode}")
+    print(f"Modes retained for the final basis    : {nbr_selected} ({pct_of_total:.1f}% of total available)")
+    if nbr_modes_taken >= nbr_tot_mode:
+        print("  -> requested >= available: all available modes were taken (mass/phi criteria not applied)")
+    else:
+        pct_mass = (nbr_mass/nbr_selected*100) if nbr_selected else 0
+        pct_phi = (nbr_phi/nbr_selected*100) if nbr_selected else 0
+        print(f"  - selected via mass criterion : {nbr_mass} ({pct_mass:.1f}% of selection)")
+        print(f"  - selected via phi criterion  : {nbr_phi} ({pct_phi:.1f}% of selection)")
+    print(f"Selected modal basis (mode numbers)  : {NewlistModes}")
+    print(f"Mass-selected mode numbers           : {selected_mass}")
+    print(f"Phi-selected mode numbers            : {selected_phi}")
 
     return NewlistModes
 
-def GetAlphaBeta(p_freqList, p_dampingList):
-    # Computes optimized Rayleigh's coefs alpha & beta ( eta=1/2*(alpha*w+beta/w) )
-    # freqList in Hz ; damping list = corresponding hysteretic damping
-    
-    freqList = np.array(p_freqList)
-    dampingList = np.array(p_dampingList)
+def GetAlphaBeta(p_freqList, p_lossFactorList):
+    # Computes optimized Rayleigh's coefs alpha & beta, with C = alpha*K + beta*M (Code_Aster AMOR_ALPHA, AMOR_BETA)
+    # Loss factor eta = tanD = alpha*w + beta/w ; damping ratio zeta = eta/2 (R5.05.04)
+    # freqList in Hz ; lossFactorList = corresponding hysteretic damping (tanD)
 
-    if len(freqList) == 1: # only 1 freq: set beta to 0 and alpha s.t. damping is exact
-        return [dampingList[0]/(pi*freqList[0]), 0] 
-    elif len(freqList) == 2: # only 2 freqs: return alpha, beta s.t. damping is exact at both freqs
-        f0 = freqList[0]
-        f1 = freqList[1]
-        eta0 = dampingList[0]
-        eta1 = dampingList[1]
-        alpha = eta0/(pi*f0)*(1 - f1/eta0 * (eta0*f1-eta1*f0)/(f1**2-f0**2))
-        beta = 4*pi*f0*f1 * (eta0*f1-eta1*f0)/(f1**2-f0**2)
-        return [alpha, beta]
+    freqList = np.array(p_freqList, dtype=float)
+    etaList = np.array(p_lossFactorList, dtype=float)
 
-    # more than 2 freqs: use least squares method to optimize damping
-    A = np.trapz(dampingList*2*pi*freqList, 2*pi*freqList)
-    B = np.trapz(dampingList/(2*pi*freqList), 2*pi*freqList)
-    vect = np.array([[A], [B]])
-    w1 = 2*pi*freqList[0]
-    w2 = 2*pi*freqList[-1]
-    M = 12/((w2**3-w1**3)*(1/w1-1/w2) - 3*(w2-w1)**2) * np.array([[1/2*(1/w1-1/w2), -1/2*(w2-w1)], [-1/2*(w2-w1), 1/6*(w2**3-w1**3)]])
-    alphaBeta = np.dot(M, vect)
-    alpha = float(alphaBeta[0])
-    beta = float(alphaBeta[1])
-    return [alpha, beta]
+    if len(freqList) == 0 or len(freqList) != len(etaList):
+        raise ValueError("GetAlphaBeta: freqList and lossFactorList must be non-empty and of same length")
+    if np.any(freqList <= 0):
+        raise ValueError("GetAlphaBeta: all frequencies must be > 0 Hz")
+
+    # Same frequency repeated: treat as a single frequency
+    if len(np.unique(freqList)) == 1:
+        freqList = freqList[:1]
+        etaList = etaList[:1]
+
+    wList = 2*pi*freqList
+
+    if len(wList) == 1: # only 1 freq: set beta to 0 and alpha s.t. damping is exact
+        alpha = etaList[0]/wList[0]
+        beta = 0.0
+    elif len(wList) == 2: # only 2 freqs: alpha, beta s.t. damping is exact at both freqs
+        w0, w1 = wList
+        eta0, eta1 = etaList
+        alpha = (eta1*w1 - eta0*w0)/(w1**2 - w0**2)
+        beta = w0*w1*(eta0*w1 - eta1*w0)/(w1**2 - w0**2)
+    else: # more than 2 freqs: least squares fit of eta(w) = alpha*w + beta/w over [w1, w2]
+        A = np.trapz(etaList*wList, wList)
+        B = np.trapz(etaList/wList, wList)
+        w1 = wList[0]
+        w2 = wList[-1]
+        I2 = (w2**3 - w1**3)/3
+        I0 = w2 - w1
+        Im2 = 1/w1 - 1/w2
+        det = I2*Im2 - I0**2
+        alpha = float((Im2*A - I0*B)/det)
+        beta = float((I2*B - I0*A)/det)
+
+    if alpha < 0 or beta < 0:
+        print(f"WARNING GetAlphaBeta: negative Rayleigh coefficient (alpha={alpha:.3e}, beta={beta:.3e}), "
+              f"damping may be negative outside [{freqList[0]:.1f}, {freqList[-1]:.1f}] Hz")
+    return [float(alpha), float(beta)]
 
 def DictToTuple(myDict):
     temp = []
@@ -1356,52 +1356,52 @@ if bool_macroEl2_slpShift:
 # Materials properties ; import functions
 ######################################################  
 # E pad mat 1
-f_EPad1=LIRE_FONCTION(UNITE = 30, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+f_EPad1=LIRE_FONCTION(UNITE = 30, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 if bool_macroEl2_Ph2 and 'Emat1' in parameters['macroEl2'].keys():
-    fEpad12 = LIRE_FONCTION(UNITE = 50, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    fEpad12 = LIRE_FONCTION(UNITE = 50, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 # E pad mat 2
-f_EPad2=LIRE_FONCTION(UNITE = 32, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+f_EPad2=LIRE_FONCTION(UNITE = 32, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 if bool_macroEl2_Ph2 and 'Emat2' in parameters['macroEl2'].keys():
-    fEpad22 = LIRE_FONCTION(UNITE = 52, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    fEpad22 = LIRE_FONCTION(UNITE = 52, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 # tanD pad mat 1
-f_TDPad1=LIRE_FONCTION(UNITE = 31, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+f_TDPad1=LIRE_FONCTION(UNITE = 31, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 if bool_macroEl2_Ph2 and 'tanDmat1' in parameters['macroEl2'].keys():
-    fTDpad12=LIRE_FONCTION(UNITE = 54, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    fTDpad12=LIRE_FONCTION(UNITE = 54, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 # tanD pad mat 2
-f_TDPad2=LIRE_FONCTION(UNITE = 33, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+f_TDPad2=LIRE_FONCTION(UNITE = 33, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 if bool_macroEl2_Ph2 and 'tanDmat2' in parameters['macroEl2'].keys():
-    fTDpad22=LIRE_FONCTION(UNITE = 56, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    fTDpad22=LIRE_FONCTION(UNITE = 56, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 if USP_on:
     # E USP
-    f_EUSP=LIRE_FONCTION(UNITE = 34, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    f_EUSP=LIRE_FONCTION(UNITE = 34, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
     # tanD USP
-    f_TDUSP=LIRE_FONCTION(UNITE = 35, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    f_TDUSP=LIRE_FONCTION(UNITE = 35, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 if USP2_on:
     if bool_macroEl2_Ph2 and 'EUSP' in parameters['macroEl2'].keys():
-        f_EUSP2=LIRE_FONCTION(UNITE = 58, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+        f_EUSP2=LIRE_FONCTION(UNITE = 58, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
     else:
-        f_EUSP2=LIRE_FONCTION(UNITE = 34, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+        f_EUSP2=LIRE_FONCTION(UNITE = 34, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 if USP2_on:
     if bool_macroEl2_Ph2 and 'tanDUSP' in parameters['macroEl2'].keys():
-        f_TDUSP2=LIRE_FONCTION(UNITE = 60, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+        f_TDUSP2=LIRE_FONCTION(UNITE = 60, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
     else:
-        f_TDUSP2=LIRE_FONCTION(UNITE = 35, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+        f_TDUSP2=LIRE_FONCTION(UNITE = 35, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 # E bal
-f_EBal=LIRE_FONCTION(UNITE = 36, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+f_EBal=LIRE_FONCTION(UNITE = 36, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 if bool_macroEl2_Ph2 and 'Ebal' in parameters['macroEl2'].keys():
-    f_EBal2=LIRE_FONCTION(UNITE = 62, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    f_EBal2=LIRE_FONCTION(UNITE = 62, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 # tanD bal
-f_TDBal=LIRE_FONCTION(UNITE = 37, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+f_TDBal=LIRE_FONCTION(UNITE = 37, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 if bool_macroEl2_Ph2 and 'tanDbal' in parameters['macroEl2'].keys():
-    f_TDBal2=LIRE_FONCTION(UNITE = 64, NOM_PARA = 'FREQ', PROL_GAUCHE = 'LINEAIRE', PROL_DROITE = 'LINEAIRE')
+    f_TDBal2=LIRE_FONCTION(UNITE = 64, NOM_PARA = 'FREQ', PROL_GAUCHE = 'CONSTANT', PROL_DROITE = 'LINEAIRE')
 
 ######################################################
 # Materials properties ; define materials

@@ -185,7 +185,7 @@ class MultiSleeperModelGUI(QMainWindow):
 		self.txt_nModesRai.setText(str(dictSimu['nModesRai']))
 		self.txt_nModesSlp.setText(str(dictSimu['nModesSlp']))
 		self.txt_massP.setText(str(dictSimu['MassP']))
-		self.txt_NbrModes.setText(str(dictSimu['NbrModes']))
+		self.txt_NbrModes.setText(str(int(dictSimu['NbrModes'])))
 		self.txt_slpSpacing.setText(str(dictSimu['slpSpacing']))
 		self.txt_nSlp.setText(str(dictSimu['nSlp']))
 		self.txt_fDirVert.setText(str(dictSimu['fDirVert']))
@@ -910,7 +910,7 @@ class MultiSleeperModelGUI(QMainWindow):
 
 			#
 			try:
-				NbrModes = float(self.txt_NbrModes.text())
+				NbrModes = int(self.txt_NbrModes.text())
 				if NbrModes < 1:
 					QMessageBox.information(self, 'Error', 'Please enter a correct number of modes for phase II simulation.', QMessageBox.Ok,)
 					return
